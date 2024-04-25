@@ -1,5 +1,5 @@
 // export const rootUrl = "http://backend:8000/";
-export const rootUrl = "http://127.0.0.1:8000/";
+export const rootUrl = "http://127.0.0.1:8001/";
 
 export interface PaginatedData<T> {
   count: number;

@@ -4,10 +4,10 @@ services:
   backend:
     build:
       context: ./garde_backend
-    # command: gunicorn garde_backend.wsgi:application --bind 0.0.0.0:8000
-    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn garde_backend.wsgi:application --bind 0.0.0.0:8000
+    # command: python manage.py runserver 0.0.0.0:8001
     ports:
-      - "8000:8000"
+      - "8001:8001"
     volumes:
       - django_app:/app
 
