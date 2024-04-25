@@ -26,42 +26,46 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 router = routers.DefaultRouter()
-router.register(r'users', UsersViewSet, basename="users")
+# add /api/users/ to the router
+
+# router.register(r'users', UsersViewSet, basename="users")
+
+router.register(r'api/users', UsersViewSet, basename="users")
 
 
 urlpatterns = [
 
-    path('auth/token', LoginTokenView.as_view(), name="login-token"),
-    path('auth/login', LoginView.as_view(), name="login"),
+    path('api/auth/token', LoginTokenView.as_view(), name="login-token"),
+    path('api/auth/login', LoginView.as_view(), name="login"),
 
     # ADMIN
-    path("pirogues/", PirogueList.as_view(), name="pirogue-list"),
-    path("immigrants/", ImmigrantList.as_view(), name = "immigrant-list"),
-    path('stats/', StatsView.as_view(), name="stats"), 
-    path('stats/immigrants', ImmigrantStatsView.as_view(), name="immigrants-stats"),
-    path("migration_irregular/", MigrationIrregularList.as_view(), name="migration-irregular-list"),
+    path("api/pirogues/", PirogueList.as_view(), name="pirogue-list"),
+    path("api/immigrants/", ImmigrantList.as_view(), name = "immigrant-list"),
+    path('api/stats/', StatsView.as_view(), name="stats"), 
+    path('api/stats/immigrants', ImmigrantStatsView.as_view(), name="immigrants-stats"),
+    path("api/migration_irregular/", MigrationIrregularList.as_view(), name="migration-irregular-list"),
  
     # AGENT
     
-    path("me/pirogues/", MyPirogueList.as_view(), name="my-pirogue-list"),
+    path("api/me/pirogues/", MyPirogueList.as_view(), name="my-pirogue-list"),
 
     # BOTH
 
-    path("pirogues/<int:pk>/", PirogueDetail.as_view(), name="pirogue-detail"),
-    path("immigrants/<int:pk>/", ImmigrantDetail.as_view(), name = "immigrant-detail"),  
-    path('pirogues/<int:pirogue_pk>/immigrants/', PirogueImmigrantsList.as_view(), name="pirogue-immigrants-list"),
+    path("api/pirogues/<int:pk>/", PirogueDetail.as_view(), name="pirogue-detail"),
+    path("api/immigrants/<int:pk>/", ImmigrantDetail.as_view(), name = "immigrant-detail"),  
+    path('api/pirogues/<int:pirogue_pk>/immigrants/', PirogueImmigrantsList.as_view(), name="pirogue-immigrants-list"),
 
-    path('countries/', CoutriesView.as_view(), name="countries-list"),
-    path('countries/<int:pk>/', CountriesDetailView.as_view(), name="countries-detail"),
+    path('api/countries/', CoutriesView.as_view(), name="countries-list"),
+    path('api/countries/<int:pk>/', CountriesDetailView.as_view(), name="countries-detail"),
 
-    path('immigrants/pdf', ImmigrantsPDFExportView.as_view(), name="immigrant-detail"),
+    path('api/immigrants/pdf', ImmigrantsPDFExportView.as_view(), name="immigrant-detail"),
     
 
 ]
 from django.conf.urls.static import static
 
 urlpatterns += router.urls
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static("api/" +  settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # ADMIN
 
