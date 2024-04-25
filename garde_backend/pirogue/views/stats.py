@@ -13,6 +13,12 @@ class StatsSerializer(serializers.Serializer):
 class CoutriesView(ListAPIView): 
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    search_fields = ['name_fr', 'name_en', 'alpha2', 'alpha3', 'code']
+
+class CountriesDetailView(APIView):
+    def get(self, request, pk):
+        country = Country.objects.get(pk=pk)
+        return Response(CountrySerializer(country).data)
 
 class StatsView(APIView):
     permission_classes = [IsAdminUser]

@@ -36,7 +36,10 @@ class User(AbstractBaseUser):
     def is_staff(self):
         return self.is_admin or self.is_superuser
 
-class UserSerializer(serializers.ModelSerializer):    
+class UserSerializer(serializers.ModelSerializer): 
+    total_pirogues = serializers.IntegerField(read_only = True)
+    total_immigrants = serializers.IntegerField(read_only = True)
+
     def create(self, validated_data):
         # if "is_admin" in validated_data and  validated_data['is_admin']:
         #     user = User.objects.create_superuser(username=validated_data['username'], password=validated_data['password'], name=validated_data['name'])

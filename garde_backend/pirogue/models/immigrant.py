@@ -4,11 +4,14 @@ from django.db.models import F
 
 class ImmigrantManager(models.Manager):
     def def_queryset(self): 
-        return self.get_queryset().annotate(created_by_name = F('created_by__name')).annotate(pirogue_number = F('pirogue__number'))
+        ret =  self.get_queryset().annotate(created_by_name = F('created_by__name'))
+        # .annotate(pirogue_number = F('pirogue__number'))
+        ret = ret.annotate(nationality_name = F('nationality__name_fr')).annotate(birth_country_name = F('birth_country__name_fr'))
+        return ret
 
 class Immigrant(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    etat = models.CharField(max_length=100, choices=[('alive', 'alive'), ('dead', 'dead'), ('sick_evacuation', 'sick_evacuation'), ('pregnant', 'pregnant')], default='alive')
     date_of_birth = models.DateField()  
     birth_country = models.ForeignKey('pirogue.Country', on_delete=models.PROTECT , related_name="immigrants_birth_country")
     nationality = models.ForeignKey('pirogue.Country', on_delete=models.PROTECT, related_name= "immigrants_nationality_country" )
@@ -23,6 +26,8 @@ class Immigrant(models.Model):
 class ImmigrantSerializer(serializers.ModelSerializer):
     created_by_name = serializers.CharField(source='pirogue.created_by.username', read_only=True)
     pirogue_number = serializers.CharField( read_only=True)
+    birth_country_name = serializers.CharField( read_only=True)
+    nationality_name = serializers.CharField( read_only=True)
 
     class Meta:
         model = Immigrant

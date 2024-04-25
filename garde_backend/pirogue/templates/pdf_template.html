@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <title>PDF Export</title>
+    <style>
+      /* Define your CSS styles here */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="asds">PDF Export</h1>
+    <img src="{% static 'logo.png' %}" alt="Logo" />
+
+    <table>
+      <tr>
+        {% for title in titles %}
+        <th>{{ title }}</th>
+        {% endfor %}
+      </tr>
+      {% for row in data %}
+      <tr>
+        {% for col in row %}
+        <td>{{ col}}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>

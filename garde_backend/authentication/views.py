@@ -8,6 +8,7 @@ from authentication.models import UserSerializer
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, NOT, AllowAny, BasePermission
 from authentication.models import User
+from django.db.models import Count
 
 from rest_framework import viewsets
 
@@ -51,5 +52,9 @@ class LoginView(ObtainAuthToken):
 
 class UsersViewSet(viewsets.ModelViewSet): 
     serializer_class = UserSerializer 
-    queryset = User.objects.all() 
     permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        ret = User.objects
+        ret = ret.annotate(total_pirogues = Count("pirogues")).annotate(total_immigrants = Count("pirogues__immigrants"))
+        return ret

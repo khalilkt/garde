@@ -5,12 +5,23 @@ from django.db.models.functions import Coalesce
 
 class PirogueManager(models.Manager):
     def def_queryset(self):
-        return self.get_queryset().annotate(immigrants_count = Coalesce(Count("immigrants"), 0)).annotate(created_by_name = F('created_by__name'))
+        return self.get_queryset().annotate(immigrants_count = Coalesce(Count("immigrants"), 0)).annotate(created_by_name = F('created_by__name')).annotate(nationality_name = F('nationality__name_fr'))
 
 class Pirogue(models.Model):
     lat = models.DecimalField(max_digits=22, decimal_places=16)
     long = models.DecimalField(max_digits=22, decimal_places=16)
-    number = models.CharField(max_length=10)
+    # numbers is a list of strings
+    motor_numbers = models.JSONField(default=list, blank = True)
+    puissance = models.IntegerField(blank=True, null=True)
+    material = models.CharField(max_length=100, choices=[('wood', 'wood'), ('metal', 'metal'), ('plastic', 'plastic'), ('polyester', 'polyester')], null= True, blank = True)
+    nationality = models.ForeignKey('Country', on_delete=models.PROTECT, related_name='pirogues', null= True, blank = True)
+    brand = models.CharField(max_length=100, null= True, blank = True)
+    gps = models.JSONField(default=list)
+    # essence
+    fuel = models.IntegerField(default=0)
+    port = models.CharField(max_length=100, choices=[('ndagou', 'ndagou'), ('nouadhibou', 'nouadhibou'), ('nouakchott', 'nouakchott'), ('tanit', 'tanit')])
+    extra  = models.CharField(max_length=1000, default="", blank=True, null=True)
+
     departure = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
@@ -22,6 +33,7 @@ class Pirogue(models.Model):
 class PirogueSerializer(serializers.ModelSerializer):
     created_by_name = serializers.CharField(read_only=True)
     immigrants_count = serializers.IntegerField(read_only=True)
+    nationality_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = Pirogue

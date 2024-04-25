@@ -16,17 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from pirogue.views.pirogue import PirogueList, PirogueDetail, MyPirogueList
-from pirogue.views.immigrant import ImmigrantList, ImmigrantDetail, PirogueImmigrantsList
+from pirogue.views.pirogue import MigrationIrregularList, PirogueList, PirogueDetail, MyPirogueList
+from pirogue.views.immigrant import ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, PirogueImmigrantsList, ImmigrantStatsView
 from authentication.views import LoginTokenView, LoginView, UsersViewSet
-from pirogue.views.stats import StatsView, CoutriesView
+from pirogue.views.stats import StatsView, CoutriesView, CountriesDetailView
 
 from rest_framework import routers
 from django.conf import settings
 from django.conf.urls.static import static
 
 router = routers.DefaultRouter()
-router.register(r'users', UsersViewSet)
+router.register(r'users', UsersViewSet, basename="users")
 
 
 urlpatterns = [
@@ -38,6 +38,8 @@ urlpatterns = [
     path("pirogues/", PirogueList.as_view(), name="pirogue-list"),
     path("immigrants/", ImmigrantList.as_view(), name = "immigrant-list"),
     path('stats/', StatsView.as_view(), name="stats"), 
+    path('stats/immigrants', ImmigrantStatsView.as_view(), name="immigrants-stats"),
+    path("migration_irregular/", MigrationIrregularList.as_view(), name="migration-irregular-list"),
  
     # AGENT
     
@@ -50,14 +52,17 @@ urlpatterns = [
     path('pirogues/<int:pirogue_pk>/immigrants/', PirogueImmigrantsList.as_view(), name="pirogue-immigrants-list"),
 
     path('countries/', CoutriesView.as_view(), name="countries-list"),
+    path('countries/<int:pk>/', CountriesDetailView.as_view(), name="countries-detail"),
 
+    path('immigrants/pdf', ImmigrantsPDFExportView.as_view(), name="immigrant-detail"),
     
 
 ]
+from django.conf.urls.static import static
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += router.urls
-
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # ADMIN
 
 # GET/POST /users/
