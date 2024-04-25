@@ -26,13 +26,14 @@ SECRET_KEY = 'django-insecure-ma+p3$t%f#m)f=(ix#&^t$ri^s4&gbx6mz06u$j%modb9zn96)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0,0.0.0']
 
 
 # Application definition
 
 AUTH_USER_MODEL = 'authentication.User'
 
+CORS_ALLOWED_ORIGIN = '*'
 
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
