@@ -10,16 +10,11 @@ from rest_framework.filters import SearchFilter, OrderingFilter, BaseFilterBacke
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
-from reportlab.lib.styles import getSampleStyleSheet
 # import static files
 from django.templatetags.static import static
 
 from django.conf import settings
 from django.template.loader import render_to_string
-from weasyprint import HTML
 from django.http import FileResponse, HttpResponse
 from rest_framework.views import APIView
 from dateutil.relativedelta import relativedelta 
@@ -92,50 +87,51 @@ class ImmigrantStatsView (ImmigrantList):
 
 class ImmigrantsPDFExportView(ImmigrantList):
     def get(self, request):
-            buffer = BytesIO()
+        return Response("Not implemented")
+            # buffer = BytesIO()
 
-            # Create a PDF document
-            doc = SimpleDocTemplate(buffer, pagesize=letter)
-            story = []
+            # # Create a PDF document
+            # doc = SimpleDocTemplate(buffer, pagesize=letter)
+            # story = []
 
-            # Add heading with image
-            styles = getSampleStyleSheet()
+            # # Add heading with image
+            # styles = getSampleStyleSheet()
             
-            base_dir = settings.BASE_DIR
-            img_path = path.join(base_dir, 'static', 'logo.png')
+            # base_dir = settings.BASE_DIR
+            # img_path = path.join(base_dir, 'static', 'logo.png')
 
-            # add a 2px height line from left to right
-            story.append(Paragraph("<hr width='100%' size='2' color='black'>", styles['Normal']))
+            # # add a 2px height line from left to right
+            # story.append(Paragraph("<hr width='100%' size='2' color='black'>", styles['Normal']))
 
-            img = Image(img_path, width=100, height=100)
-            story.append(img)
+            # img = Image(img_path, width=100, height=100)
+            # story.append(img)
 
-            story.append(Paragraph("Heading", styles['Heading1']))
+            # story.append(Paragraph("Heading", styles['Heading1']))
 
-            # Add long table
-            data = [["Column 1", "Column 2", "Column 3"]]  # Example data
-            for i in range(100):  # Add 100 rows for demonstration
-                data.append(["Row {}".format(i), "Value {}".format(i), "Description {}".format(i)])
+            # # Add long table
+            # data = [["Column 1", "Column 2", "Column 3"]]  # Example data
+            # for i in range(100):  # Add 100 rows for demonstration
+            #     data.append(["Row {}".format(i), "Value {}".format(i), "Description {}".format(i)])
 
-            table = Table(data)
-            table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                                    ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
+            # table = Table(data)
+            # table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            #                         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            #                         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            #                         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            #                         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            #                         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            #                         ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
 
-            story.append(table)
+            # story.append(table)
 
-            # Build the PDF
-            doc.build(story)
+            # # Build the PDF
+            # doc.build(story)
 
-            # Rewind the buffer
-            buffer.seek(0)
+            # # Rewind the buffer
+            # buffer.seek(0)
 
-            # Return the PDF as a response
-            return FileResponse(buffer, as_attachment=True, filename='example.pdf')
+            # # Return the PDF as a response
+            # return FileResponse(buffer, as_attachment=True, filename='example.pdf')
 
 class ImmigrantDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [HasImmigrantPermission]
