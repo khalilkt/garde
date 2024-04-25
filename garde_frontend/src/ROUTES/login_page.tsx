@@ -32,7 +32,7 @@ export default function LoginPage() {
       <div className="flex w-[90%] flex-col md:w-[400px] ">
         <img src={logo} alt="logo" className="mb-6 h-24 w-24 self-center" />
         <h1 className="mb-9 self-center text-3xl font-semibold">
-          Connectez Vousss {rootUrl}
+          Connectez Vous
         </h1>
         <Input
           id="username_input"
