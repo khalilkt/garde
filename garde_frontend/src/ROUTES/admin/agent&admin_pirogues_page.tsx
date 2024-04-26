@@ -33,6 +33,10 @@ import { MATERIAL_NAME, PaginatedData, rootUrl } from "../../models/constants";
 import { AuthContext } from "../../App";
 import PirogueDetailPage, { CountryInterface } from "./pirogue_detail_page";
 import * as RDialog from "@radix-ui/react-dialog";
+import {
+  PositionInput,
+  PositionInterface,
+} from "../../components/position_input";
 
 export interface PirogueInterface {
   id: number;
@@ -62,10 +66,25 @@ function AddEditPirogueDialog({
 }: {
   onDone: (created: boolean) => void;
 }) {
-  const [formState, setFormState] = React.useState({
+  const [formState, setFormState] = React.useState<{
+    lat: PositionInterface;
+    long: PositionInterface;
+    numbers: string[];
+    departure: string;
+    destination: string;
+    extra: string;
+    description: string;
+    port: string;
+    puissance: string;
+    fuel: number;
+    material: string;
+    nationality: string;
+    brand: string;
+    gps: string[];
+  }>({
     numbers: [""],
-    lat: "",
-    long: "",
+    lat: { x: "", y: "", z: "", orientation: "N" },
+    long: { x: "", y: "", z: "", orientation: "N" },
     departure: "",
     destination: "",
     extra: "",
@@ -83,10 +102,27 @@ function AddEditPirogueDialog({
   const couttriesNameCache = React.useRef<{ [key: string]: string }>({});
 
   async function create() {
+    const lat =
+      formState.lat.x +
+      "-" +
+      formState.lat.y +
+      "-" +
+      formState.lat.z +
+      "-" +
+      formState.lat.orientation;
+    const long =
+      formState.long.x +
+      "-" +
+      formState.long.y +
+      "-" +
+      formState.long.z +
+      "-" +
+      formState.long.orientation;
+    alert("lat: " + lat + " long: " + long);
     try {
       if (
-        formState.lat.length === 0 ||
-        formState.long.length === 0 ||
+        lat.length === 0 ||
+        long.length === 0 ||
         formState.departure.length === 0 ||
         formState.destination.length === 0 ||
         formState.port.length === 0
@@ -97,8 +133,8 @@ function AddEditPirogueDialog({
       await axios.post(
         rootUrl + "me/pirogues/",
         {
-          lat: formState.lat,
-          long: formState.long,
+          lat: lat,
+          long: long,
           motor_numbers: formState.numbers,
           puissance:
             formState.puissance.length === 0 ? null : formState.puissance,
@@ -198,21 +234,27 @@ function AddEditPirogueDialog({
         placeholder="Puissance"
         type="number"
       />
-      <Input
+      {/* <Input
         value={formState.lat}
         onChange={(e) => {
           setFormState((state) => ({ ...state, lat: e.target.value }));
         }}
         placeholder="Latitude"
         type="number"
-      />
-      <Input
-        value={formState.long}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, long: e.target.value }));
+      /> */}
+      <PositionInput
+        onChange={function (value: PositionInterface): void {
+          setFormState((state) => ({ ...state, lat: value }));
         }}
-        placeholder="Longitude"
-        type="number"
+        value={formState.lat as PositionInterface}
+        className={"w-52"}
+      />
+      <PositionInput
+        onChange={function (value: PositionInterface): void {
+          setFormState((state) => ({ ...state, long: value }));
+        }}
+        value={formState.long as PositionInterface}
+        className={"w-52"}
       />
 
       <Input

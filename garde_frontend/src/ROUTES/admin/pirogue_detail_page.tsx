@@ -95,14 +95,19 @@ function AddEditImmigrantDialog({
         return;
       }
 
-      const imageSrc = webcamRef.current!.getScreenshot()!;
-      const image = base64ToBlob(imageSrc.split(",")[1]);
+      const imageSrc = webcamRef.current?.getScreenshot()!;
+      let image = null;
+      if (!imageSrc) {
+        image = base64ToBlob(imageSrc.split(",")[1]);
+      }
       let sendFormData = new FormData();
       sendFormData.append("date_of_birth", date_of_birth_str);
       sendFormData.append("name", formData.name);
       sendFormData.append("is_male", formData.is_male?.toString() ?? "");
       sendFormData.append("etat", formData.etat);
-      sendFormData.append("image", image, "image.jpeg");
+      if (image) {
+        sendFormData.append("image", image, "image.jpeg");
+      }
       sendFormData.append(
         "birth_country",
         formData.birth_country?.toString() ?? "",

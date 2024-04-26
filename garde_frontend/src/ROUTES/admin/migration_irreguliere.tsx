@@ -128,7 +128,7 @@ function MigrationIrreguliereImmigrantDialog({
           text={`J'ai l'honneur de vous faire parvenir en annexe la liste de ${
             formState.filter((e) => e.country && e.value > 0).length
           } personnes remis par la
-810 de la 1** Région à la GCM dans le cadre de la lutte contre la migration irrégulière par voie maritime le ${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()}  .`}
+B10 de la 1** Région à la GCM dans le cadre de la lutte contre la migration irrégulière par voie maritime le ${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()}  .`}
         >
           {formState
             .filter((e) => e.country && e.value > 0)

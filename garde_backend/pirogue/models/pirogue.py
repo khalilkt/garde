@@ -8,8 +8,8 @@ class PirogueManager(models.Manager):
         return self.get_queryset().annotate(immigrants_count = Coalesce(Count("immigrants"), 0)).annotate(created_by_name = F('created_by__name')).annotate(nationality_name = F('nationality__name_fr'))
 
 class Pirogue(models.Model):
-    lat = models.DecimalField(max_digits=22, decimal_places=16)
-    long = models.DecimalField(max_digits=22, decimal_places=16)
+    lat = models.CharField(max_length=100)
+    long = models.CharField(max_length=100)
     # numbers is a list of strings
     motor_numbers = models.JSONField(default=list, blank = True)
     puissance = models.IntegerField(blank=True, null=True)
