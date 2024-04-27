@@ -1,5 +1,5 @@
-export const rootUrl = "http://localhost:81/";
-// export const rootUrl = "http://162.0.239.121:8001/api/";
+export const rootUrl = "https://localhost:81/";
+// export const rootUrl = "https://162.0.239.121:81/";
 
 export interface PaginatedData<T> {
   count: number;
