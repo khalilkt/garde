@@ -54,6 +54,8 @@ services:
       - backend_media:/app/media
     env_file:
       - ./.env
+    depends_on:
+      - db
 
   nginx:
     build:
@@ -71,6 +73,8 @@ services:
 
   db:
     image: postgres:latest
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_DB=GARDE_DB
       - POSTGRES_USER=postgres
