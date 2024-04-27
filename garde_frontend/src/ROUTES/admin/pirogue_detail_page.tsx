@@ -97,7 +97,7 @@ function AddEditImmigrantDialog({
 
       const imageSrc = webcamRef.current?.getScreenshot()!;
       let image = null;
-      if (!imageSrc) {
+      if (imageSrc) {
         image = base64ToBlob(imageSrc.split(",")[1]);
       }
       let sendFormData = new FormData();

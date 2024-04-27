@@ -87,7 +87,7 @@ function App() {
     const token = localStorage.getItem("token");
     if (token) {
       try {
-        const response = await axios.post(rootUrl + "auth/token", {
+        const response = await axios.post(rootUrl + "auth/token/", {
           token: token,
         });
         if (response.data) {
