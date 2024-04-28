@@ -179,22 +179,24 @@ export default function AdminAgentImmigrantsPage() {
           pirogueId={null}
         />
       </MDialog>
-      <div className="mb-10 flex w-full flex-row items-center justify-between">
-        <Link
-          to="/"
-          className=" flex flex-row items-center gap-x-2 text-lg text-primary"
-        >
-          <LeftArrow className=" h-4 w-4 fill-primary" />
-          <h3>Page des pirogues </h3>
-        </Link>
-        {!isAdmin && (
+      {!isAdmin && (
+        <div className="mb-10 flex w-full flex-row items-center justify-between">
+          <Link
+            to="/"
+            className=" flex flex-row items-center gap-x-2 text-lg text-primary"
+          >
+            <LeftArrow className=" h-4 w-4 fill-primary" />
+            <h3>Page des pirogues </h3>
+          </Link>
+          (
           <DisconnectButton
             onClick={() => {
               authContext.logOut();
             }}
           />
-        )}
-      </div>
+          )
+        </div>
+      )}
       <Title className="mb-10">Immigrants</Title>
       <div className="flex w-full flex-row justify-between ">
         <div className=" flex w-full flex-row justify-between ">
@@ -283,7 +285,16 @@ export default function AdminAgentImmigrantsPage() {
                 {/* <Td>
                   <input type="checkbox" className="h-5 w-5" />
                 </Td> */}
-                <Td>{immigrant.name}</Td>
+                <Td className="flex items-center justify-start gap-x-2">
+                  {immigrant.image && (
+                    <img
+                      onClick={() => {}}
+                      className="h-8 w-8 rounded-full"
+                      src={immigrant.image}
+                    />
+                  )}
+                  <span>{immigrant.name}</span>
+                </Td>
                 <Td>{immigrant.is_male ? "Homme" : "Femme"}</Td>
                 <Td>
                   <Border>{immigrant.nationality_name}</Border>

@@ -126,7 +126,9 @@ function AddEditPirogueDialog({
       if (
         formState.number.length === 0 ||
         formState.port.length === 0 ||
-        formState.nationality === ""
+        formState.nationality === "" ||
+        formState.departure.length === 0 ||
+        formState.destination.length === 0
       ) {
         alert("Veuillez remplir les champs obligatoire");
         return;
@@ -386,7 +388,7 @@ function AddEditPirogueDialog({
         {isSubmitting ? (
           <LoadingIcon className="z-10" />
         ) : (
-          <span>Créer Pirogueee</span>
+          <span>Créer Pirogue</span>
         )}
       </FilledButton>
     </div>
@@ -597,22 +599,24 @@ export default function AdminAgentPiroguesPage() {
             }}
           />
         </MDialog>
-        <div className="mb-10 flex w-full flex-row items-center justify-between">
-          <Link
-            to="/immigrants"
-            className=" flex flex-row items-center gap-x-2 text-lg text-primary"
-          >
-            <LeftArrow className=" h-4 w-4 fill-primary" />
-            <h3>Page d'Immigrants </h3>
-          </Link>
-          {!isAdmin && (
-            <DisconnectButton
-              onClick={() => {
-                authContext.logOut();
-              }}
-            />
-          )}
-        </div>
+        {!isAdmin && (
+          <div className="mb-10 flex w-full flex-row items-center justify-between">
+            <Link
+              to="/immigrants"
+              className=" flex flex-row items-center gap-x-2 text-lg text-primary"
+            >
+              <LeftArrow className=" h-4 w-4 fill-primary" />
+              <h3>Page d'Immigrants </h3>
+            </Link>
+            {
+              <DisconnectButton
+                onClick={() => {
+                  authContext.logOut();
+                }}
+              />
+            }
+          </div>
+        )}
         <div className="mb-10 flex w-full flex-row items-center justify-between ">
           <Title className="">Pirogues</Title>
         </div>
@@ -651,14 +655,16 @@ export default function AdminAgentPiroguesPage() {
             >
               <span>Nouvelle pirogue</span> <PlusIcon />
             </FilledButton>
-            <FilledButton
-              onClick={() => {
-                setIsFilterOpen(true);
-              }}
-            >
-              <span>Filtrer</span>
-              <FilterIcon />
-            </FilledButton>
+            {isAdmin && (
+              <FilledButton
+                onClick={() => {
+                  setIsFilterOpen(true);
+                }}
+              >
+                <span>Filtrer</span>
+                <FilterIcon />
+              </FilledButton>
+            )}
           </div>
         </div>
         <div className="mt-10">

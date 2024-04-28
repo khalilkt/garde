@@ -75,7 +75,7 @@ function App() {
       }
     } catch (e) {
       console.log(e);
-      alert((e as AxiosError).code || "Erreur");
+      alert("Une erreur s'est produite. Veuillez réessayer.");
     }
   }
 
