@@ -169,24 +169,31 @@ export default function MigrationIrregulierePage() {
     },
     onAfterPrint: () => {},
   });
-  async function load() {
-    setSelected([]);
-    let url = rootUrl + "migration_irregular";
-    url += `?created_at=${selectedDate.toISOString().split("T")[0]}`;
-    try {
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      });
-      setData(response.data);
-    } catch (e) {
-      console.log(e);
-    }
-  }
 
   useEffect(() => {
+    let isActive = true;
+    const load = async () => {
+      setSelected([]);
+      let url = rootUrl + "migration_irregular";
+      url += `?created_at=${selectedDate.toISOString().split("T")[0]}`;
+      try {
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        if (isActive) {
+          setData(response.data);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
     load();
+    return () => {
+      isActive = false;
+    };
   }, [selectedDate]);
 
   function dateToString(date: Date) {
@@ -231,7 +238,7 @@ export default function MigrationIrregulierePage() {
             );
           }}
         >
-          <LeftArrow className="h-5 w-5 fill-primary" />
+          <LeftArrow className="h-5 w-5 fill-black" />
         </button>
         <span className="w-52 text-center text-xl font-semibold">
           {dateToString(selectedDate)}
@@ -243,7 +250,7 @@ export default function MigrationIrregulierePage() {
             );
           }}
         >
-          <LeftArrow className=" h-5 w-5 rotate-180 fill-primary" />
+          <LeftArrow className=" h-5 w-5 rotate-180 fill-black" />
         </button>
       </div>
       <div className="flex gap-x-4 self-end">
@@ -276,7 +283,7 @@ export default function MigrationIrregulierePage() {
           </svg>
         </FilledButton>
       </div>
-      <table className=" mt-8 w-full text-center text-lg">
+      <table className=" mt-8 w-full text-center text-sm">
         <thead className="">
           <tr className="font-bold text-gray">
             <th className="text-medium  py-3 text-base">
@@ -298,14 +305,14 @@ export default function MigrationIrregulierePage() {
                 className="h-5 w-5"
               />
             </th>
-            <th className="text-medium  py-3 text-base">Numéro</th>
-            <th className="text-medium  py-3 text-base">Agent</th>
-            <th className="text-medium py-3 text-base">Nb d'immigrés</th>
-            <th className="text-medium py-3 text-base">Marque</th>
-            <th className="text-medium py-3 text-base">Matière</th>
-            <th className="text-medium py-3 text-base">Nationalité</th>
-            <th className="text-medium py-3 text-base">Lieu de départ</th>
-            <th className="text-medium py-3 text-base">Destination</th>
+            <th>N°PA</th>
+            <th>Nature</th>
+            <th>Date</th>
+            <th>Essence</th>
+            <th>N°Moteurs</th>
+            <th>GPS</th>
+            <th>Equipage</th>
+            <th>Effets personnels</th>
           </tr>
         </thead>
         {!data ? (
@@ -315,6 +322,58 @@ export default function MigrationIrregulierePage() {
             {data.map((pirogue, i) => (
               <Tr>
                 <Td>
+                  <input
+                    checked={selected.includes(i)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelected([...selected, i]);
+                      } else {
+                        setSelected(selected.filter((val) => val !== i));
+                      }
+                    }}
+                    type="checkbox"
+                    className="h-5 w-5"
+                  />
+                </Td>
+                <Td>{pirogue.number}</Td>
+                <Td>
+                  {pirogue.material ? MATERIAL_NAME[pirogue.material] : "-"}
+                </Td>
+                <Td>
+                  {new Date(pirogue.created_at).toISOString().split("T")[0]}
+                </Td>
+                <Td>{pirogue.fuel}</Td>
+                <Td>
+                  <ul className="list-disc gap-y-1 text-sm">
+                    {pirogue.motor_numbers.join().length === 0
+                      ? "-"
+                      : pirogue.motor_numbers
+                          .filter((e) => e.length > 0)
+                          .map((number) => (
+                            <li className="max-w-52 overflow-x-hidden whitespace-pre-wrap break-words">
+                              {number.length > 0 ? number : "-"}
+                            </li>
+                          ))}
+                  </ul>
+                </Td>
+                <Td>
+                  <ul className="list-disc gap-y-1 text-sm">
+                    {pirogue.gps.join().length === 0
+                      ? "-"
+                      : pirogue.gps
+                          .filter((e) => e.length > 0)
+                          .map((gps) => (
+                            <li className="max-w-52 overflow-x-hidden whitespace-pre-wrap break-words">
+                              {gps.length > 0 ? gps : "-"}
+                            </li>
+                          ))}
+                  </ul>
+                </Td>
+                <Td>{pirogue.immigrants_count}</Td>
+                <Td>{pirogue.extra}</Td>
+
+                {/* ---------- */}
+                {/* <Td>
                   <input
                     checked={selected.includes(i)}
                     onChange={(e) => {
@@ -345,7 +404,7 @@ export default function MigrationIrregulierePage() {
                 </Td>
                 <Td>{pirogue.nationality_name ?? "-"}</Td>
                 <Td>{pirogue.departure ?? "-"}</Td>
-                <Td>{pirogue.destination ?? "-"}</Td>
+                <Td>{pirogue.destination ?? "-"}</Td> */}
               </Tr>
             ))}
           </tbody>
@@ -383,7 +442,7 @@ export default function MigrationIrregulierePage() {
                     .filter((_, i) => selected.includes(i))
                     .map((pirogue, i) => (
                       <tr key={i}>
-                        <td className="border px-2 py-1">{pirogue.id}</td>
+                        <td className="border px-2 py-1">{pirogue.number}</td>
                         <td className="border px-2 py-1">
                           {pirogue.material
                             ? MATERIAL_NAME[pirogue.material]

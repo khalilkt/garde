@@ -10,6 +10,7 @@ import {
   EditIcon,
   FilterIcon,
   LeftArrow,
+  LoadingIcon,
   MdpIcon,
   MoreIcon,
   PlusIcon,
@@ -65,6 +66,7 @@ interface DialogState {
 export default function AdminAgentsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTimer = React.useRef<NodeJS.Timeout>();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [dialogState, setDialogState] = React.useState<DialogState>({
     state: "none",
   });
@@ -111,6 +113,7 @@ export default function AdminAgentsPage() {
         alert("Veuillez remplir tous les champs");
         return;
       }
+      setIsSubmitting(true);
       await axios.post(
         rootUrl + "users/",
         {
@@ -129,6 +132,7 @@ export default function AdminAgentsPage() {
     } catch (e) {
       alert("Erreur lors de la création de l'agent");
     }
+    setIsSubmitting(false);
   }
 
   async function updatePassword(userId: number) {
@@ -154,8 +158,10 @@ export default function AdminAgentsPage() {
         alert("Les mots de passe ne correspondent pas");
         return;
       }
+      setIsSubmitting(true);
+
       await axios.post(
-        rootUrl + `users/${userId}/update_password`,
+        rootUrl + `users/${userId}/update_password/`,
         {
           password: passwordInput.value,
         },
@@ -169,6 +175,7 @@ export default function AdminAgentsPage() {
     } catch (e) {
       alert("Erreur lors de la mise à jour du mot de passe");
     }
+    setIsSubmitting(false);
   }
 
   async function openEditDialog(agent: AgentInterface) {
@@ -225,7 +232,6 @@ export default function AdminAgentsPage() {
           id={PASSWORDCHANGE_INPUT_ID}
           placeholder="Mot de passe"
         />
-        type="password"
         <Input
           className="col-span-2"
           type="password"
@@ -275,8 +281,12 @@ export default function AdminAgentsPage() {
         >
           Annuler
         </FilledButton>
-        <FilledButton onClick={create} className="col-span-1">
-          Créer Agent
+        <FilledButton
+          disabled={isSubmitting}
+          onClick={create}
+          className="col-span-1"
+        >
+          {isSubmitting ? <LoadingIcon /> : "Ajouter"}
         </FilledButton>
       </div>
     );
@@ -301,19 +311,20 @@ export default function AdminAgentsPage() {
         )}
       </MDialog>
       <Title className="mb-10">Agents</Title>
-      <div className="flex w-full flex-row justify-between ">
+      <div className="flex w-full flex-row justify-between">
         <SearchBar
           id="agents_search_bar"
           onChange={onSearchChange}
           placeholder="Chercher agents"
           className="w-[300px]"
         />
-        <div className="flex flex-row gap-x-4">
+        <div className="flex w-max flex-row gap-x-4">
           <FilledButton
             onClick={() => {
               setDialogState({ state: "adding" });
             }}
             isLight={true}
+            className="w-max"
           >
             <span>Nouveau Agent</span> <PlusIcon />
           </FilledButton>

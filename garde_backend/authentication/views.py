@@ -9,15 +9,14 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, NOT, AllowAny, BasePermission
 from authentication.models import User
 from django.db.models import Count
+from rest_framework.views import APIView
 
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 # Create your views here.
 
-class UsersViewSet(viewsets.ModelViewSet): 
-    serializer_class = UserSerializer 
-    queryset = User.objects.all() 
-    permission_classes = [IsAdminUser]
 
 
 def get_response(user : User, token : Token):
@@ -53,8 +52,22 @@ class LoginView(ObtainAuthToken):
 class UsersViewSet(viewsets.ModelViewSet): 
     serializer_class = UserSerializer 
     permission_classes = [IsAdminUser]
+    search_fields = ["name", "username"]
 
     def get_queryset(self):
         ret = User.objects
         ret = ret.annotate(total_pirogues = Count("pirogues")).annotate(total_immigrants = Count("pirogues__immigrants"))
         return ret
+
+class PasswordUpdateView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, user_id):
+        user = User.objects.get(id=user_id)
+        password = request.data.get('password')
+        if password is None:
+            return Response({"error" : "Password is required"}, status=400)
+        user.set_password(password)
+        user.save()
+        return Response({"message" : "Password updated"})
+        

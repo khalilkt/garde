@@ -46,13 +46,13 @@ export function AdminProtectedLayout() {
       <ul className="flex w-[14%] flex-col gap-y-2 border-r-2 border-r-primaryBorder bg-white px-6 pt-20">
         <h3
           onClick={() => {
-            authContext.logOut();
+            // authContext.logOut();
           }}
           className="mb-10 font-semibold text-gray"
         >
           Menu
         </h3>
-        <NavItem to="/admin/" icon={<StatsIcon />}>
+        <NavItem to="/admin" icon={<StatsIcon />}>
           Statistiques
         </NavItem>
         <NavItem to="/admin/agents" icon={<AgentsIcon />}>

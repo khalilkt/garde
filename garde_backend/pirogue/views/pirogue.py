@@ -19,7 +19,7 @@ class HasPiroguePermission(BasePermission):
 
 
 def get_pirogue_filterset_fields():
-    return ['created_by']
+    return ['created_by', "nationality", "port"]
 
 def get_pirogue_search_fields():
     return ['motor_numbers', 'departure', 'destination', 'lat', 'long']

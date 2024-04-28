@@ -17,8 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from pirogue.views.pirogue import MigrationIrregularList, PirogueList, PirogueDetail, MyPirogueList
-from pirogue.views.immigrant import ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, PirogueImmigrantsList, ImmigrantStatsView
-from authentication.views import LoginTokenView, LoginView, UsersViewSet
+from pirogue.views.immigrant import ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, MyImmigrantsWoutPirogueList, PirogueImmigrantsList, ImmigrantStatsView
+from authentication.views import LoginTokenView, LoginView, PasswordUpdateView, UsersViewSet
 from pirogue.views.stats import StatsView, CoutriesView, CountriesDetailView
 
 from rest_framework import routers
@@ -36,6 +36,7 @@ urlpatterns = [
     path('auth/login/', LoginView.as_view(), name="login"),
 
     # ADMIN
+    path('users/<int:user_id>/update_password/', PasswordUpdateView.as_view(), name="password-update"),
     path("pirogues/", PirogueList.as_view(), name="pirogue-list"),
     path("immigrants/", ImmigrantList.as_view(), name = "immigrant-list"),
     path('stats/', StatsView.as_view(), name="stats"), 
@@ -45,6 +46,7 @@ urlpatterns = [
     # AGENT
     
     path("me/pirogues/", MyPirogueList.as_view(), name="my-pirogue-list"),
+    path("me/immigrants/", MyImmigrantsWoutPirogueList.as_view(), name="my-pirogue-list"),
 
     # BOTH
 

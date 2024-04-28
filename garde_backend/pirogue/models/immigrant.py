@@ -4,20 +4,19 @@ from django.db.models import F
 
 class ImmigrantManager(models.Manager):
     def def_queryset(self): 
-        ret =  self.get_queryset().annotate(created_by_name = F('created_by__name'))
-        # .annotate(pirogue_number = F('pirogue__number'))
+        ret =  self.get_queryset().annotate(created_by_name = F('created_by__name')).annotate(pirogue_number = F('pirogue__number'))
         ret = ret.annotate(nationality_name = F('nationality__name_fr')).annotate(birth_country_name = F('birth_country__name_fr'))
         return ret
 
 class Immigrant(models.Model):
     name = models.CharField(max_length=100)
     etat = models.CharField(max_length=100, choices=[('alive', 'alive'), ('dead', 'dead'), ('sick_evacuation', 'sick_evacuation'), ('pregnant', 'pregnant')], default='alive')
-    date_of_birth = models.DateField()  
-    birth_country = models.ForeignKey('pirogue.Country', on_delete=models.PROTECT , related_name="immigrants_birth_country")
-    nationality = models.ForeignKey('pirogue.Country', on_delete=models.PROTECT, related_name= "immigrants_nationality_country" )
+    date_of_birth = models.DateField( null = True, blank = True)  
+    birth_country = models.ForeignKey('pirogue.Country', on_delete=models.PROTECT , related_name="immigrants_birth_country", null = True, blank = True)
+    nationality = models.ForeignKey('pirogue.Country', on_delete=models.PROTECT, related_name= "immigrants_nationality_country" , null = True, blank = True)
     is_male = models.BooleanField()
     image = models.ImageField(upload_to='immigrants/', blank=True, null=True)
-    pirogue = models.ForeignKey('pirogue.Pirogue', on_delete=models.CASCADE, related_name="immigrants")
+    pirogue = models.ForeignKey('pirogue.Pirogue', on_delete=models.CASCADE, related_name="immigrants", null = True, blank = True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('authentication.User', on_delete=models.PROTECT, related_name='immigrants')
 

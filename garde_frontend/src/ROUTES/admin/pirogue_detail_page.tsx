@@ -12,12 +12,12 @@ import axios from "axios";
 import { PaginatedData, rootUrl } from "../../models/constants";
 import { useParams, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../../App";
-import { ImmigrantInterface } from "./admin_immigrants_page";
+import { ImmigrantInterface } from "./agent&admin_immigrants_page";
 import { Pagination, TableBodySquelette, Td, Tr } from "../../components/table";
 import { FilledButton } from "../../components/buttons";
 import { MDialog } from "../../components/dialog";
 import Webcam, { WebcamProps } from "react-webcam";
-import { PlusIcon } from "../../components/icons";
+import { LoadingIcon, PlusIcon } from "../../components/icons";
 
 function Squelette({ width }: { width: string }) {
   return (
@@ -25,11 +25,68 @@ function Squelette({ width }: { width: string }) {
   );
 }
 
-function AddEditImmigrantDialog({
+interface DateInterface {
+  day: number | null;
+  month: number | null;
+  year: number | null;
+}
+
+function DateOfBirthInput({
+  value,
+  onChange,
+}: {
+  value: DateInterface;
+  onChange: (value: DateInterface) => void;
+}) {
+  return (
+    <div className="flex gap-x-1">
+      <Input
+        value={value.day ?? ""}
+        onChange={(e) => {
+          let v: number | null = parseInt(e.target.value);
+          if (v > 31) return;
+          if (isNaN(v)) v = null;
+          onChange({ ...value, day: v });
+        }}
+        maxLength={2}
+        placeholder="03"
+        className="w-[30%] px-1 py-1 text-center"
+      />
+      <Input
+        value={value.month ?? ""}
+        onChange={(e) => {
+          let v: number | null = parseInt(e.target.value);
+          if (v > 12) return;
+          if (isNaN(v)) v = null;
+
+          onChange({ ...value, month: v });
+        }}
+        maxLength={2}
+        placeholder="12"
+        className="w-[30%] px-1 py-1 text-center"
+      />
+      <Input
+        value={value.year ?? ""}
+        onChange={(e) => {
+          let v: number | null = parseInt(e.target.value);
+          const maxYear = new Date().getFullYear();
+          if (v > maxYear) return;
+          if (isNaN(v)) v = null;
+          onChange({ ...value, year: v });
+        }}
+        maxLength={4}
+        placeholder="1990"
+        className="w-[40%] px-1 py-1 text-center"
+      />
+    </div>
+  );
+}
+
+export function AddEditImmigrantDialog({
   pirogueId,
   onDone,
 }: {
-  pirogueId: string;
+  pirogueId: string | null;
   onDone: () => void;
 }) {
   const webcamRef = React.useRef<Webcam>(null);
@@ -37,32 +94,27 @@ function AddEditImmigrantDialog({
   const [formData, setFormData] = React.useState<{
     name: string;
     etat: string;
-    date_of_birth: {
-      day: string;
-      month: string;
-      year: string;
-    };
+    date_of_birth: DateInterface;
     is_male: boolean | null;
     image: string | null;
     birth_country: number | null;
     nationality: number | null;
-    pirogue: string;
   }>({
     etat: "alive",
     name: "",
     date_of_birth: {
-      day: "",
-      month: "",
-      year: "",
+      day: null,
+      month: null,
+      year: null,
     },
     is_male: null,
     image: null,
     birth_country: null,
     nationality: null,
-    pirogue: pirogueId,
   });
   const countriesNameCache = React.useRef<{ [key: number]: string }>({});
   const token = useContext(AuthContext).authData?.token;
+  const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
   const base64ToBlob = (base64String: string) => {
     const byteCharacters = atob(base64String);
     const byteNumbers = new Array(byteCharacters.length);
@@ -78,19 +130,19 @@ function AddEditImmigrantDialog({
       // check if all fields are filled
       let date_of_birth_str = null;
       if (
-        formData.date_of_birth.year.length === 4 &&
-        formData.date_of_birth.month.length > 0 &&
-        formData.date_of_birth.day.length > 0
+        formData.date_of_birth.day &&
+        formData.date_of_birth.month &&
+        formData.date_of_birth.year
       ) {
-        date_of_birth_str = `${formData.date_of_birth.year}-${formData.date_of_birth.month}-${formData.date_of_birth.day}`;
+        date_of_birth_str =
+          formData.date_of_birth!.year +
+          `-` +
+          formData.date_of_birth!.month +
+          `-` +
+          formData.date_of_birth!.day;
       }
 
-      if (
-        !formData.name ||
-        !date_of_birth_str ||
-        formData.is_male === null ||
-        !formData.birth_country
-      ) {
+      if (!formData.name || formData.is_male === null) {
         alert("Veuillez remplir tous les champs");
         return;
       }
@@ -101,7 +153,9 @@ function AddEditImmigrantDialog({
         image = base64ToBlob(imageSrc.split(",")[1]);
       }
       let sendFormData = new FormData();
-      sendFormData.append("date_of_birth", date_of_birth_str);
+      if (date_of_birth_str) {
+        sendFormData.append("date_of_birth", date_of_birth_str);
+      }
       sendFormData.append("name", formData.name);
       sendFormData.append("is_male", formData.is_male?.toString() ?? "");
       sendFormData.append("etat", formData.etat);
@@ -116,18 +170,23 @@ function AddEditImmigrantDialog({
         "nationality",
         formData.nationality?.toString() ?? "",
       );
-      sendFormData.append("pirogue", pirogueId);
+      if (pirogueId) {
+        sendFormData.append("pirogue", pirogueId);
+      }
 
-      const response = await axios.post(
-        rootUrl + "pirogues/" + pirogueId + "/immigrants/",
-        sendFormData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Token ${token}`,
-          },
+      setIsSubmitting(true);
+      let url = rootUrl;
+      if (pirogueId) {
+        url += "pirogues/" + pirogueId + "/immigrants/";
+      } else {
+        url += "me/immigrants/";
+      }
+      const response = await axios.post(url, sendFormData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Token ${token}`,
         },
-      );
+      });
       console.log(response);
       onDone();
     } catch (e) {
@@ -135,10 +194,11 @@ function AddEditImmigrantDialog({
       alert("Une erreur s'est produite");
       console.error(e);
     }
+    setIsSubmitting(false);
   }
 
   return (
-    <div className="grid w-full grid-cols-2 gap-x-4 gap-y-6 md:w-[550px]">
+    <div className="grid w-full grid-cols-2 gap-x-4 gap-y-6 lg:w-[550px]">
       <div className="col-span-2 flex items-center justify-center rounded">
         <Webcam
           ref={webcamRef}
@@ -160,53 +220,15 @@ function AddEditImmigrantDialog({
         placeholder="Nom"
         type="text"
       />
-      <div className="flex gap-x-2">
-        <Input
-          value={formData.date_of_birth.day}
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              date_of_birth: {
-                ...formData.date_of_birth,
-                day: (e as any).target.value,
-              },
-            });
-          }}
-          maxLength={2}
-          placeholder="03"
-          className="w-[30%] px-1 py-1 text-center"
-        />
-        <Input
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              date_of_birth: {
-                ...formData.date_of_birth,
-                month: (e as any).target.value,
-              },
-            });
-          }}
-          value={formData.date_of_birth.month}
-          maxLength={2}
-          placeholder="12"
-          className="w-[30%] px-1 py-1 text-center"
-        />
-        <Input
-          value={formData.date_of_birth.year}
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              date_of_birth: {
-                ...formData.date_of_birth,
-                year: (e as any).target.value,
-              },
-            });
-          }}
-          maxLength={4}
-          placeholder="1990"
-          className="w-[40%] px-1 py-1 text-center"
-        />
-      </div>
+      <DateOfBirthInput
+        value={formData.date_of_birth}
+        onChange={(value) => {
+          setFormData({
+            ...formData,
+            date_of_birth: value,
+          });
+        }}
+      />
       <Select
         value={
           formData.is_male === null
@@ -304,7 +326,7 @@ function AddEditImmigrantDialog({
         Annuler
       </FilledButton>
       <FilledButton onClick={createImmigrant} className="col-span-1">
-        Créer Immigrant
+        {isSubmitting ? <LoadingIcon /> : <span>Créer Immigrant</span>}
       </FilledButton>
     </div>
   );
@@ -329,7 +351,7 @@ const BIRTH_COUNTRY_INPUT_ID = "birth_country_dialog";
 const DATE_OF_BIRTH_INPUT_ID = "date_of_birth_dialog";
 const DESCRIPTION_TEXTAREA_ID = "description_dialog";
 
-function MobileImmigrantView({
+export function MobileImmigrantView({
   immigrant,
   onImageClick,
 }: {
@@ -391,6 +413,7 @@ export default function PirogueDetailPage({
   const [dialogState, setDialogState] = React.useState<DialogState>({
     state: "none",
   });
+  const isAdmin = useContext(AuthContext).authData?.user.is_admin;
 
   async function createImmigrant() {
     const elem = document.getElementById("ajdajdasdad");
@@ -456,10 +479,38 @@ export default function PirogueDetailPage({
     }
   }
 
+  function positionToString(pos: string) {
+    const splited = pos.split("-");
+    if (splited.length !== 4) return null;
+    if (splited.includes("")) return null;
+
+    return splited[0] + "°" + splited[1] + "'" + splited[2] + "''" + splited[3];
+  }
+
+  let infos: { [key: string]: string | null | undefined } | null = null;
+
+  if (data) {
+    infos = {
+      Agent: data.created_by_name,
+      "Nbre d'immigrants": data.immigrants_count?.toString(),
+      latitude: data.lat ? positionToString(data.lat) : null,
+      longitude: data.long ? positionToString(data.long) : null,
+      Départ: data.departure,
+      Destination: data.destination,
+      "date de création": new Date(data.created_at).toISOString().split("T")[0],
+      Marque: data.brand,
+      Puissance: data.puissance?.toString(),
+      Port: data.port,
+      Matériel: data.material,
+      Nationalité: data.nationality_name,
+      Carburant: data.fuel?.toString(),
+    };
+  }
+
   return (
     <div
       {...divProps}
-      className={`flex h-full flex-col px-8  pt-12 md:px-9 md:pb-0 ${divProps.className ?? ""}`}
+      className={`flex h-full flex-col px-8 pt-12 lg:px-9 lg:pb-0 ${divProps.className ?? ""}`}
     >
       <MDialog
         onClose={() => setDialogState({ state: "none" })}
@@ -508,38 +559,20 @@ export default function PirogueDetailPage({
           </svg>
         </button>
       </div>
-      {
-        <div className="mb-4 flex w-full flex-col gap-y-4 md:flex-row">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-            <h3>Agent:</h3>
-            {data ? (
-              <Border className="text-xs">{data.created_by_name}</Border>
-            ) : (
-              <Squelette width="w-20" />
-            )}
-            <h3>Nbre d'immigrés:</h3>
-            {data ? (
-              <Border className="text-xs">{data.immigrants_count}</Border>
-            ) : (
-              <Squelette width="w-20" />
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-4 ">
-            <h3>Lieu de Départ:</h3>
-            {data ? (
-              <Border className="text-xs">{data.departure}</Border>
-            ) : (
-              <Squelette width="w-20" />
-            )}
-            <h3>Destination:</h3>
-            {data ? (
-              <Border className="text-xs">{data.destination}</Border>
-            ) : (
-              <Squelette width="w-20" />
-            )}
-          </div>
-        </div>
-      }
+      <div className="mb-6 flex flex-row flex-wrap gap-x-[10px] gap-y-2 text-sm">
+        {infos ? (
+          Object.entries(infos)
+            .filter((entry) => entry[1])
+            .map((value) => (
+              <div className="flex rounded-md bg-primaryLight2 px-3 py-2">
+                <span className="text-black">{value[0] + ": "} </span>
+                <span className="text-primary">{value[1]}</span>
+              </div>
+            ))
+        ) : (
+          <div className="h-12 w-full animate-pulse rounded bg-[#D9D9D9]"></div>
+        )}
+      </div>
       <hr className="border-[#888888]" />
       <Title className="mb-4 mt-6">Description</Title>
       {data ? (
@@ -550,16 +583,18 @@ export default function PirogueDetailPage({
       <hr className="mt-6 border-[#888888]" />
       <div className="flex items-center justify-between">
         <Title className="mb-4 mt-6">Immigrants</Title>
-        <FilledButton
-          className="hidden h-max rounded-md bg-primaryLight2 px-4 py-1 text-base font-semibold text-primary md:block"
-          onClick={() => {
-            setDialogState({ state: "adding" });
-          }}
-        >
-          <span className="text-primary">Ajouter</span>
-        </FilledButton>
+        {true && (
+          <FilledButton
+            className="hidden h-max rounded-md bg-primaryLight2 px-4 py-1 text-base font-semibold text-primary lg:block"
+            onClick={() => {
+              setDialogState({ state: "adding" });
+            }}
+          >
+            <span className="text-primary">Ajouter</span>
+          </FilledButton>
+        )}
       </div>
-      <div className="flex flex-col gap-y-4 md:hidden">
+      <div className="flex flex-col gap-y-4 lg:hidden">
         {immigrantsData?.data.map((immigrant, i) => (
           <MobileImmigrantView
             onImageClick={(payload) => {
@@ -576,12 +611,12 @@ export default function PirogueDetailPage({
         onClick={() => {
           setDialogState({ state: "adding" });
         }}
-        className=" fixed inset-x-0 bottom-10 z-10 mx-8 md:hidden"
+        className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
       >
         Nouveau immigrant
         <PlusIcon className=" fill-white" />
       </FilledButton>
-      <table className="text-md hidden w-full text-center font-medium md:table">
+      <table className="text-md hidden w-full text-center font-medium lg:table">
         <thead className="w-full">
           <tr className="font-bold text-gray">
             <th className="text-medium  py-3 text-base"></th>

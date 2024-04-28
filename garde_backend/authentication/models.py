@@ -25,12 +25,12 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser): 
     username = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    USERNAME_FIELD = 'username'
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     objects = UserManager()
     REQUIRED_FIELDS = ['name']
+    USERNAME_FIELD = 'username'
 
     @property
     def is_staff(self):

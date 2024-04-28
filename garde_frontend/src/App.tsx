@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import axios from "axios";
+import axios, { Axios, AxiosError } from "axios";
 import { rootUrl } from "./models/constants";
 import {
   BrowserRouter,
@@ -15,7 +15,7 @@ import LoginPage from "./ROUTES/login_page";
 import { AdminProtectedLayout } from "./components/admin_layout";
 import AdminAgentsPage from "./ROUTES/admin/admin_agents_page";
 import AdminAgentPiroguesPage from "./ROUTES/admin/agent&admin_pirogues_page";
-import AdminImmigrantsPage from "./ROUTES/admin/admin_immigrants_page";
+import AdminAgentImmigrantsPage from "./ROUTES/admin/agent&admin_immigrants_page";
 import AdminStatsPage from "./ROUTES/admin/admin_stats_page";
 import MigrationIrregulierePage from "./ROUTES/admin/migration_irreguliere";
 
@@ -53,7 +53,7 @@ function AgentProtectedLayout() {
     return <Navigate to="/admin" />;
   }
   return (
-    <div className=" px-8 pb-12 pt-12 md:px-10 md:pb-0 md:pt-20">
+    <div className=" px-8 pb-12 pt-12 lg:px-10 lg:pb-0 lg:pt-20">
       <Outlet />
     </div>
   );
@@ -75,6 +75,7 @@ function App() {
       }
     } catch (e) {
       console.log(e);
+      alert((e as AxiosError).code || "Erreur");
     }
   }
 
@@ -96,7 +97,6 @@ function App() {
           localStorage.removeItem("token");
         }
       } catch (e) {
-        localStorage.removeItem("token");
         console.log(e);
       }
     }
@@ -126,12 +126,19 @@ function App() {
 
               <Route path="/" element={<AgentProtectedLayout />}>
                 <Route path="/" element={<AdminAgentPiroguesPage />} />
+                <Route
+                  path="immigrants"
+                  element={<AdminAgentImmigrantsPage />}
+                />
               </Route>
               <Route path="/admin" element={<AdminProtectedLayout />}>
                 <Route path="" element={<AdminStatsPage />} />
                 <Route path="agents" element={<AdminAgentsPage />} />
                 <Route path="pirogues" element={<AdminAgentPiroguesPage />} />
-                <Route path="immigrants" element={<AdminImmigrantsPage />} />
+                <Route
+                  path="immigrants"
+                  element={<AdminAgentImmigrantsPage />}
+                />
                 <Route
                   path="migration_irreguliere"
                   element={<MigrationIrregulierePage />}

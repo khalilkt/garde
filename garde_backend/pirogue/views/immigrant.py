@@ -70,18 +70,33 @@ class ImmigrantList(ListAPIView):
             elif age == "major":
                 ret = ret.filter(date_of_birth__lt = date.today() - relativedelta(years=+25))
         return ret
+    
+class MyImmigrantsWoutPirogueList(ListCreateAPIView):
+    serializer_class = ImmigrantSerializer
+    ordering = ['-created_at']
+    search_fields = get_immigrant_search_fields()
+
+    def get_queryset(self):
+        queryset = Immigrant.objects.def_queryset()
+        queryset = queryset.filter(created_by=self.request.user, pirogue=None)
+        return queryset
 
 class ImmigrantStatsView (ImmigrantList):
     
-
     def get(self, request):
         ret = super().filter_queryset(super().get_queryset())
+        total_by_month = {}
+        for i in range(1, 13):
+            total_by_month[i] = ret.filter(created_at__month = i).count()
+            
+        
         total_males = ret.filter(is_male = True).count()
         total_females = ret.filter(is_male = False).count()
         response = {
             "total_males" : total_males, 
             "total_females" : total_females,
-            "total" : total_females +  total_males
+            "total" : total_females +  total_males,
+            "total_by_month" : total_by_month 
         }
         return Response(response)
 

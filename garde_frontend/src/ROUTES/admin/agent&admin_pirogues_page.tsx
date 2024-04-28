@@ -20,6 +20,7 @@ import {
   EditIcon,
   FilterIcon,
   LeftArrow,
+  LoadingIcon,
   MdpIcon,
   MoreIcon,
   PlusIcon,
@@ -40,6 +41,7 @@ import {
 
 export interface PirogueInterface {
   id: number;
+  number: string;
   created_by_name: string;
   immigrants_count: number;
   lat: string;
@@ -67,6 +69,7 @@ function AddEditPirogueDialog({
   onDone: (created: boolean) => void;
 }) {
   const [formState, setFormState] = React.useState<{
+    number: string;
     lat: PositionInterface;
     long: PositionInterface;
     numbers: string[];
@@ -82,6 +85,7 @@ function AddEditPirogueDialog({
     brand: string;
     gps: string[];
   }>({
+    number: "",
     numbers: [""],
     lat: { x: "", y: "", z: "", orientation: "N" },
     long: { x: "", y: "", z: "", orientation: "N" },
@@ -100,7 +104,7 @@ function AddEditPirogueDialog({
   });
   const token = useContext(AuthContext).authData?.token;
   const couttriesNameCache = React.useRef<{ [key: string]: string }>({});
-
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   async function create() {
     const lat =
       formState.lat.x +
@@ -118,21 +122,21 @@ function AddEditPirogueDialog({
       formState.long.z +
       "-" +
       formState.long.orientation;
-    alert("lat: " + lat + " long: " + long);
     try {
       if (
-        lat.length === 0 ||
-        long.length === 0 ||
-        formState.departure.length === 0 ||
-        formState.destination.length === 0 ||
-        formState.port.length === 0
+        formState.number.length === 0 ||
+        formState.port.length === 0 ||
+        formState.nationality === ""
       ) {
-        alert("Veuillez remplir tous les champs");
+        alert("Veuillez remplir les champs obligatoire");
         return;
       }
+      setIsSubmitting(true);
+
       await axios.post(
         rootUrl + "me/pirogues/",
         {
+          number: formState.number,
           lat: lat,
           long: long,
           motor_numbers: formState.numbers,
@@ -159,13 +163,25 @@ function AddEditPirogueDialog({
     } catch (e) {
       alert("Erreur lors de la création de la pirogue");
     }
+    setIsSubmitting(false);
   }
 
   return (
     <div className="grid  grid-cols-2 gap-x-4 gap-y-6 ">
       <div className="col-span-2 flex flex-col gap-y-2">
+        <Input
+          disabled={isSubmitting}
+          value={formState.number}
+          onChange={(e) => {
+            setFormState((state) => ({ ...state, number: e.target.value }));
+          }}
+          placeholder="Numéro de la pirogue*"
+          type="text"
+        />
+        <hr className="my-2 w-20 self-center border-primary" />
         {formState.numbers.map((number, i) => (
           <Input
+            disabled={isSubmitting}
             value={number}
             onChange={(e) => {
               const newNumbers = [...formState.numbers];
@@ -173,11 +189,12 @@ function AddEditPirogueDialog({
               setFormState((state) => ({ ...state, numbers: newNumbers }));
             }}
             className="col-span-2"
-            placeholder={`Numéro du moteur ${i === 0 ? "" : i + 1}`}
+            placeholder={`Numéro du moteur ${i + 1}`}
             type="text"
           />
         ))}
         <OutlinedButton
+          disabled={isSubmitting}
           onClick={() => {
             setFormState((state) => ({
               ...state,
@@ -186,10 +203,11 @@ function AddEditPirogueDialog({
           }}
           className="col-span-2"
         >
-          Ajouter numéro
+          Ajouter numéro du moteur
         </OutlinedButton>
       </div>
       <Select
+        disabled={isSubmitting}
         value={formState.material}
         className={formState.material.length === 0 ? "text-gray" : ""}
         onChange={(e) => {
@@ -213,12 +231,13 @@ function AddEditPirogueDialog({
             nationality: value.id.toString(),
           }));
         }}
-        placeHolder={"Nationalité"}
+        placeHolder={"Nationalité*"}
         search={true}
         url={"countries"}
         lookupColumn="name_fr"
       />
       <Input
+        disabled={isSubmitting}
         value={formState.brand}
         onChange={(e) => {
           setFormState((state) => ({ ...state, brand: e.target.value }));
@@ -227,6 +246,7 @@ function AddEditPirogueDialog({
         type="text"
       />
       <Input
+        disabled={isSubmitting}
         value={formState.puissance}
         onChange={(e) => {
           setFormState((state) => ({ ...state, puissance: e.target.value }));
@@ -234,15 +254,9 @@ function AddEditPirogueDialog({
         placeholder="Puissance"
         type="number"
       />
-      {/* <Input
-        value={formState.lat}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, lat: e.target.value }));
-        }}
-        placeholder="Latitude"
-        type="number"
-      /> */}
+
       <PositionInput
+        disabled={isSubmitting}
         onChange={function (value: PositionInterface): void {
           setFormState((state) => ({ ...state, lat: value }));
         }}
@@ -250,6 +264,7 @@ function AddEditPirogueDialog({
         className={"w-52"}
       />
       <PositionInput
+        disabled={isSubmitting}
         onChange={function (value: PositionInterface): void {
           setFormState((state) => ({ ...state, long: value }));
         }}
@@ -258,20 +273,23 @@ function AddEditPirogueDialog({
       />
 
       <Input
+        disabled={isSubmitting}
         value={formState.departure}
         onChange={(e) => {
           setFormState((state) => ({ ...state, departure: e.target.value }));
         }}
-        placeholder="Départ"
+        placeholder="Départ*"
       />
       <Input
+        disabled={isSubmitting}
         value={formState.destination}
         onChange={(e) => {
           setFormState((state) => ({ ...state, destination: e.target.value }));
         }}
-        placeholder="Déstination"
+        placeholder="Déstination*"
       />
       <Input
+        disabled={isSubmitting}
         value={formState.fuel == 0 ? "" : formState.fuel.toString()}
         onChange={(e) => {
           setFormState((state) => ({
@@ -282,6 +300,7 @@ function AddEditPirogueDialog({
         placeholder="Essence"
       />
       <Select
+        disabled={isSubmitting}
         value={formState.port}
         onChange={(e) => {
           setFormState((state) => ({
@@ -292,7 +311,7 @@ function AddEditPirogueDialog({
         className={formState.port === "" ? "text-gray" : ""}
       >
         <option value="" disabled>
-          Port
+          Port*
         </option>
         <option value="ndagou">Ndagou</option>
         <option value="nouadhibou">Nouadhibou</option>
@@ -305,6 +324,7 @@ function AddEditPirogueDialog({
       <div className="col-span-2 flex flex-col gap-y-2">
         {formState.gps.map((g, i) => (
           <Input
+            disabled={isSubmitting}
             value={g}
             onChange={(e) => {
               const newGps = [...formState.gps];
@@ -317,6 +337,7 @@ function AddEditPirogueDialog({
           />
         ))}
         <OutlinedButton
+          disabled={isSubmitting}
           onClick={() => {
             setFormState((state) => ({
               ...state,
@@ -329,6 +350,7 @@ function AddEditPirogueDialog({
         </OutlinedButton>
       </div>
       <Textarea
+        disabled={isSubmitting}
         value={formState.extra}
         onChange={(e) => {
           setFormState((state) => ({ ...state, extra: e.target.value }));
@@ -337,6 +359,7 @@ function AddEditPirogueDialog({
         placeholder="Effets persnonels"
       />
       <Textarea
+        disabled={isSubmitting}
         value={formState.description}
         onChange={(e) => {
           setFormState((state) => ({ ...state, description: e.target.value }));
@@ -346,7 +369,8 @@ function AddEditPirogueDialog({
       />
 
       <FilledButton
-        className="w-full"
+        disabled={isSubmitting}
+        className="order-2 col-span-2 w-full lg:order-1 lg:col-span-1 "
         onClick={() => {
           onDone(false);
         }}
@@ -354,8 +378,16 @@ function AddEditPirogueDialog({
       >
         Annuler
       </FilledButton>
-      <FilledButton onClick={create} className="col-span-1 w-full">
-        Créer Pirogue
+      <FilledButton
+        disabled={isSubmitting}
+        onClick={create}
+        className="relative col-span-2 w-full lg:order-2 lg:col-span-1"
+      >
+        {isSubmitting ? (
+          <LoadingIcon className="z-10" />
+        ) : (
+          <span>Créer Pirogueee</span>
+        )}
       </FilledButton>
     </div>
   );
@@ -375,9 +407,7 @@ function MobilePriogueView({ pirogue }: { pirogue: PirogueInterface }) {
       <div className="flex items-center justify-between ">
         <div>
           <span className="text-sm text-gray"> Pirogue</span>
-          <h5 className="text-lg">
-            {pirogue.motor_numbers.length > 0 ? pirogue.motor_numbers[0] : "-"}
-          </h5>
+          <h5 className="text-lg">{pirogue.number}</h5>
         </div>
         <button
           onClick={() => {
@@ -431,6 +461,7 @@ export default function AdminAgentPiroguesPage() {
 
   const token = useContext(AuthContext).authData?.token;
   const isAdmin = useContext(AuthContext).authData?.user.is_admin;
+  const countriesNameCache = React.useRef<{ [key: string]: string }>({});
 
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
 
@@ -467,6 +498,16 @@ export default function AdminAgentPiroguesPage() {
           .then((response) => {
             agentNamesCache.current[value] = response.data.name;
           });
+      } else if (key === "nationality") {
+        axios
+          .get(rootUrl + "countries/" + value, {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          })
+          .then((response) => {
+            countriesNameCache.current[value] = response.data.name_fr;
+          });
       }
     });
   }
@@ -481,6 +522,7 @@ export default function AdminAgentPiroguesPage() {
 
   function onSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     const search = e.target.value;
+
     clearTimeout(searchTimer.current!);
     searchTimer.current = setTimeout(() => {
       setSearchParams((params) => {
@@ -497,6 +539,7 @@ export default function AdminAgentPiroguesPage() {
 
   useEffect(() => {
     const searchBar = document.getElementById("pirogues_search_bar");
+
     const searchParam = searchParams.get("search");
     if (searchBar) {
       (searchBar as HTMLInputElement).value = searchParam ?? "";
@@ -518,12 +561,24 @@ export default function AdminAgentPiroguesPage() {
         title: "Agent",
         value: agentNamesCache.current[value] ?? "",
       });
+    } else if (key === "nationality") {
+      tags.push({
+        id: key,
+        title: "Nationalité",
+        value: countriesNameCache.current[value] ?? "",
+      });
+    } else if (key === "port") {
+      tags.push({
+        id: key,
+        title: "Port",
+        value: value,
+      });
     }
   });
   return (
     <div className="flex">
       {/* pb is for the floting button */}
-      <div className="flex flex-1 flex-col pb-10 md:pb-0">
+      <div className="flex flex-1 flex-col pb-10 lg:pb-0">
         <MDialog
           onClose={() => setDialogState({ state: "none" })}
           isOpen={dialogState.state !== "none"}
@@ -542,8 +597,14 @@ export default function AdminAgentPiroguesPage() {
             }}
           />
         </MDialog>
-        <div className="mb-10 flex w-full flex-row items-center justify-between ">
-          <Title className="">Pirogues</Title>
+        <div className="mb-10 flex w-full flex-row items-center justify-between">
+          <Link
+            to="/immigrants"
+            className=" flex flex-row items-center gap-x-2 text-lg text-primary"
+          >
+            <LeftArrow className=" h-4 w-4 fill-primary" />
+            <h3>Page d'Immigrants </h3>
+          </Link>
           {!isAdmin && (
             <DisconnectButton
               onClick={() => {
@@ -552,47 +613,37 @@ export default function AdminAgentPiroguesPage() {
             />
           )}
         </div>
+        <div className="mb-10 flex w-full flex-row items-center justify-between ">
+          <Title className="">Pirogues</Title>
+        </div>
         <div className=" flex w-full flex-row justify-between ">
-          <div className="flex w-full items-center gap-x-6">
+          <div className="flex w-full items-start gap-x-6 lg:w-auto ">
             <SearchBar
               id="pirogues_search_bar"
               onChange={onSearchChange}
               placeholder="Chercher pirogues"
-              className="w-full md:w-[300px]"
+              className="w-full flex-1 lg:w-[300px]"
             />
-            {Array.from(tags).map(({ id, title, value }) => (
-              <Tag
-                className="hidden md:block"
-                onClick={() => {
-                  setSearchParams((params) => {
-                    params.delete(id);
-                    params.delete("page");
-                    return params;
-                  });
-                }}
-                key={id}
-                title={title}
-                tag={value}
-              />
-            ))}
-          </div>
-          <div className="hidden flex-row items-center gap-x-4 md:flex">
-            <OutlinedButton className="border-[#009C22] text-[#009C22]">
-              <span>Exporter</span>
-              <svg
-                width="20"
-                height="18"
-                viewBox="0 0 20 18"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M6.33325 17.25C5.82909 17.25 5.39749 17.0705 5.03846 16.7115C4.67943 16.3524 4.49992 15.9208 4.49992 15.4167V13.5833H2.66659C2.16242 13.5833 1.73082 13.4038 1.37179 13.0448C1.01277 12.6858 0.833252 12.2542 0.833252 11.75V8.08333C0.833252 7.30417 1.10061 6.65104 1.63534 6.12396C2.17006 5.59688 2.81936 5.33333 3.58325 5.33333H16.4166C17.1958 5.33333 17.8489 5.59688 18.376 6.12396C18.903 6.65104 19.1666 7.30417 19.1666 8.08333V11.75C19.1666 12.2542 18.9871 12.6858 18.628 13.0448C18.269 13.4038 17.8374 13.5833 17.3333 13.5833H15.4999V15.4167C15.4999 15.9208 15.3204 16.3524 14.9614 16.7115C14.6023 17.0705 14.1708 17.25 13.6666 17.25H6.33325ZM2.66659 11.75H4.49992C4.49992 11.2458 4.67943 10.8142 5.03846 10.4552C5.39749 10.0962 5.82909 9.91667 6.33325 9.91667H13.6666C14.1708 9.91667 14.6023 10.0962 14.9614 10.4552C15.3204 10.8142 15.4999 11.2458 15.4999 11.75H17.3333V8.08333C17.3333 7.82361 17.2454 7.6059 17.0697 7.43021C16.894 7.25451 16.6763 7.16667 16.4166 7.16667H3.58325C3.32353 7.16667 3.10582 7.25451 2.93013 7.43021C2.75443 7.6059 2.66659 7.82361 2.66659 8.08333V11.75ZM13.6666 5.33333V2.58333H6.33325V5.33333H4.49992V2.58333C4.49992 2.07917 4.67943 1.64757 5.03846 1.28854C5.39749 0.929514 5.82909 0.75 6.33325 0.75H13.6666C14.1708 0.75 14.6023 0.929514 14.9614 1.28854C15.3204 1.64757 15.4999 2.07917 15.4999 2.58333V5.33333H13.6666ZM15.4999 9.45833C15.7596 9.45833 15.9773 9.37049 16.153 9.19479C16.3287 9.0191 16.4166 8.80139 16.4166 8.54167C16.4166 8.28194 16.3287 8.06424 16.153 7.88854C15.9773 7.71285 15.7596 7.625 15.4999 7.625C15.2402 7.625 15.0225 7.71285 14.8468 7.88854C14.6711 8.06424 14.5833 8.28194 14.5833 8.54167C14.5833 8.80139 14.6711 9.0191 14.8468 9.19479C15.0225 9.37049 15.2402 9.45833 15.4999 9.45833ZM13.6666 15.4167V11.75H6.33325V15.4167H13.6666Z"
-                  fill="#009C22"
+            <div className="hidden gap-x-2 lg:flex">
+              {Array.from(tags).map(({ id, title, value }) => (
+                <Tag
+                  onClick={() => {
+                    setSearchParams((params) => {
+                      params.delete(id);
+                      params.delete("page");
+                      return params;
+                    });
+                  }}
+                  key={id}
+                  title={title}
+                  tag={value}
                 />
-              </svg>
-            </OutlinedButton>
+              ))}
+            </div>
+          </div>
+          <div className="hidden flex-row items-center gap-x-4 lg:flex">
             <FilledButton
+              className="w-max"
               onClick={() => {
                 setDialogState({ state: "adding" });
               }}
@@ -611,7 +662,7 @@ export default function AdminAgentPiroguesPage() {
           </div>
         </div>
         <div className="mt-10">
-          <div className="flex flex-col gap-y-4 md:hidden">
+          <div className="flex flex-col gap-y-4 lg:hidden">
             {data?.data.map((pirogue, i) => (
               <MobilePriogueView pirogue={pirogue} />
             ))}
@@ -620,19 +671,19 @@ export default function AdminAgentPiroguesPage() {
             onClick={() => {
               setDialogState({ state: "adding" });
             }}
-            className=" fixed inset-x-0 bottom-10 z-10 mx-8 md:hidden"
+            className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
           >
             Nouveu pirogue
             <PlusIcon className=" fill-white" />
           </FilledButton>
-          <table className="hidden w-full text-center text-lg md:table">
+          <table className="hidden w-full text-center text-lg lg:table">
             <thead className="">
               <tr className="font-bold text-gray">
                 <th className="text-medium  py-3 text-base">Numéro</th>
-                <th className="text-medium  py-3 text-base">Agent</th>
-                <th className="text-medium py-3 text-base">Nb d'immigrés</th>
+                <th className="text-medium py-3 text-base ">Agent</th>
+                <th className="text-medium py-3 text-base">Equipage</th>
                 <th className="text-medium py-3 text-base">Marque</th>
-                <th className="text-medium py-3 text-base">Matière</th>
+                <th className="text-medium py-3 text-base">Port</th>
                 <th className="text-medium py-3 text-base">Nationalité</th>
                 <th className="text-medium py-3 text-base">Lieu de départ</th>
                 <th className="text-medium py-3 text-base">Destination</th>
@@ -640,7 +691,7 @@ export default function AdminAgentPiroguesPage() {
               </tr>
             </thead>
             {!data ? (
-              <TableBodySquelette columnCount={6} />
+              <TableBodySquelette columnCount={8} />
             ) : (
               <tbody>
                 {data?.data.map((pirogue, i) => (
@@ -648,21 +699,15 @@ export default function AdminAgentPiroguesPage() {
                     {/* <Td>
                   <input type="checkbox" className="h-5 w-5" />
                 </Td> */}
-                    <Td className="flex flex-col items-center gap-y-1">
-                      {pirogue.motor_numbers && pirogue.motor_numbers.length > 0
-                        ? pirogue.motor_numbers.map((number) => (
-                            <span className="w-min rounded-xl bg-primaryLight px-2 py-1 text-xs font-semibold">
-                              {number.length > 0 ? number : "-"}
-                            </span>
-                          ))
-                        : "-"}
+                    <Td className="flex items-center gap-x-2 gap-y-1 overflow-clip">
+                      -
                     </Td>
-                    <Td>{pirogue.created_by_name ?? "-"}</Td>
+                    <Td className="font-medium text-primary">
+                      {pirogue.created_by_name ?? "-"}
+                    </Td>
                     <Td>{pirogue.immigrants_count}</Td>
                     <Td>{pirogue.brand ?? "-"}</Td>
-                    <Td>
-                      {pirogue.material ? MATERIAL_NAME[pirogue.material] : "-"}
-                    </Td>
+                    <Td>{pirogue.port ?? "-"}</Td>
                     <Td>{pirogue.nationality_name ?? "-"}</Td>
                     <Td>{pirogue.departure ?? "-"}</Td>
                     <Td>{pirogue.destination ?? "-"}</Td>
@@ -700,7 +745,7 @@ export default function AdminAgentPiroguesPage() {
           </table>
         </div>
         <Pagination
-          className="mt-6 md:mt-10"
+          className="mt-6 lg:mt-10"
           onItemClick={(page) => {
             setSearchParams((params) => {
               params.set("page", page.toString());
@@ -775,6 +820,55 @@ export default function AdminAgentPiroguesPage() {
                 url={"users"}
                 lookupColumn="name"
               />
+              <SearchSelect<CountryInterface>
+                value={
+                  countriesNameCache.current[
+                    searchParams.get("nationality") ?? ""
+                  ] ?? null
+                }
+                onSelected={function (value): void {
+                  countriesNameCache.current[value.id.toString()] =
+                    value.name_fr;
+                  setSearchParams((params) => {
+                    if (value) {
+                      params.set("nationality", value.id.toString());
+                    } else {
+                      params.delete("nationality");
+                    }
+                    params.set("page", "1");
+
+                    return params;
+                  });
+                }}
+                placeHolder={"Nationalité"}
+                search={true}
+                url={"countries"}
+                lookupColumn="name_fr"
+              />
+              <Select
+                // disabled={isSubmitting}
+                value={searchParams.get("port") ?? ""}
+                onChange={(e) => {
+                  setSearchParams((params) => {
+                    if (e.target.value === "") {
+                      params.delete("port");
+                    } else {
+                      params.set("port", e.target.value);
+                    }
+                    params.set("page", "1");
+                    return params;
+                  });
+                }}
+                className={searchParams.get("port") ? "" : "text-gray"}
+              >
+                <option value="" disabled>
+                  Port
+                </option>
+                <option value="ndagou">Ndagou</option>
+                <option value="nouadhibou">Nouadhibou</option>
+                <option value="nouakchott">Nouakchott</option>
+                <option value="tanit">Tanit</option>
+              </Select>
             </div>
             {/* <FilledButton
               onClick={() => {}}
@@ -810,7 +904,7 @@ export default function AdminAgentPiroguesPage() {
           >
             <RDialog.Portal>
               <RDialog.Overlay className="fixed inset-0 z-20 flex items-center justify-center bg-gray opacity-70" />
-              <RDialog.Content className="fixed right-0 top-0 z-20 h-screen  w-screen overflow-y-auto bg-white shadow-lg md:w-[60%]">
+              <RDialog.Content className="fixed right-0 top-0 z-20 h-screen  w-screen overflow-y-auto bg-white shadow-lg lg:w-[60%]">
                 <PirogueDetailPage
                   className=""
                   pirogueId={searchParams.get("selected_pirogue") ?? "0"}

@@ -8,19 +8,20 @@ class PirogueManager(models.Manager):
         return self.get_queryset().annotate(immigrants_count = Coalesce(Count("immigrants"), 0)).annotate(created_by_name = F('created_by__name')).annotate(nationality_name = F('nationality__name_fr'))
 
 class Pirogue(models.Model):
+    number = models.CharField(max_length=100)
     lat = models.CharField(max_length=100)
     long = models.CharField(max_length=100)
     # numbers is a list of strings
     motor_numbers = models.JSONField(default=list, blank = True)
     puissance = models.IntegerField(blank=True, null=True)
     material = models.CharField(max_length=100, choices=[('wood', 'wood'), ('metal', 'metal'), ('plastic', 'plastic'), ('polyester', 'polyester')], null= True, blank = True)
-    nationality = models.ForeignKey('Country', on_delete=models.PROTECT, related_name='pirogues', null= True, blank = True)
+    nationality = models.ForeignKey('Country', on_delete=models.PROTECT, related_name='pirogues')
     brand = models.CharField(max_length=100, null= True, blank = True)
     gps = models.JSONField(default=list)
     # essence
     fuel = models.IntegerField(default=0)
-    port = models.CharField(max_length=100, choices=[('ndagou', 'ndagou'), ('nouadhibou', 'nouadhibou'), ('nouakchott', 'nouakchott'), ('tanit', 'tanit')])
-    extra  = models.CharField(max_length=1000, default="", blank=True, null=True)
+    port = models.CharField(max_length=100, choices=[('ndagou', 'ndagou'), ('nouadhibou', 'nouadhibou'), ('nouakchott', 'nouakchott'), ('tanit', 'tanit')], )
+    extra  = models.CharField(max_length=4000, default="", blank=True, null=True)
 
     departure = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)

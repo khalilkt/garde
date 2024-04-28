@@ -24,9 +24,9 @@ class StatsView(APIView):
     permission_classes = [IsAdminUser]
     def get(self, request):
         total_pirogues = Pirogue.objects.count()
-        total_immigrants = Immigrant.objects.count()   
+        total_immigrants = Immigrant.objects.count()
         return Response(StatsSerializer({
             'total_pirogues': total_pirogues,
             'total_immigrants': total_immigrants,
-        }).data)      
+        }).data)   
         

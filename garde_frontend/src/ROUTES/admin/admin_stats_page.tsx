@@ -84,56 +84,7 @@ export default function AdminStatsPage() {
     },
     series: [
       {
-        data: [
-          {
-            x: "Jan",
-            y: 10,
-          },
-          {
-            x: "Fev",
-            y: 18,
-          },
-          {
-            x: "Mar",
-            y: 13,
-          },
-          {
-            x: "Avr",
-            y: 15,
-          },
-          {
-            x: "Mai",
-            y: 10,
-          },
-          {
-            x: "Juin",
-            y: 18,
-          },
-          {
-            x: "Juil",
-            y: 13,
-          },
-          {
-            x: "Aout",
-            y: 15,
-          },
-          {
-            x: "Sep",
-            y: 10,
-          },
-          {
-            x: "Oct",
-            y: 18,
-          },
-          {
-            x: "Nov",
-            y: 13,
-          },
-          {
-            x: "Dec",
-            y: 15,
-          },
-        ],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       },
     ],
   });
@@ -154,11 +105,25 @@ export default function AdminStatsPage() {
         total: number;
         total_males: number;
         total_females: number;
+        total_by_month: {
+          [key: string]: number;
+        };
       } = response.data;
+
+      setOptions({
+        ...options,
+        series: [
+          {
+            data: Object.values(data.total_by_month),
+          },
+        ],
+      });
+
       setPieOptions({
         ...pieOptions,
         series: [data.total_males, data.total_females],
       });
+
       document.getElementById("asssss")!.innerText = data.total.toString();
     } catch (e) {
       console.log(e);
@@ -240,7 +205,7 @@ export default function AdminStatsPage() {
           <option value={"minor"}>Mineur</option>
           <option value={"major"}>Majeur</option>
         </Select>
-        <div className="flex items-center">
+        <div className="flex items-center gap-x-1">
           <SearchSelect<CountryInterface>
             className={"w-36"}
             value={
@@ -270,9 +235,8 @@ export default function AdminStatsPage() {
               }}
             >
               <svg
-                className="text-gray-500 h-6 w-6 cursor-pointer"
+                className="text-gray-500 h-5 w-5 cursor-pointer stroke-primary"
                 fill="none"
-                stroke="currentColor"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -286,7 +250,7 @@ export default function AdminStatsPage() {
             </button>
           )}
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-x-1">
           <SearchSelect<CountryInterface>
             className={"w-48"}
             value={
@@ -317,9 +281,8 @@ export default function AdminStatsPage() {
               }}
             >
               <svg
-                className="text-gray-500 h-6 w-6 cursor-pointer"
+                className="text-gray-500 h-5 w-5 cursor-pointer stroke-primary"
                 fill="none"
-                stroke="currentColor"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >

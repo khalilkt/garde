@@ -1,5 +1,6 @@
 import { Link, redirect, useParams, useSearchParams } from "react-router-dom";
 import {
+  DisconnectButton,
   FilledButton,
   SelectButton,
   SelectButtonTile,
@@ -30,7 +31,11 @@ import { MDialog } from "../../components/dialog";
 import axios from "axios";
 import { PaginatedData, rootUrl } from "../../models/constants";
 import { AuthContext } from "../../App";
-import { CountryInterface } from "./pirogue_detail_page";
+import {
+  AddEditImmigrantDialog,
+  CountryInterface,
+  MobileImmigrantView,
+} from "./pirogue_detail_page";
 
 export interface ImmigrantInterface {
   id: number;
@@ -49,18 +54,25 @@ export interface ImmigrantInterface {
   created_by: number;
 }
 
-export default function AdminImmigrantsPage() {
+export default function AdminAgentImmigrantsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTimer = React.useRef<NodeJS.Timeout>();
   const [data, setData] =
     React.useState<PaginatedData<ImmigrantInterface> | null>(null);
+  const isAdmin = useContext(AuthContext).authData?.user.is_admin;
 
+  const authContext = useContext(AuthContext);
   const countriesNameCache = React.useRef<{ [key: string]: string }>({});
-
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const token = useContext(AuthContext).authData?.token;
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   async function load() {
-    let url = rootUrl + "immigrants";
+    let url = rootUrl;
+    if (!isAdmin) {
+      url += "me/";
+    }
+    url += "immigrants";
+
     if (searchParams.size > 0) {
       url += "?" + searchParams.toString();
     }
@@ -77,7 +89,7 @@ export default function AdminImmigrantsPage() {
     }
   }
 
-  function init() {
+  async function init() {
     searchParams.forEach((value, key) => {
       if (key === "nationality" || key === "birth_country") {
         axios
@@ -87,7 +99,7 @@ export default function AdminImmigrantsPage() {
             },
           })
           .then((response) => {
-            countriesNameCache.current[value] = response.data.name;
+            countriesNameCache.current[value] = response.data.name_fr;
           });
       }
     });
@@ -153,43 +165,105 @@ export default function AdminImmigrantsPage() {
   });
 
   return (
-    <div className="flex flex-col">
+    <div className="mb-10 flex flex-col">
+      <MDialog
+        onClose={() => setIsDialogOpen(false)}
+        isOpen={isDialogOpen}
+        title="Ajouter Immigrant sans pirogue"
+      >
+        <AddEditImmigrantDialog
+          onDone={() => {
+            setIsDialogOpen(false);
+            load();
+          }}
+          pirogueId={null}
+        />
+      </MDialog>
+      <div className="mb-10 flex w-full flex-row items-center justify-between">
+        <Link
+          to="/"
+          className=" flex flex-row items-center gap-x-2 text-lg text-primary"
+        >
+          <LeftArrow className=" h-4 w-4 fill-primary" />
+          <h3>Page des pirogues </h3>
+        </Link>
+        {!isAdmin && (
+          <DisconnectButton
+            onClick={() => {
+              authContext.logOut();
+            }}
+          />
+        )}
+      </div>
       <Title className="mb-10">Immigrants</Title>
       <div className="flex w-full flex-row justify-between ">
-        <div className="flex items-center gap-x-6">
-          <SearchBar
-            id="immigrants_search_bar"
-            onChange={onSearchChange}
-            placeholder="Chercher Immigrant"
-            className="w-[300px]"
-          />
-          {Array.from(tags).map(({ id, title, value }) => (
-            <Tag
-              onClick={() => {
-                setSearchParams((params) => {
-                  params.delete(id);
-                  params.delete("page");
-                  return params;
-                });
-              }}
-              key={id}
-              title={title}
-              tag={value}
+        <div className=" flex w-full flex-row justify-between ">
+          <div className="flex w-full items-start gap-x-6 lg:w-auto ">
+            <SearchBar
+              id="pirogues_search_bar"
+              onChange={onSearchChange}
+              placeholder="Chercher Immigrants"
+              className="w-full flex-1 lg:w-[300px]"
             />
-          ))}
+            <div className="hidden gap-x-2 lg:flex">
+              {Array.from(tags).map(({ id, title, value }) => (
+                <Tag
+                  onClick={() => {
+                    setSearchParams((params) => {
+                      params.delete(id);
+                      params.delete("page");
+                      return params;
+                    });
+                  }}
+                  key={id}
+                  title={title}
+                  tag={value}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="flex flex-row gap-x-4">
-          <FilledButton
-            onClick={() => {
-              setIsFilterOpen(true);
-            }}
-          >
-            <span>Filtrer</span> <FilterIcon />
-          </FilledButton>
+        <div className="hidden flex-row gap-x-4 lg:flex ">
+          {isAdmin && (
+            <FilledButton
+              onClick={() => {
+                setIsFilterOpen(true);
+              }}
+            >
+              <span>Filtrer</span> <FilterIcon />
+            </FilledButton>
+          )}
+          {!isAdmin && (
+            <FilledButton
+              onClick={() => {
+                setIsDialogOpen(true);
+              }}
+            >
+              <span>Ajouter</span>
+              <PlusIcon className=" fill-white " />
+            </FilledButton>
+          )}
         </div>
       </div>
       <div className="mt-10 w-full">
-        <table className="w-full text-center text-lg">
+        <div className="flex flex-col gap-y-4 lg:hidden">
+          {data?.data.map((immigrant, i) => (
+            <MobileImmigrantView
+              onImageClick={(payload) => {}}
+              immigrant={immigrant}
+            />
+          ))}
+        </div>
+        <FilledButton
+          onClick={() => {
+            setIsDialogOpen(true);
+          }}
+          className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
+        >
+          Nouveau immigrant
+          <PlusIcon className=" fill-white" />
+        </FilledButton>
+        <table className="hidden w-full text-center text-lg lg:table">
           <thead className="w-full">
             <tr className="font-bold text-gray">
               <th className="text-medium  py-3 text-base">Nom</th>
@@ -197,8 +271,10 @@ export default function AdminImmigrantsPage() {
               <th className="text-medium py-3 text-base">Nationalité</th>
               <th className="text-medium py-3 text-base">Pays de naissance</th>
               <th className="text-medium py-3 text-base">Date de naissance</th>
-              <th className="text-medium py-3 text-base">Pirogue</th>
-              <th className="text-medium py-3 text-base">Agent</th>
+              {isAdmin && (
+                <th className="text-medium py-3 text-base">Pirogue</th>
+              )}
+              {isAdmin && <th className="text-medium py-3 text-base">Agent</th>}
             </tr>
           </thead>
           <tbody>
@@ -216,8 +292,10 @@ export default function AdminImmigrantsPage() {
                   <Border>{immigrant.birth_country_name}</Border>
                 </Td>
                 <Td>{immigrant.date_of_birth}</Td>
-                <Td>{immigrant.pirogue_number}</Td>
-                <Td className="text-primary">{immigrant.created_by_name}</Td>
+                {isAdmin && <Td>{immigrant.pirogue_number}</Td>}
+                {isAdmin && (
+                  <Td className="text-primary">{immigrant.created_by_name}</Td>
+                )}
               </Tr>
             ))}
           </tbody>

@@ -24,11 +24,11 @@ export function SearchBar({
   ...inputProps
 }: React.HTMLProps<HTMLInputElement>) {
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <input
         {...inputProps}
         className={`relative rounded-md border-2 border-primaryBorder py-2 pl-9 pr-3 text-black ${inputProps.className ?? ""}`}
-      />
+      ></input>
       <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 transform " />
     </div>
   );
@@ -43,7 +43,7 @@ export function Input({
   return (
     <input
       {...inputProps}
-      className={`rounded-md border border-primaryBorder px-3 py-2 text-sm text-black md:text-base ${inputProps.className ?? ""}`}
+      className={`rounded-md border border-primaryBorder px-3 py-2 text-sm text-black lg:text-base ${inputProps.className ?? ""}`}
     />
   );
 }
@@ -57,7 +57,7 @@ export function Select({
   return (
     <select
       {...selectedProps}
-      className={` text-ellipsis rounded-md border border-primaryBorder px-3  py-2 pl-3 text-sm text-black md:text-base ${selectedProps.className ?? ""}`}
+      className={`relative h-full w-full text-ellipsis rounded-md border border-primaryBorder px-3 py-2 text-sm text-black lg:text-base ${selectedProps.className ?? ""}`}
     >
       {children}
     </select>
@@ -147,7 +147,7 @@ export function SearchSelect<T>({
             <span className={value && value.length > 0 ? "" : "text-gray"}>
               {value && value.length > 0 ? value : placeHolder}
             </span>
-            <LeftArrow className="absolute right-4 -rotate-90 transform fill-black" />
+            <LeftArrow className="absolute  right-4 -rotate-90 transform fill-black" />
           </button>
         </Popover.Trigger>
         <Popover.Portal>
@@ -250,7 +250,7 @@ export function Textarea({
   return (
     <textarea
       {...textareaProps}
-      className={`rounded-md border border-primaryBorder py-2 pl-3  pr-3 text-sm text-black md:text-base ${textareaProps.className ?? ""}`}
+      className={`rounded-md border border-primaryBorder py-2 pl-3  pr-3 text-sm text-black lg:text-base ${textareaProps.className ?? ""}`}
     />
   );
 }
@@ -280,7 +280,7 @@ export function Tag({
   return (
     <button
       {...buttonProps}
-      className={`flex h-max items-center gap-x-2 rounded-lg  border-2 border-primaryBorder px-2 py-2 text-sm  ${buttonProps.className}`}
+      className={`flex h-max w-max items-center gap-x-2 rounded-lg  border-2 border-primaryBorder px-2 py-2 text-sm  ${buttonProps.className}`}
     >
       <span>{title}</span>
       <span className="text-primary">{tag}</span>

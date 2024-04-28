@@ -24,19 +24,21 @@ export function FilledButton({
 
 export function OutlinedButton({
   onClick,
-  className,
   children,
+  ...btnProps
 }: {
   onClick?: () => void;
-  className?: string;
   children: ReactNode;
-}) {
+} & React.DetailedHTMLProps<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  HTMLButtonElement
+>) {
   return (
     <button
       onClick={onClick}
       className={
         "flex flex-row items-center justify-center gap-x-[10px] rounded-md border border-primary bg-white px-4 py-2 text-center font-medium text-primary transition-all duration-150 active:scale-95 " +
-        (className ?? "")
+        (btnProps.className ?? "")
       }
     >
       {children}
