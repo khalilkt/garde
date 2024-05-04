@@ -66,9 +66,9 @@ class ImmigrantList(ListAPIView):
         if "age" in params:
             age = params["age"]
             if age == "minor": 
-                ret = ret.filter(date_of_birth__gt = date.today() - relativedelta(years=+25))
+                ret = ret.filter(age__lt = 18)
             elif age == "major":
-                ret = ret.filter(date_of_birth__lt = date.today() - relativedelta(years=+25))
+                ret = ret.filter(age__gte = 18)
         return ret
     
 class MyImmigrantsWoutPirogueList(ListCreateAPIView):
@@ -82,7 +82,6 @@ class MyImmigrantsWoutPirogueList(ListCreateAPIView):
         return queryset
 
 class ImmigrantStatsView (ImmigrantList):
-    
     def get(self, request):
         ret = super().filter_queryset(super().get_queryset())
         total_by_month = {}

@@ -9,6 +9,7 @@ import {
   StatsIcon,
 } from "./icons";
 import { DisconnectButton } from "./buttons";
+import AdminReportPage from "../ROUTES/admin/admin_report_page";
 
 function NavItem({
   to,
@@ -69,6 +70,9 @@ export function AdminProtectedLayout() {
           icon={<MigrationIrregulierIcon />}
         >
           Migration Irrégulière
+        </NavItem>
+        <NavItem to="/admin/rapports" icon={<StatsIcon />}>
+          Rapports
         </NavItem>
         <DisconnectButton
           className="text-semibold mb-20 mt-auto self-center"

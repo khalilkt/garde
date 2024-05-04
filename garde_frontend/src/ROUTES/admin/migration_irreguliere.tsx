@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Input, SearchSelect, Title } from "../../components/comps";
 import { ImmigrantIcon, LeftArrow } from "../../components/icons";
-import { MATERIAL_NAME, PaginatedData, rootUrl } from "../../models/constants";
+import {
+  MATERIAL_NAME,
+  MONTHS,
+  PaginatedData,
+  rootUrl,
+} from "../../models/constants";
 import { PirogueInterface } from "./agent&admin_pirogues_page";
 import { TableBodySquelette, Td, Tr } from "../../components/table";
 import axios from "axios";
@@ -10,20 +15,7 @@ import { FilledButton, OutlinedButton } from "../../components/buttons";
 import { useReactToPrint } from "react-to-print";
 import { MDialog } from "../../components/dialog";
 import { CountryInterface } from "./pirogue_detail_page";
-const MONTHS = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
+
 function MigrationIrreguliereImmigrantDialog({
   selectedDate,
 }: {

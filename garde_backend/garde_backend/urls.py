@@ -16,10 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from pirogue.views.pirogue import MigrationIrregularList, PirogueList, PirogueDetail, MyPirogueList
+from pirogue.views.pirogue import MigrationIrregularList, PirogueList, PirogueDetail, MyPirogueList, PirogueStatsView
 from pirogue.views.immigrant import ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, MyImmigrantsWoutPirogueList, PirogueImmigrantsList, ImmigrantStatsView
 from authentication.views import LoginTokenView, LoginView, PasswordUpdateView, UsersViewSet
 from pirogue.views.stats import StatsView, CoutriesView, CountriesDetailView
+from pirogue.views.report import ReportList 
 
 from rest_framework import routers
 from django.conf import settings
@@ -41,7 +42,10 @@ urlpatterns = [
     path("immigrants/", ImmigrantList.as_view(), name = "immigrant-list"),
     path('stats/', StatsView.as_view(), name="stats"), 
     path('stats/immigrants/', ImmigrantStatsView.as_view(), name="immigrants-stats"),
+    path('stats/pirogues/', PirogueStatsView.as_view(), name="pirogues-stats"),
+
     path("migration_irregular/", MigrationIrregularList.as_view(), name="migration-irregular-list"),
+    path("report/", ReportList.as_view(), name="report"),
  
     # AGENT
     

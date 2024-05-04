@@ -18,6 +18,7 @@ import AdminAgentPiroguesPage from "./ROUTES/admin/agent&admin_pirogues_page";
 import AdminAgentImmigrantsPage from "./ROUTES/admin/agent&admin_immigrants_page";
 import AdminStatsPage from "./ROUTES/admin/admin_stats_page";
 import MigrationIrregulierePage from "./ROUTES/admin/migration_irreguliere";
+import AdminReportPage from "./ROUTES/admin/admin_report_page";
 
 interface UserInterface {
   id: number;
@@ -143,6 +144,7 @@ function App() {
                   path="migration_irreguliere"
                   element={<MigrationIrregulierePage />}
                 />
+                <Route path="rapports" element={<AdminReportPage />} />
               </Route>
             </Routes>
           )}
