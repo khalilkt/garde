@@ -76,7 +76,7 @@ export default function AdminAgentImmigrantsPage() {
     if (searchParams.size > 0) {
       url += "?" + searchParams.toString();
     }
-    alert(url);
+    // alert(url);
     try {
       const response = await axios.get(url, {
         headers: {
