@@ -4,10 +4,11 @@ services:
   backend:
     build:
       context: ./garde_backend
-    command: >
-      sh -c "python manage.py migrate &&
-            python manage.py loaddata pirogue/fixtures/countries_fixture.json &&
-             gunicorn garde_backend.wsgi --bind 0.0.0.0:8000"
+    # command: >
+    #   sh -c "python manage.py migrate &&
+    #         python manage.py loaddata pirogue/fixtures/countries_fixture.json &&
+    #          gunicorn garde_backend.wsgi --bind 0.0.0.0:8000"
+    command: "gunicorn garde_backend.wsgi --bind 0.0.0.0:8000"
     ports:
       - "8000:8000"
     volumes:
@@ -52,8 +53,9 @@ services:
       - POSTGRES_DB=GARDE_DB
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/:rw
 
   adminer:
     image: adminer

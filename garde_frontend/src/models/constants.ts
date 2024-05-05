@@ -29,3 +29,4 @@ export const MONTHS = [
   "Novembre",
   "Décembre",
 ];
+export const TEsT = "test";
