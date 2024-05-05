@@ -55,7 +55,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - PGDATA=/var/lib/postgresql/data/
     volumes:
-      - postgres_data:/var/lib/postgresql/data/:rw
+      - pg_data:/var/lib/postgresql/data/:rw
 
   adminer:
     image: adminer
@@ -65,4 +65,5 @@ services:
 
 volumes:
   backend_media:
-  postgres_data:
+  pg_data:
+    external: true
