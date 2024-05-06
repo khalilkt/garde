@@ -10,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter, BaseFilterBackend
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db.models import F
 
 from rest_framework.permissions import AllowAny
 # import static files
@@ -21,6 +22,7 @@ from django.http import FileResponse, HttpResponse
 from rest_framework.views import APIView
 from dateutil.relativedelta import relativedelta 
 from datetime import datetime
+from django.db.models import Count
 
 from os import path
 
@@ -64,6 +66,14 @@ class ImmigrantList(ListAPIView):
     search_fields = get_immigrant_search_fields()
     ordering_fileds = get_immigrant_ordering_fields()
     ordering = ['-created_at']
+   
+    @property
+    def pagination_class(self):
+        if "date" in self.request.query_params:
+            return None
+        else:
+            return super().pagination_class
+
 
     def filter_queryset(self, queryset):
         params = self.request.query_params
@@ -74,6 +84,20 @@ class ImmigrantList(ListAPIView):
                 ret = ret.filter(age__lt = 18)
             elif age == "major":
                 ret = ret.filter(age__gte = 18)
+        
+        date = params.get("date", None)
+        if date:
+            splited = date.split("-")
+            year = splited[0]
+            month = splited[1] if len(splited) > 1 else None
+            day = splited[2] if len(splited) > 2 else None
+            if day is not None:
+                ret = ret.filter(created_at__date=date)
+            elif month is not None:
+                ret = ret.filter(created_at__year=year, created_at__month=month)
+            else:
+                ret = ret.filter(created_at__year=year)
+            
         return ret
     
 class MyImmigrantsWoutPirogueList(ListCreateAPIView):
@@ -88,9 +112,17 @@ class MyImmigrantsWoutPirogueList(ListCreateAPIView):
 
 class ImmigrantStatsView (ImmigrantList):
     def get(self, request):
-        year = 2024
+        # get year from search params 
+        year = request.query_params.get('year', None)
+        if not year:
+            return Response("l'annee est obligatoir")
         ret = super().filter_queryset(super().get_queryset())
         ret = ret.filter(created_at__year=year)
+
+        # group by nationality and for each one count the number
+
+        top_nats = ret.values("nationality").annotate(name = F("nationality__name_fr")).annotate(total_immigrants = Count('id')).order_by('-total_immigrants')
+        
 
         total_by_month = {}
         for i in range(1, 13):
@@ -103,7 +135,8 @@ class ImmigrantStatsView (ImmigrantList):
             "total_males" : total_males, 
             "total_females" : total_females,
             "total" : total_females +  total_males,
-            "total_by_month" : total_by_month 
+            "total_by_month" : total_by_month ,
+            "top_nationalities" : top_nats
         }
         return Response(response)
 
@@ -172,38 +205,41 @@ class PirogueImmigrantsList(ListCreateAPIView):
         return Immigrant.objects.def_queryset().filter(pirogue=pirogue_pk)
     
 
-# senegal : 193
-# mali : 134
-# gambi : 82
-# mauri : 137
 
-# remove a natinoality
-# remove 49 woman create at 2023-06-27 (gambi)
+COUTRIES = {
+    "senegal" : "193",
+    "mali" : "134",
+    "gambi" : "82",
+    "mauri" : "137"
+    ,"bissau" :"176",
+    "equat": "65",
+    "ivoire" : "110",
+    "sierra" : "195",
+    "guinee" : "94",
+    "togo" : "214",
+    "ghana"  : "85",
+}
+
 class ImmigrantBulkAdd(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        before_count = Immigrant.objects.count()
 
-        before_females_count = Immigrant.objects.filter(is_male = False).count()
-
-        data = request.data
-        created_at = data.get("created_at", None)
-        country = data.get("country", None)
-        total = data.get("total", None)
-        females = data.get("females", None)
-        minors = data.get("minors", None)
-        departure = data.get("departure", None)
-        destination = data.get("destination", None)
-        etat = data.get("etat", None)
-
-
-        if  created_at is None or  country is None or  total is None or  females is None or  minors is None or  departure is None or  destination is None or  etat is None:
-            return Response("Missing data" , status=400)
-
-        created_at = datetime.strptime(created_at, "%Y-%m-%d")
-        country_object = Country.objects.get(pk=country)
 
         admin = User.objects.get(pk=1)
+       
+        data = request.data
+        date = data.get("date", None)
+        country = data.get("pirogue_nationality", None)
+        departure = data.get("departure", None)
+        destination = data.get("destination", None)
+
+
+        if date is None or  country is None or   departure is None or  destination is None :
+            return Response("Missing data" , status=400)
+        
+        created_at = datetime.strptime(date, "%Y-%m-%d")
+        country_object = Country.objects.get(pk=COUTRIES[country])
+
         p = Pirogue(
             number = "--",
             departure = departure,
@@ -217,35 +253,80 @@ class ImmigrantBulkAdd(APIView):
         p.save()
 
 
-        females_created = 0
-        minor_created = 0
-        for i in range (0, total):
-            is_minor = minor_created < minors
-            minor_created += 1 
-            is_male = True
-            if not is_minor and females_created < females:
-                is_male = False
-                females_created += 1
-            
-            
-            date_of_birth  =  "2024-05-05" if is_minor else "1900-05-05"
-            imm = Immigrant.objects.create(
-                name = "-",
-                etat = etat,
-                date_of_birth = date_of_birth,
-                nationality = country_object,
-                created_at = created_at,
-                is_male = is_male,
-                pirogue = p,
-                created_by =admin
-            )
-            imm.save()
-            imm.created_at = created_at
-            imm.save()
+      
 
-        after_count = Immigrant.objects.count()
-        females_count = Immigrant.objects.filter(is_male = False).count()
-        return Response("Done. Before count: " + str(before_count) + " After count: " + str(after_count) + "(" + str(females_count)  +  ")" + " Added: " + str(after_count - before_count) + "(" + str(females_count - before_females_count) + ")")
+    # d = {
+    #         "date" : "2023-06-27",
+    #         "departure" : "Dakar",
+    #         "destination" : "Bissau",
+    #         "pirogue_nationality" : "gambi",
+    #         "data" : {
+    #             "gambi" : {
+    #                 "total" : 122, 
+    #                 "females" : 30,
+    #                 "minors" : 10,
+    #             },
+    #             "mali" : {
+    #                 "total" : 134,
+    #             },
+    #         }
+
+    #     }
+
+        countries_count = {}
+        females_count = 0
+        males_count = 0 
+        minors_count = 0
+        for key in data["data"]:
+            country = key
+            total = data["data"][key]["total"]
+            females  = data["data"][key]["females"] or 0
+            minors = data["data"][key]["minors"] or 0
+            country_object = Country.objects.get(pk=COUTRIES[country])
+
+            females_created = 0
+            minor_created = 0
+            for i in range (0, total):
+                is_minor = minor_created < minors
+                minor_created += 1 
+                is_male = True
+                if not is_minor and females_created < females:
+                    is_male = False
+                    females_created += 1
+                
+                
+                date_of_birth  =  "2010-01-01" if is_minor else "1980-01-01"
+                imm = Immigrant.objects.create(
+                    name = "-",
+                    etat = "alive",
+                    date_of_birth = date_of_birth,
+                    nationality = country_object,
+                    created_at = created_at,
+                    is_male = is_male,
+                    pirogue = p,
+                    created_by =admin
+                )
+                imm.save()
+                imm.created_at = created_at
+                imm.save()
+                countries_count[country] = countries_count.get(country, 0) + 1
+                if is_minor:
+                    minors_count += 1
+                if is_male:
+                    males_count += 1
+                else:
+                    females_count += 1
+        response = {
+            "total by country" : countries_count,
+            "total" : males_count + females_count + minors_count,
+            "total males" : males_count,
+            "total females" : females_count,
+            "total minors" : minors_count, 
+            "total general" : Immigrant.objects.count()
+        }
+        return Response(response)
+
+
         
 
 

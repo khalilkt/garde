@@ -41,6 +41,37 @@ export default function AdminStatsPage() {
       height: 40,
     },
   });
+
+  const [nationalityPieOptions, setNationalityPieOptions] =
+    React.useState<ApexOptions>({
+      series: [],
+      tooltip: {
+        enabled: true,
+      },
+
+      dataLabels: {
+        enabled: false,
+      },
+      labels: [],
+      responsive: [
+        {
+          breakpoint: 480,
+          options: {
+            chart: {
+              width: 200,
+            },
+            legend: {
+              show: false,
+            },
+          },
+        },
+      ],
+      legend: {
+        position: "bottom",
+        offsetY: 0,
+      },
+    });
+
   const [options, setOptions] = React.useState<ApexOptions>({
     tooltip: {
       enabled: false,
@@ -153,6 +184,7 @@ export default function AdminStatsPage() {
         params.set(name, searchParams.get(param_name)!);
       }
     }
+    params.set("year", searchParams.get("year") ?? "2024");
     try {
       const response = await axios.get(rootUrl + "stats/pirogues", {
         params: params,
@@ -205,6 +237,9 @@ export default function AdminStatsPage() {
         params.set(param_name, searchParams.get(param_name)!);
       }
     }
+
+    params.set("year", searchParams.get("year") ?? "2024");
+
     try {
       const response = await axios.get(rootUrl + "stats/immigrants", {
         params: params,
@@ -219,6 +254,11 @@ export default function AdminStatsPage() {
         total_by_month: {
           [key: string]: number;
         };
+        top_nationalities: {
+          nationality: number;
+          name: string;
+          total_immigrants: number;
+        }[];
       } = response.data;
 
       setOptions({
@@ -233,6 +273,12 @@ export default function AdminStatsPage() {
       setPieOptions({
         ...pieOptions,
         series: [data.total_males, data.total_females],
+      });
+
+      setNationalityPieOptions({
+        ...nationalityPieOptions,
+        series: data.top_nationalities.map((item) => item.total_immigrants),
+        labels: data.top_nationalities.map((item) => item.name),
       });
 
       document.getElementById("asssss")!.innerText = data.total.toString();
@@ -255,9 +301,30 @@ export default function AdminStatsPage() {
     ? searchParams.get("material") ?? ""
     : "";
 
+  const selectedYear = searchParams.get("year") ?? "2024";
+
   return (
     <div className="flex flex-col">
-      <Title className="mb-9">Statistiques</Title>
+      <div className="flex flex-row justify-between">
+        <Title className="mb-9">Statistiques</Title>
+        <Select
+          value={selectedYear}
+          className="w-max"
+          onChange={() => {
+            setSearchParams((params) => {
+              if (selectedYear === "2023") {
+                params.set("year", "2024");
+              } else {
+                params.set("year", "2023");
+              }
+              return params;
+            });
+          }}
+        >
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+        </Select>
+      </div>
       <div className="flex items-center gap-x-4">
         <Select
           value={genre}
@@ -430,7 +497,7 @@ export default function AdminStatsPage() {
           </div>
         </div>
 
-        <div className="w-[40%] rounded-xl border-2 border-primaryBorder p-7">
+        <div className="flex w-[50%] justify-between rounded-xl border-2 border-primaryBorder p-7">
           <div className="flex flex-col">
             <h1 className="mb-10 text-2xl font-semibold">
               Répartition par genre
@@ -440,6 +507,15 @@ export default function AdminStatsPage() {
               series={pieOptions.series}
               type="donut"
               height={300}
+            />
+          </div>
+          <div className="flex flex-col items-center">
+            <h1 className="mb-10 text-2xl font-semibold">Nationalité</h1>
+            <ReactApexChart
+              options={nationalityPieOptions}
+              series={nationalityPieOptions.series}
+              type="donut"
+              height={400}
             />
           </div>
         </div>

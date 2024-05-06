@@ -2,6 +2,7 @@ import { Link, redirect, useParams, useSearchParams } from "react-router-dom";
 import {
   DisconnectButton,
   FilledButton,
+  OutlinedButton,
   SelectButton,
   SelectButtonTile,
 } from "../../components/buttons";
@@ -36,6 +37,7 @@ import {
   CountryInterface,
   MobileImmigrantView,
 } from "./pirogue_detail_page";
+import { useReactToPrint } from "react-to-print";
 
 export interface ImmigrantInterface {
   id: number;
@@ -57,8 +59,9 @@ export interface ImmigrantInterface {
 export default function AdminAgentImmigrantsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTimer = React.useRef<NodeJS.Timeout>();
-  const [data, setData] =
-    React.useState<PaginatedData<ImmigrantInterface> | null>(null);
+  const [data, setData] = React.useState<
+    PaginatedData<ImmigrantInterface> | ImmigrantInterface[] | null
+  >(null);
   const isAdmin = useContext(AuthContext).authData?.user.is_admin;
 
   const authContext = useContext(AuthContext);
@@ -66,6 +69,16 @@ export default function AdminAgentImmigrantsPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const token = useContext(AuthContext).authData?.token;
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  const printRef = React.useRef<HTMLTableElement>(null);
+
+  const handlePrint = useReactToPrint({
+    onBeforeGetContent() {},
+    content: () => {
+      return printRef.current;
+    },
+    onAfterPrint: () => {},
+  });
+
   async function load() {
     let url = rootUrl;
     if (!isAdmin) {
@@ -164,6 +177,15 @@ export default function AdminAgentImmigrantsPage() {
     }
   });
 
+  let list: ImmigrantInterface[] | null = null;
+  if (data) {
+    if ("total_pages" in data) {
+      list = data.data;
+    } else {
+      list = data;
+    }
+  }
+
   return (
     <div className="mb-10 flex flex-col">
       <MDialog
@@ -227,6 +249,16 @@ export default function AdminAgentImmigrantsPage() {
         </div>
         <div className="hidden flex-row gap-x-4 lg:flex ">
           {isAdmin && (
+            <OutlinedButton
+              className="border-green-600 text-green-600"
+              onClick={() => {
+                handlePrint();
+              }}
+            >
+              <span>Imprimer</span>
+            </OutlinedButton>
+          )}
+          {isAdmin && (
             <FilledButton
               onClick={() => {
                 setIsFilterOpen(true);
@@ -235,6 +267,7 @@ export default function AdminAgentImmigrantsPage() {
               <span>Filtrer</span> <FilterIcon />
             </FilledButton>
           )}
+
           {!isAdmin && (
             <FilledButton
               onClick={() => {
@@ -249,7 +282,7 @@ export default function AdminAgentImmigrantsPage() {
       </div>
       <div className="mt-10 w-full">
         <div className="flex flex-col gap-y-4 lg:hidden">
-          {data?.data.map((immigrant, i) => (
+          {list?.map((immigrant, i) => (
             <MobileImmigrantView
               onImageClick={(payload) => {}}
               immigrant={immigrant}
@@ -265,6 +298,43 @@ export default function AdminAgentImmigrantsPage() {
           Nouveau immigrant
           <PlusIcon className=" fill-white" />
         </FilledButton>
+        <div className="flex flex-row items-center gap-x-2">
+          <Input
+            value={searchParams.get("date") ?? ""}
+            onChange={(e) => {
+              setSearchParams((params) => {
+                params.set("date", e.target.value);
+                return params;
+              });
+            }}
+            className="mb-2 mt-4 hidden lg:block"
+            type="date"
+          />
+          {searchParams.get("date") && (
+            <button
+              onClick={() => {
+                setSearchParams((params) => {
+                  params.delete("date");
+                  return params;
+                });
+              }}
+            >
+              <svg
+                className="text-gray-500 h-5 w-5 cursor-pointer stroke-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          )}
+        </div>
         <table className="hidden w-full text-center text-lg lg:table">
           <thead className="w-full">
             <tr className="font-bold text-gray">
@@ -280,7 +350,7 @@ export default function AdminAgentImmigrantsPage() {
             </tr>
           </thead>
           <tbody>
-            {data?.data.map((immigrant, i) => (
+            {list?.map((immigrant, i) => (
               <Tr>
                 {/* <Td>
                   <input type="checkbox" className="h-5 w-5" />
@@ -312,19 +382,87 @@ export default function AdminAgentImmigrantsPage() {
           </tbody>
         </table>
       </div>
-      <Pagination
-        className="mt-10"
-        onItemClick={(page) => {
-          setSearchParams((params) => {
-            params.set("page", page.toString());
-            return params;
-          });
-        }}
-        current={
-          searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
-        }
-        total={data?.total_pages ?? 1}
-      />
+      {list && (
+        <div ref={printRef} className="hidden flex-col px-10 print:flex">
+          <div className="my-12 flex flex-col items-end self-center">
+            <h1 className="text-2xl font-bold">
+              LA MIGRATION ILLEGALE PAR VOIE MARITIME
+            </h1>
+            <div className="flex flex-row">
+              <span>Nouadhibou</span>
+              {searchParams.get("date") && (
+                <span>
+                  , le {searchParams.get("date")?.replaceAll("-", "/")}
+                </span>
+              )}
+            </div>
+          </div>
+          <table className="w-full text-center">
+            <thead className="">
+              <tr className="font-bold text-gray">
+                <th className="border-gray-300 border text-base">N°</th>
+                <th className="border-gray-300 border text-base ">
+                  NOM ET PRENOM
+                </th>
+                <th className="border-gray-300 border text-base">
+                  DATE DE NAISS
+                </th>
+                <th className="border-gray-300 border text-base">
+                  LIEU DE NAISS
+                </th>
+                <th className="border-gray-300 border text-base">
+                  NATIONALITE
+                </th>
+                <th className="border-gray-300 border text-base">GENRE</th>
+                <th className="border-gray-300 border text-base">
+                  OBSERVATIONS
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((immigrant, index) => {
+                return (
+                  <tr>
+                    {/* border */}
+                    <td className="border-gray-300 border ">{index + 1}</td>
+                    <td className="border-gray-300 border ">
+                      {immigrant.name}
+                    </td>
+                    <td className="border-gray-300 border ">
+                      {immigrant.date_of_birth.split("-")[0]}
+                    </td>
+                    <td className="border-gray-300 border ">
+                      {immigrant.birth_country_name}
+                    </td>
+                    <td className="border-gray-300 border ">
+                      {immigrant.nationality_name}
+                    </td>
+                    <td className="border-gray-300 border ">
+                      {immigrant.is_male ? "M" : "F"}
+                    </td>
+                    <td className="border-gray-300 border "></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {data && "total_pages" in data && (
+        <Pagination
+          className="mt-10"
+          onItemClick={(page) => {
+            setSearchParams((params) => {
+              params.set("page", page.toString());
+              return params;
+            });
+          }}
+          current={
+            searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
+          }
+          total={data?.total_pages ?? 1}
+        />
+      )}
       {isFilterOpen && (
         <div className={""}>
           <div

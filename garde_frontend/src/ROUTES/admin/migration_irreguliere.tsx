@@ -58,6 +58,7 @@ function MigrationIrreguliereImmigrantDialog({
                 return newState;
               });
             }}
+            search={true}
             placeHolder={"Pays"}
             url={"countries"}
             lookupColumn="name_fr"

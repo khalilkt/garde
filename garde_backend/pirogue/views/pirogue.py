@@ -20,7 +20,7 @@ class HasPiroguePermission(BasePermission):
 
 
 def get_pirogue_filterset_fields():
-    return ['created_by', "nationality", "port", "material", ]
+    return ['created_by', "nationality", "port", "material" ]
 
 def get_pirogue_search_fields():
     return ["number", 'motor_numbers', 'departure', 'destination', 'lat', 'long']
@@ -37,11 +37,39 @@ class PirogueList(ListAPIView):
     ordering_fields = get_pirogue_ordering_fields()
     ordering = ['-created_at']
 
+    @property
+    def pagination_class(self):
+        if "date" in self.request.query_params:
+            return None
+        else:
+            return super().pagination_class
+
+    def filter_queryset(self, queryset):
+        ret =  super().filter_queryset(queryset)
+        date = self.request.query_params.get("date", None)
+        if date:
+            splited = date.split("-")
+            year = splited[0]
+            month = splited[1] if len(splited) > 1 else None
+            day = splited[2] if len(splited) > 2 else None
+            if day is not None:
+                ret = ret.filter(created_at__date=date)
+            elif month is not None:
+                ret = ret.filter(created_at__year=year, created_at__month=month)
+            else:
+                ret = ret.filter(created_at__year=year)
+            
+        return ret
+
 class PirogueStatsView (PirogueList):
     
     def get(self, request):
         ret = super().filter_queryset(super().get_queryset())
-        year = 2024
+        
+        year = request.query_params.get('year', None)
+        if not year:
+            return Response("l'annee est obligatoir")
+        
         ret = ret.filter(created_at__year=year)
 
         total = ret.count()
@@ -63,7 +91,7 @@ class PirogueStatsView (PirogueList):
         response = {
             "total" : total,
             "top_nationalities" : top_nationalities, 
-            "total_by_month" : total_by_month 
+            "total_by_month" : total_by_month
         }
         return Response(response)
 

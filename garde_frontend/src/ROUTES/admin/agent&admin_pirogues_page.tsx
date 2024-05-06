@@ -479,8 +479,9 @@ export default function AdminAgentPiroguesPage() {
   const [dialogState, setDialogState] = React.useState<DialogState>({
     state: "none",
   });
-  const [data, setData] =
-    React.useState<PaginatedData<PirogueInterface> | null>(null);
+  const [data, setData] = React.useState<
+    PaginatedData<PirogueInterface> | PirogueInterface[] | null
+  >(null);
 
   const token = useContext(AuthContext).authData?.token;
   const isAdmin = useContext(AuthContext).authData?.user.is_admin;
@@ -598,6 +599,15 @@ export default function AdminAgentPiroguesPage() {
       });
     }
   });
+
+  let list: PirogueInterface[] | null = null;
+  if (data) {
+    if ("total_pages" in data) {
+      list = data.data;
+    } else {
+      list = data;
+    }
+  }
   return (
     <div className="flex">
       {/* pb is for the floting button */}
@@ -690,9 +700,7 @@ export default function AdminAgentPiroguesPage() {
         </div>
         <div className="mt-10">
           <div className="flex flex-col gap-y-4 lg:hidden">
-            {data?.data.map((pirogue, i) => (
-              <MobilePriogueView pirogue={pirogue} />
-            ))}
+            {list?.map((pirogue, i) => <MobilePriogueView pirogue={pirogue} />)}
           </div>
           <FilledButton
             onClick={() => {
@@ -703,6 +711,43 @@ export default function AdminAgentPiroguesPage() {
             Nouveu pirogue
             <PlusIcon className=" fill-white" />
           </FilledButton>
+          <div className="flex flex-row items-center gap-x-2">
+            <Input
+              value={searchParams.get("date") ?? ""}
+              onChange={(e) => {
+                setSearchParams((params) => {
+                  params.set("date", e.target.value);
+                  return params;
+                });
+              }}
+              className="mb-2 mt-4 hidden lg:block"
+              type="date"
+            />
+            {searchParams.get("date") && (
+              <button
+                onClick={() => {
+                  setSearchParams((params) => {
+                    params.delete("date");
+                    return params;
+                  });
+                }}
+              >
+                <svg
+                  className="text-gray-500 h-5 w-5 cursor-pointer stroke-primary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  ></path>
+                </svg>
+              </button>
+            )}
+          </div>
           <table className="hidden w-full text-center text-lg lg:table">
             <thead className="">
               <tr className="font-bold text-gray">
@@ -721,7 +766,7 @@ export default function AdminAgentPiroguesPage() {
               <TableBodySquelette columnCount={8} />
             ) : (
               <tbody>
-                {data?.data.map((pirogue, i) => (
+                {list?.map((pirogue, i) => (
                   <Tr>
                     {/* <Td>
                   <input type="checkbox" className="h-5 w-5" />
@@ -771,21 +816,24 @@ export default function AdminAgentPiroguesPage() {
             )}
           </table>
         </div>
-        <Pagination
-          className="mt-6 lg:mt-10"
-          onItemClick={(page) => {
-            setSearchParams((params) => {
-              params.set("page", page.toString());
-              return params;
-            });
-            // if mobile scroll to the top
-            window.scrollTo(0, 0);
-          }}
-          current={
-            searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
-          }
-          total={data?.total_pages ?? 1}
-        />
+
+        {!searchParams.get("date") && (
+          <Pagination
+            className="mt-6 lg:mt-10"
+            onItemClick={(page) => {
+              setSearchParams((params) => {
+                params.set("page", page.toString());
+                return params;
+              });
+              // if mobile scroll to the top
+              window.scrollTo(0, 0);
+            }}
+            current={
+              searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
+            }
+            total={(data as PaginatedData<PirogueInterface>)?.total_pages ?? 1}
+          />
+        )}
       </div>
       {isFilterOpen && (
         <div className={""}>
