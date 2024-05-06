@@ -356,7 +356,7 @@ export default function AdminReportPage() {
       {report && (
         <div
           ref={printRef}
-          className="mt-20 flex flex-col items-center gap-y-10  px-10"
+          className="mt-20 hidden flex-col items-center  gap-y-10 px-10 print:flex"
         >
           <span className={` text-center text-xl font-semibold `}>
             {MONTHS[startDate.month - 1] + " " + startDate.year}

@@ -54,6 +54,7 @@ export interface PirogueInterface {
   motor_numbers: string[];
   puissance: number;
   port: string;
+
   material: string;
   brand: string;
   gps: string[];
@@ -78,6 +79,7 @@ function AddEditPirogueDialog({
     extra: string;
     description: string;
     port: string;
+    etat: string;
     puissance: string;
     fuel: number;
     material: string;
@@ -94,7 +96,7 @@ function AddEditPirogueDialog({
     extra: "",
     description: "",
     port: "",
-    //
+    etat: "saisie",
     puissance: "",
     fuel: 0,
     material: "",
@@ -145,6 +147,7 @@ function AddEditPirogueDialog({
           puissance:
             formState.puissance.length === 0 ? null : formState.puissance,
           port: formState.port,
+          etat: formState.etat,
           material: formState.material,
           brand: formState.brand,
           gps: formState.gps,
@@ -319,6 +322,24 @@ function AddEditPirogueDialog({
         <option value="nouadhibou">Nouadhibou</option>
         <option value="nouakchott">Nouakchott</option>
         <option value="tanit">Tanit</option>
+      </Select>
+      <Select
+        disabled={isSubmitting}
+        value={formState.etat}
+        onChange={(e) => {
+          setFormState((state) => ({
+            ...state,
+            etat: e.target.value,
+          }));
+        }}
+        className={formState.etat === "" ? "text-gray" : ""}
+      >
+        <option value="" disabled>
+          État
+        </option>
+        <option value="saisie">Saisie</option>
+        <option value="casse">Cassé</option>
+        <option value="abandonnee">Abandonnée</option>
       </Select>
       <div className="col-span-2 flex w-full items-center justify-center">
         <hr className=" w-1/2 place-content-center self-center border-gray" />

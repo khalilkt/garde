@@ -31,7 +31,9 @@ class Immigrant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('authentication.User', on_delete=models.PROTECT, related_name='immigrants')
 
-   
+
+
+    
     
 
     objects = ImmigrantManager()

@@ -2,6 +2,7 @@ from datetime import date
 from io import BytesIO
 from rest_framework.generics import ListAPIView, RetrieveAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAdminUser
+from authentication.models import User
 from pirogue.models import Immigrant, ImmigrantSerializer
 from rest_framework.permissions import BasePermission
 from pirogue.models import Pirogue
@@ -10,6 +11,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter, BaseFilterBacke
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from rest_framework.permissions import AllowAny
 # import static files
 from django.templatetags.static import static
 
@@ -18,8 +20,11 @@ from django.template.loader import render_to_string
 from django.http import FileResponse, HttpResponse
 from rest_framework.views import APIView
 from dateutil.relativedelta import relativedelta 
+from datetime import datetime
 
 from os import path
+
+from pirogue.models.country import Country
 
 class HasImmigrantPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -163,3 +168,82 @@ class PirogueImmigrantsList(ListCreateAPIView):
         pirogue_pk = self.kwargs.get('pirogue_pk')
         return Immigrant.objects.def_queryset().filter(pirogue=pirogue_pk)
     
+
+# senegal : 193
+# mali : 134
+# gambi : 82
+# mauri : 137
+
+# remove a natinoality
+# remove 49 woman create at 2023-06-27 (gambi)
+class ImmigrantBulkAdd(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        before_count = Immigrant.objects.count()
+        before_females_count = Immigrant.objects.filter(is_male = False).count()
+
+        data = request.data
+        created_at = data.get("created_at", None)
+        country = data.get("country", None)
+        total = data.get("total", None)
+        females = data.get("females", None)
+        minors = data.get("minors", None)
+        departure = data.get("departure", None)
+        destination = data.get("destination", None)
+        etat = data.get("etat", None)
+
+
+        if  created_at is None or  country is None or  total is None or  females is None or  minors is None or  departure is None or  destination is None or  etat is None:
+            return Response("Missing data" , status=400)
+
+        created_at = datetime.strptime(created_at, "%Y-%m-%d")
+        country_object = Country.objects.get(pk=country)
+
+        admin = User.objects.get(pk=1)
+        p = Pirogue(
+            number = "--",
+            departure = departure,
+            destination = destination,
+            nationality = country_object,
+            created_at = created_at,
+            created_by =admin
+        )
+        p.save()
+        p.created_at = created_at
+        p.save()
+
+
+        females_created = 0
+        minor_created = 0
+        for i in range (0, total):
+            is_minor = minor_created < minors
+            minor_created += 1 
+            is_male = True
+            if not is_minor and females_created < females:
+                is_male = False
+                females_created += 1
+            
+            
+            date_of_birth  =  "2024-05-05" if is_minor else "1900-05-05"
+            imm = Immigrant.objects.create(
+                name = "-",
+                etat = etat,
+                date_of_birth = date_of_birth,
+                nationality = country_object,
+                created_at = created_at,
+                is_male = is_male,
+                pirogue = p,
+                created_by =admin
+            )
+            imm.save()
+            imm.created_at = created_at
+            imm.save()
+
+        after_count = Immigrant.objects.count()
+        females_count = Immigrant.objects.filter(is_male = False).count()
+        return Response("Done. Before count: " + str(before_count) + " After count: " + str(after_count) + "(" + str(females_count)  +  ")" + " Added: " + str(after_count - before_count) + "(" + str(females_count - before_females_count) + ")")
+        
+
+
+
+        

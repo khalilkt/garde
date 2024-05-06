@@ -10,8 +10,8 @@ class PirogueManager(models.Manager):
 
 class Pirogue(models.Model):
     number = models.CharField(max_length=100)
-    lat = models.CharField(max_length=100)
-    long = models.CharField(max_length=100)
+    lat = models.CharField(max_length=100, null= True, blank = True)
+    long = models.CharField(max_length=100, null= True, blank = True)
     # numbers is a list of strings
     motor_numbers = models.JSONField(default=list, blank = True)
     puissance = models.IntegerField(blank=True, null=True)
@@ -21,7 +21,7 @@ class Pirogue(models.Model):
     gps = models.JSONField(default=list)
     # essence
     fuel = models.IntegerField(default=0)
-    port = models.CharField(max_length=100, choices=[('ndagou', 'ndagou'), ('nouadhibou', 'nouadhibou'), ('nouakchott', 'nouakchott'), ('tanit', 'tanit')], )
+    port = models.CharField(max_length=100, choices=[('ndagou', 'ndagou'), ('nouadhibou', 'nouadhibou'), ('nouakchott', 'nouakchott'), ('tanit', 'tanit'), ("unknown", "-")], )
     extra  = models.CharField(max_length=4000, default="", blank=True, null=True)
 
     departure = models.CharField(max_length=100)
@@ -29,6 +29,7 @@ class Pirogue(models.Model):
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('authentication.User', on_delete=models.PROTECT, related_name='pirogues')
+    etat = models.CharField(max_length=100, choices=[('saisie', 'saisie'), ('casse', 'casse'), ('abandonnee', 'abandonnee')], default='saisie')
 
     video = models.FileField(upload_to='pirogues/', blank=True, null=True)
 

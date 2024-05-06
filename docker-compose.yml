@@ -51,19 +51,18 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_DB=GARDE_DB
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=IMZ
+      - POSTGRES_PASSWORD=aoishdqiwuf13213edn1i21x012u09x12ue28e12837eds128
       - PGDATA=/var/lib/postgresql/data/
     volumes:
       - pg_data:/var/lib/postgresql/data/:rw
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
 
 volumes:
   backend_media:
   pg_data:
-    external: true
