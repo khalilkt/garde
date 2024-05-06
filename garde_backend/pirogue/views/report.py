@@ -92,8 +92,8 @@ class ReportList(APIView):
         if len(start_date) != 7 or len(end_date) != 7:   
             return Response({"error": "start and end dates must be in the format YYYY-MM"}, status=status.HTTP_400_BAD_REQUEST)
       
-        start_date_epoch = datetime.strptime(start_date, "%Y-%m").timestamp() * 1000000
-        end_date_epoch = (datetime.strptime(end_date, "%Y-%m") + relativedelta(months=1)).timestamp() * 1000000
+        start_date_epoch = datetime.strptime(start_date, "%Y-%m").timestamp() 
+        end_date_epoch = (datetime.strptime(end_date, "%Y-%m") + relativedelta(months=1)).timestamp() 
      
         pirogues = filter_by_start_end_date(Pirogue.objects.def_queryset(), start_date_epoch, end_date_epoch)
         immigrants_report = get_immigrant_report(start_date_epoch, end_date_epoch)
@@ -106,6 +106,7 @@ class ReportList(APIView):
             "end_data_epoch" : end_date_epoch,
             "sss" : str(sss[0].created_at_epoch)
         }
+
         return Response(ret)
 
 
