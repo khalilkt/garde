@@ -63,7 +63,7 @@ export function AdminProtectedLayout() {
           Pirogues
         </NavItem>
         <NavItem to="/admin/immigrants" icon={<ImmigrantIcon />}>
-          Immigrants
+          Émigrés
         </NavItem>
         <NavItem
           to="/admin/migration_irreguliere"
@@ -86,7 +86,7 @@ export function AdminProtectedLayout() {
           }}
         />
       </ul>
-      <section className="mx-10 h-screen flex-1 overflow-y-auto pt-10">
+      <section className="h-screen flex-1 overflow-y-auto px-10  pt-10">
         <Outlet />
       </section>
     </div>

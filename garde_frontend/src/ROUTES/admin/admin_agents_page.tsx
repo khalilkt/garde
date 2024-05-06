@@ -338,7 +338,7 @@ export default function AdminAgentsPage() {
               <th className="text-medium  py-3 text-base">Nom d'utilisateur</th>
               <th className="text-medium py-3 text-base">Dernière Connexion</th>
               <th className="text-medium py-3 text-base">Pirogues</th>
-              <th className="text-medium py-3 text-base">Immigrants</th>
+              <th className="text-medium py-3 text-base">Émigrés</th>
               <th className="text-medium w-20  py-3 text-base"></th>
             </tr>
           </thead>
@@ -363,7 +363,23 @@ export default function AdminAgentsPage() {
                     >
                       <span>Modifier</span>
                     </SelectButtonTile>
-                    <SelectButtonTile icon={<DeleteIcon />}>
+                    <SelectButtonTile
+                      onClick={() => {
+                        axios
+                          .delete(rootUrl + `users/${agent.id}/`, {
+                            headers: {
+                              Authorization: `Token ${token}`,
+                            },
+                          })
+                          .then(() => {
+                            load();
+                          })
+                          .catch(() => {
+                            alert("Erreur lors de la suppression de l'agent");
+                          });
+                      }}
+                      icon={<DeleteIcon />}
+                    >
                       <span>Supprimer</span>
                     </SelectButtonTile>
                     <SelectButtonTile

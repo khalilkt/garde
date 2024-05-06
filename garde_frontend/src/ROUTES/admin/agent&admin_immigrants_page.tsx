@@ -191,7 +191,7 @@ export default function AdminAgentImmigrantsPage() {
       <MDialog
         onClose={() => setIsDialogOpen(false)}
         isOpen={isDialogOpen}
-        title="Ajouter Immigrant sans pirogue"
+        title="Ajouter un Émigré sans pirogue"
       >
         <AddEditImmigrantDialog
           onDone={() => {
@@ -219,14 +219,14 @@ export default function AdminAgentImmigrantsPage() {
           )
         </div>
       )}
-      <Title className="mb-10">Immigrants</Title>
+      <Title className="mb-10">Émigré</Title>
       <div className="flex w-full flex-row justify-between ">
         <div className=" flex w-full flex-row justify-between ">
           <div className="flex w-full items-start gap-x-6 lg:w-auto ">
             <SearchBar
               id="pirogues_search_bar"
               onChange={onSearchChange}
-              placeholder="Chercher Immigrants"
+              placeholder="Chercher Émigrés"
               className="w-full flex-1 lg:w-[300px]"
             />
             <div className="hidden gap-x-2 lg:flex">
@@ -295,7 +295,7 @@ export default function AdminAgentImmigrantsPage() {
           }}
           className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
         >
-          Nouveau immigrant
+          Nouveau Émigré
           <PlusIcon className=" fill-white" />
         </FilledButton>
         <div className="flex flex-row items-center gap-x-2">

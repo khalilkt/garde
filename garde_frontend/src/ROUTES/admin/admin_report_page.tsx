@@ -288,7 +288,7 @@ export default function AdminReportPage() {
           }}
           active={searchParams.get("tab") === "immigrants"}
         >
-          Immigrants
+          Émigrés
         </Tab>
       </div>
       <FilledButton
@@ -303,7 +303,7 @@ export default function AdminReportPage() {
         <thead className="w-full">
           <tr className="font-bold text-gray">
             <th className="text-medium  py-3 text-base">Date</th>
-            <th className="text-medium  py-3 text-base">Immigrants</th>
+            <th className="text-medium  py-3 text-base">Émigré</th>
             <th className="text-medium py-3 text-base">Nationalités</th>
             <th className="text-medium py-3 text-base">Genres</th>
             <th className="text-medium py-3 text-base">Départ</th>
@@ -391,7 +391,7 @@ export default function AdminReportPage() {
             <thead>
               <tr>
                 <th className="border px-2 py-1">Date</th>
-                <th className="border px-2 py-1">Immigrants</th>
+                <th className="border px-2 py-1">Émigré</th>
                 <th className="border px-2 py-1">Nationalités</th>
                 <th className="border px-2 py-1">Genres</th>
                 <th className="border px-2 py-1">Départ</th>

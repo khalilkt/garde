@@ -38,6 +38,7 @@ import {
   PositionInput,
   PositionInterface,
 } from "../../components/position_input";
+import { useReactToPrint } from "react-to-print";
 
 export interface PirogueInterface {
   id: number;
@@ -488,6 +489,15 @@ export default function AdminAgentPiroguesPage() {
   const countriesNameCache = React.useRef<{ [key: string]: string }>({});
 
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  const printRef = React.useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    onBeforeGetContent() {},
+    content: () => {
+      return printRef.current;
+    },
+    onAfterPrint: () => {},
+  });
 
   async function load() {
     let url = rootUrl + "pirogues";
@@ -637,7 +647,7 @@ export default function AdminAgentPiroguesPage() {
               className=" flex flex-row items-center gap-x-2 text-lg text-primary"
             >
               <LeftArrow className=" h-4 w-4 fill-primary" />
-              <h3>Page d'Immigrants </h3>
+              <h3>Page d'émigrés </h3>
             </Link>
             {
               <DisconnectButton
@@ -677,6 +687,16 @@ export default function AdminAgentPiroguesPage() {
             </div>
           </div>
           <div className="hidden flex-row items-center gap-x-4 lg:flex">
+            {isAdmin && (
+              <OutlinedButton
+                className="border-green-600 text-green-600"
+                onClick={() => {
+                  handlePrint();
+                }}
+              >
+                <span>Imprimer</span>
+              </OutlinedButton>
+            )}
             <FilledButton
               className="w-max"
               onClick={() => {
@@ -816,6 +836,64 @@ export default function AdminAgentPiroguesPage() {
             )}
           </table>
         </div>
+        {list && (
+          <div ref={printRef} className="hidden flex-col px-10 print:flex">
+            <div className="my-12 flex flex-col items-end self-center">
+              <h1 className="text-2xl font-bold">
+                LA MIGRATION ILLEGALE PAR VOIE MARITIME
+              </h1>
+              <div className="flex flex-row">
+                <span>Nouadhibou</span>
+                {searchParams.get("date") && (
+                  <span>
+                    , le {searchParams.get("date")?.replaceAll("-", "/")}
+                  </span>
+                )}
+              </div>
+            </div>
+            <table className="w-full text-center">
+              <thead className="">
+                <tr className="font-bold text-gray">
+                  <th className="border-gray-300 border text-base">
+                    N° du pirogue
+                  </th>
+                  <th className="border-gray-300 border text-base ">
+                    Nationalité
+                  </th>
+                  <th className="border-gray-300 border text-base">
+                    NBRE D'IMMIGRES
+                  </th>
+                  <th className="border-gray-300 border text-base">DEPART</th>
+                  <th className="border-gray-300 border text-base">
+                    OBSERVATIONS
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((pirogue, index) => {
+                  return (
+                    <tr>
+                      {/* border */}
+                      <td className="border-gray-300 border ">
+                        {pirogue.number}
+                      </td>
+                      <td className="border-gray-300 border ">
+                        {pirogue.nationality_name}
+                      </td>
+                      <td className="border-gray-300 border ">
+                        {pirogue.immigrants_count}
+                      </td>
+                      <td className="border-gray-300 border ">
+                        {pirogue.departure ?? "-"}
+                      </td>
+                      <td className="border-gray-300 border "></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {!searchParams.get("date") && (
           <Pagination
