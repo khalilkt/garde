@@ -53,7 +53,7 @@ class PirogueRaportSerializer(serializers.ModelSerializer):
 
 def filter_by_start_end_date(queryset, start_date_epoch, end_date_epoch):
     # ret = queryset.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))
-    ret = queryset.annotate(created_at_epoch = Extract('date_joined', 'epoch').get())
+    ret = queryset.annotate(created_at_epoch = Extract('date_joined', 'epoch'))
     ret  = ret.filter(created_at_epoch__gte=start_date_epoch, created_at_epoch__lt=end_date_epoch)
     return ret
 
@@ -98,7 +98,7 @@ class ReportList(APIView):
         pirogues = filter_by_start_end_date(Pirogue.objects.def_queryset(), start_date_epoch, end_date_epoch)
         immigrants_report = get_immigrant_report(start_date_epoch, end_date_epoch)
         # sss = Pirogue.objects.annotate(created_at_epoch =  ExpressionWrapper((F('created_at') - datetime(1970,1,1)).total_seconds(), output_field=IntegerField()))[:1]
-        sss = Pirogue.objects.annotate(created_at_epoch = Extract('date_joined', 'epoch').get())
+        sss = Pirogue.objects.annotate(created_at_epoch = Extract('date_joined', 'epoch'))
         ret = {
             "pirogues" : PirogueRaportSerializer(pirogues, many=True).data,
             "immigrants" : immigrants_report,
