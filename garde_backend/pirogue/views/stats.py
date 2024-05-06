@@ -25,8 +25,9 @@ class CountriesDetailView(APIView):
 class StatsView(APIView):
     permission_classes = [IsAdminUser]
     def get(self, request):
-        total_pirogues = Pirogue.objects.count()
-        total_immigrants = Immigrant.objects.count()
+        year= 2024
+        total_pirogues = Pirogue.objects.filter(created_at__year=year).count()
+        total_immigrants = Immigrant.objects.filter(created_at__year=year).count()
         return Response(StatsSerializer({
             'total_pirogues': total_pirogues,
             'total_immigrants': total_immigrants,
@@ -41,7 +42,7 @@ def get_year_stats(year):
     females = immigrant_query.filter(Q(is_male = False) & (Q(age__isnull = True) | Q(age__gte = 18) ) )
     minors = immigrant_query.filter(is_male=True, age__isnull = False , age__lt = 18)
     
-    
+
 
 
     return {
