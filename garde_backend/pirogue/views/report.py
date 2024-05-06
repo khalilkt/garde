@@ -9,6 +9,7 @@ from datetime import date
 
 from pirogue.models.country import Country
 
+from django.db.models.functions import Extract
 
 class NationalitySerializer(serializers.Serializer):
     name = serializers.CharField() 
@@ -51,7 +52,8 @@ class PirogueRaportSerializer(serializers.ModelSerializer):
         fields = ['created_at', 'immigrants_count', 'nationalities', 'departure', "created_at_epoch"]
 
 def filter_by_start_end_date(queryset, start_date_epoch, end_date_epoch):
-    ret = queryset.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))
+    # ret = queryset.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))
+    ret = queryset.annotate(created_at_epoch = Extract('date_joined', 'epoch').get())
     ret  = ret.filter(created_at_epoch__gte=start_date_epoch, created_at_epoch__lt=end_date_epoch)
     return ret
 
@@ -95,8 +97,8 @@ class ReportList(APIView):
      
         pirogues = filter_by_start_end_date(Pirogue.objects.def_queryset(), start_date_epoch, end_date_epoch)
         immigrants_report = get_immigrant_report(start_date_epoch, end_date_epoch)
-        sss = Pirogue.objects.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))[:1]
-        
+        # sss = Pirogue.objects.annotate(created_at_epoch =  ExpressionWrapper((F('created_at') - datetime(1970,1,1)).total_seconds(), output_field=IntegerField()))[:1]
+        sss = Pirogue.objects.annotate(created_at_epoch = Extract('date_joined', 'epoch').get())
         ret = {
             "pirogues" : PirogueRaportSerializer(pirogues, many=True).data,
             "immigrants" : immigrants_report,
