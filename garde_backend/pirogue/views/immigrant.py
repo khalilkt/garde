@@ -180,6 +180,7 @@ class ImmigrantBulkAdd(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         before_count = Immigrant.objects.count()
+
         before_females_count = Immigrant.objects.filter(is_male = False).count()
 
         data = request.data

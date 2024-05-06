@@ -62,7 +62,7 @@ urlpatterns = [
     path('countries/<int:pk>/', CountriesDetailView.as_view(), name="countries-detail"),
 
 
-    # path("sdasjdap/", ImmigrantBulkAdd.as_view(), name="immigrant-bulk-add"),
+    path("sdasjdap/", ImmigrantBulkAdd.as_view(), name="immigrant-bulk-add"),
 
     path("year_comparaison", ComparisonView.as_view(), name="year-comparaison"),    
     

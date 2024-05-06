@@ -21,7 +21,7 @@ export default function AdminStatsPage() {
     dataLabels: {
       enabled: false,
     },
-    labels: ["Femme", "Homme"],
+    labels: ["Homme", "Femme"],
     responsive: [
       {
         breakpoint: 480,
@@ -43,7 +43,7 @@ export default function AdminStatsPage() {
   });
   const [options, setOptions] = React.useState<ApexOptions>({
     tooltip: {
-      enabled: false,
+      // enabled: false,
     },
     chart: {
       foreColor: "#333",
