@@ -88,7 +88,10 @@ class MyImmigrantsWoutPirogueList(ListCreateAPIView):
 
 class ImmigrantStatsView (ImmigrantList):
     def get(self, request):
+        year = 2024
         ret = super().filter_queryset(super().get_queryset())
+        ret = ret.filter(created_at__year=year)
+
         total_by_month = {}
         for i in range(1, 13):
             total_by_month[i] = ret.filter(created_at__month = i).count()

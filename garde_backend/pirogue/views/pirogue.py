@@ -41,6 +41,9 @@ class PirogueStatsView (PirogueList):
     
     def get(self, request):
         ret = super().filter_queryset(super().get_queryset())
+        year = 2024
+        ret = ret.filter(created_at__year=year)
+
         total = ret.count()
         total_by_month = {}
         for i in range(1, 13):
