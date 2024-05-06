@@ -102,7 +102,7 @@ class ReportList(APIView):
             "immigrants" : immigrants_report,
             "start_date_epoch"  : start_date_epoch,
             "end_data_epoch" : end_date_epoch,
-            "sss" : sss[0].created_at_epoch
+            "sss" : str(sss[0].created_at_epoch)
         }
         return Response(ret)
 
