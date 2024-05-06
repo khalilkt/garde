@@ -95,9 +95,14 @@ class ReportList(APIView):
      
         pirogues = filter_by_start_end_date(Pirogue.objects.def_queryset(), start_date_epoch, end_date_epoch)
         immigrants_report = get_immigrant_report(start_date_epoch, end_date_epoch)
+        sss = Pirogue.objects.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))[:1]
+        
         ret = {
             "pirogues" : PirogueRaportSerializer(pirogues, many=True).data,
-            "immigrants" : immigrants_report
+            "immigrants" : immigrants_report,
+            "start_date_epoch"  : start_date_epoch,
+            "end_data_epoch" : end_date_epoch,
+            "sss" : sss[0].created_at_epoch
         }
         return Response(ret)
 
