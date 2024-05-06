@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Select, Title } from "../../components/comps";
 import { Td, Tr } from "../../components/table";
 import { LeftArrow } from "../../components/icons";
+import { rootUrl } from "../../models/constants";
+import axios from "axios";
+import { AuthContext } from "../../App";
 
 interface DataInterface {
   [key: string]: {
@@ -14,23 +17,39 @@ interface DataInterface {
 }
 
 export default function AdminComparaisonPage() {
-  const [data, setData] = React.useState<DataInterface | null>({
-    "2023": {
-      total_pirogues: 10,
-      total_immigrants: 249,
-      total_females: 100,
-      total_males: 99,
-      total_minors: 50,
-    },
+  const token = useContext(AuthContext).authData?.token;
+  const [data, setData] = React.useState<DataInterface | null>(
+    null,
+    // {
+    // "2023": {
+    //   total_pirogues: 10,
+    //   total_immigrants: 249,
+    //   total_females: 100,
+    //   total_males: 99,
+    //   total_minors: 50,
+    // },
 
-    "2024": {
-      total_pirogues: 5,
-      total_immigrants: 100,
-      total_females: 20,
-      total_males: 60,
-      total_minors: 20,
-    },
-  });
+    // "2024": {
+    //   total_pirogues: 5,
+    //   total_immigrants: 100,
+    //   total_females: 20,
+    //   total_males: 60,
+    //   total_minors: 20,
+    // },
+    //   }
+  );
+
+  async function load() {
+    const res = await axios.get(rootUrl + "year_comparaison", {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    setData(res.data);
+  }
+  React.useEffect(() => {
+    load();
+  }, []);
   return (
     <div>
       <Title>Comparaison</Title>
