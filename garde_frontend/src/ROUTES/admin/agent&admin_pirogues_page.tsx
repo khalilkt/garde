@@ -835,6 +835,12 @@ export default function AdminAgentPiroguesPage() {
                 <option value="2024">2024</option>
               </Select>
             )}
+            {selectedDateRange !== null && list !== null && (
+              <span className="">
+                <span>Total </span>
+                <span className="font-semibold">{list!.length}</span>
+              </span>
+            )}
           </div>
           <table className="hidden w-full text-center text-lg lg:table">
             <thead className="">
@@ -960,6 +966,12 @@ export default function AdminAgentPiroguesPage() {
                 })}
               </tbody>
             </table>
+            {selectedDateRange !== null && list !== null && (
+              <span className="mt-4 self-end">
+                <span>Total </span>
+                <span className="font-semibold">{list!.length}</span>
+              </span>
+            )}
           </div>
         )}
 

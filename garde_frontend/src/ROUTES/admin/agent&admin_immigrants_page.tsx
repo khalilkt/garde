@@ -401,6 +401,12 @@ export default function AdminAgentImmigrantsPage() {
               <option value="2024">2024</option>
             </Select>
           )}
+          {selectedDateRange !== null && list !== null && (
+            <span>
+              <span>Total </span>
+              <span className="font-semibold">{list!.length}</span>
+            </span>
+          )}
         </div>
         <table className="hidden w-full text-center text-lg lg:table">
           <thead className="w-full">
@@ -513,6 +519,12 @@ export default function AdminAgentImmigrantsPage() {
               })}
             </tbody>
           </table>
+          {selectedDateRange !== null && list !== null && (
+            <span className="mt-4 self-end">
+              <span>Total </span>
+              <span className="font-semibold">{list!.length}</span>
+            </span>
+          )}
         </div>
       )}
       {data && "total_pages" in data && (
