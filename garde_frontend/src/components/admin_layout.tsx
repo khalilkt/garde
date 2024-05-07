@@ -63,7 +63,7 @@ export function AdminProtectedLayout() {
           Pirogues
         </NavItem>
         <NavItem to="/admin/immigrants" icon={<ImmigrantIcon />}>
-          Émigrés
+          Migrants
         </NavItem>
         <NavItem
           to="/admin/migration_irreguliere"

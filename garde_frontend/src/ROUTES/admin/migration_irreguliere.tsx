@@ -253,7 +253,7 @@ export default function MigrationIrregulierePage() {
           }}
           className=""
         >
-          Migration irrégulière Immigrant
+          Migration irrégulière
           <ImmigrantIcon className="ml-2 fill-primary" />
         </OutlinedButton>
         <FilledButton
