@@ -239,6 +239,7 @@ class ImmigrantBulkAdd(APIView):
         country = data.get("pirogue_nationality", None)
         departure = data.get("departure", None)
         destination = data.get("destination", None)
+        etat = data.get("etat", "alive")
 
 
         if date is None or  country is None or   departure is None or  destination is None :
@@ -305,7 +306,7 @@ class ImmigrantBulkAdd(APIView):
                 date_of_birth  =  "2010-01-01" if is_minor else "1980-01-01"
                 imm = Immigrant.objects.create(
                     name = "-",
-                    etat = "alive",
+                    etat = etat,
                     date_of_birth = date_of_birth,
                     nationality = country_object,
                     created_at = created_at,
