@@ -218,6 +218,13 @@ COUTRIES = {
     "guinee" : "94",
     "togo" : "214",
     "ghana"  : "85",
+    "nigeria" : "158",
+    "soudan" : "205",
+    "cameroun" : "36",
+    "turc" : "220",
+    "somali" : "200",
+    # what is the breveation I.COM ? : comors
+
 }
 
 class ImmigrantBulkAdd(APIView):
