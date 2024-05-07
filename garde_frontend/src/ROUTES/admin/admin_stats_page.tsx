@@ -483,7 +483,7 @@ export default function AdminStatsPage() {
         <div className="w-[60%] rounded-xl border-2 border-primaryBorder p-7">
           <div className="flex flex-col gap-y-4">
             <h1 className=" text-2xl font-semibold">
-              Total Émigrés en {new Date().getFullYear()}
+              Total Émigrés en {selectedYear}
             </h1>
             <span className="mb-10" id="asssss">
               {}
@@ -619,7 +619,7 @@ export default function AdminStatsPage() {
         <div className="w-[60%] rounded-xl border-2 border-primaryBorder p-7">
           <div className="flex flex-col gap-y-4">
             <h1 className=" text-2xl font-semibold">
-              Total Pirogues en {new Date().getFullYear()}
+              Total Pirogues en {selectedYear}
             </h1>
             <span className="mb-10" id="asssss2">
               {}
