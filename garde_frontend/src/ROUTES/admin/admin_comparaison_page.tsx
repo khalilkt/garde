@@ -7,12 +7,26 @@ import axios from "axios";
 import { AuthContext } from "../../App";
 
 interface DataInterface {
-  [key: string]: {
-    total_pirogues: number;
-    total_immigrants: number;
-    total_females: number;
-    total_males: number;
-    total_minors: number;
+  data: {
+    [key: string]: {
+      total_pirogues: number;
+      total_immigrants: number;
+      total_females: number;
+      total_males: number;
+      total_minors: number;
+      nationalities: {
+        [key: string]: {
+          name: string;
+          total: number;
+        };
+      };
+    };
+  };
+  nationalities: {
+    [key: string]: {
+      name: string;
+      total: number;
+    };
   };
 }
 
@@ -50,6 +64,11 @@ export default function AdminComparaisonPage() {
   React.useEffect(() => {
     load();
   }, []);
+
+  let top_nats = Object.entries(data?.nationalities ?? {}).sort((a, b) => {
+    return b[1].total - a[1].total;
+  });
+  top_nats = top_nats.slice(0, 5);
   return (
     <div>
       <Title>Comparaison</Title>
@@ -73,44 +92,58 @@ export default function AdminComparaisonPage() {
           </Tr>
           <Tr>
             <th>Total Pirogue</th>
-            <Td className="w-1/4">{data["2023"].total_pirogues}</Td>
-            <Td className="w-1/4">{data["2024"].total_pirogues}</Td>
+            <Td className="w-1/4">{data.data["2023"].total_pirogues}</Td>
+            <Td className="w-1/4">{data.data["2024"].total_pirogues}</Td>
             <Td className="w-1/4 font-semibold">
-              {data["2024"].total_pirogues - data["2023"].total_pirogues}
+              {data.data["2024"].total_pirogues -
+                data.data["2023"].total_pirogues}
             </Td>
           </Tr>
           <Tr>
             <th>Total Immigrants</th>
-            <Td>{data["2023"].total_immigrants}</Td>
-            <Td>{data["2024"].total_immigrants}</Td>
+            <Td>{data.data["2023"].total_immigrants}</Td>
+            <Td>{data.data["2024"].total_immigrants}</Td>
             <Td className="w-1/4 font-semibold">
-              {data["2024"].total_immigrants - data["2023"].total_immigrants}
+              {data.data["2024"].total_immigrants -
+                data.data["2023"].total_immigrants}
             </Td>
           </Tr>
           <Tr>
             <th>Total Hommes</th>
-            <Td>{data["2023"].total_males}</Td>
-            <Td>{data["2024"].total_males}</Td>
+            <Td>{data.data["2023"].total_males}</Td>
+            <Td>{data.data["2024"].total_males}</Td>
             <Td className="w-1/4 font-semibold">
-              {data["2024"].total_males - data["2023"].total_males}
+              {data.data["2024"].total_males - data.data["2023"].total_males}
             </Td>
           </Tr>
           <Tr>
             <th>Total Femmes</th>
-            <Td>{data["2023"].total_females}</Td>
-            <Td>{data["2024"].total_females}</Td>
+            <Td>{data.data["2023"].total_females}</Td>
+            <Td>{data.data["2024"].total_females}</Td>
             <Td className="w-1/4 font-semibold">
-              {data["2024"].total_females - data["2023"].total_females}
+              {data.data["2024"].total_females -
+                data.data["2023"].total_females}
             </Td>
           </Tr>
           <Tr>
             <th>Total Mineurs</th>
-            <Td>{data["2023"].total_minors}</Td>
-            <Td>{data["2024"].total_minors}</Td>
+            <Td>{data.data["2023"].total_minors}</Td>
+            <Td>{data.data["2024"].total_minors}</Td>
             <Td className="w-1/4 font-semibold">
-              {data["2024"].total_minors - data["2023"].total_minors}
+              {data.data["2024"].total_minors - data.data["2023"].total_minors}
             </Td>
           </Tr>
+          {top_nats.map(([id, value]) => (
+            <Tr>
+              <th>{value.name}</th>
+              <Td>{data.data["2023"].nationalities[id].total}</Td>
+              <Td>{data.data["2024"].nationalities[id].total}</Td>
+              <Td className="w-1/4 font-semibold">
+                {data.data["2024"].nationalities[id].total -
+                  data.data["2023"].nationalities[id].total}
+              </Td>
+            </Tr>
+          ))}
         </table>
       )}
     </div>

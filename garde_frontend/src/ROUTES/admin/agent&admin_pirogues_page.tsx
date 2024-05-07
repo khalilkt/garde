@@ -618,6 +618,19 @@ export default function AdminAgentPiroguesPage() {
       list = data;
     }
   }
+
+  let selectedDateRange: "days" | "months" | "years" | null = null;
+  if (searchParams.has("date")) {
+    const selectedDate = searchParams.get("date");
+    if (selectedDate?.split("-").length === 3) {
+      selectedDateRange = "days";
+    } else if (selectedDate?.split("-").length === 2) {
+      selectedDateRange = "months";
+    } else if (selectedDate?.split("-").length === 1) {
+      selectedDateRange = "years";
+    }
+  }
+
   return (
     <div className="flex">
       {/* pb is for the floting button */}
@@ -731,41 +744,96 @@ export default function AdminAgentPiroguesPage() {
             Nouveu pirogue
             <PlusIcon className=" fill-white" />
           </FilledButton>
-          <div className="flex flex-row items-center gap-x-2">
-            <Input
-              value={searchParams.get("date") ?? ""}
+          <div className="mb-2 mt-4 flex flex-row items-center gap-x-2">
+            <Select
               onChange={(e) => {
+                const value = e.target.value;
                 setSearchParams((params) => {
-                  params.set("date", e.target.value);
+                  if (value === "days") {
+                    params.set("date", new Date().toISOString().split("T")[0]);
+                  } else if (value === "months") {
+                    params.set(
+                      "date",
+                      new Date().toISOString().split("-").slice(0, 2).join("-"),
+                    );
+                  } else if (value === "years") {
+                    params.set("date", new Date().toISOString().split("-")[0]);
+                  } else {
+                    params.delete("date");
+                  }
                   return params;
                 });
               }}
-              className="mb-2 mt-4 hidden lg:block"
-              type="date"
-            />
-            {searchParams.get("date") && (
-              <button
-                onClick={() => {
+              value={selectedDateRange ?? ""}
+              className="w-max py-3"
+            >
+              <option value={""}>Tous</option>
+              <option value={"days"}>Par Jour</option>
+              <option value={"months"}>Par Mois</option>
+              <option value={"years"}>Par Année</option>
+            </Select>
+            {selectedDateRange === "days" && (
+              <Input
+                value={searchParams.get("date") ?? ""}
+                onChange={(e) => {
                   setSearchParams((params) => {
-                    params.delete("date");
+                    params.set("date", e.target.value);
                     return params;
                   });
                 }}
+                className=" hidden lg:block"
+                type="date"
+              />
+            )}
+            {selectedDateRange === "months" && (
+              <Select
+                value={
+                  searchParams.get("date")?.split("-")[1].padStart(2, "0") ?? ""
+                }
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSearchParams((params) => {
+                    const date = params.get("date")?.split("-");
+                    params.set("date", date?.[0] + "-" + v);
+                    return params;
+                  });
+                }}
+                className="hidden w-max py-3 lg:block"
               >
-                <svg
-                  className="text-gray-500 h-5 w-5 cursor-pointer stroke-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  ></path>
-                </svg>
-              </button>
+                <option value="" disabled>
+                  Mois
+                </option>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <option value={(i + 1).toString().padStart(2, "0")}>
+                    {i + 1}
+                  </option>
+                ))}
+              </Select>
+            )}
+            {(selectedDateRange === "months" ||
+              selectedDateRange === "years") && (
+              <Select
+                value={searchParams.get("date")?.split("-")[0] ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSearchParams((params) => {
+                    if (selectedDateRange === "months") {
+                      const date = params.get("date")?.split("-");
+                      params.set("date", v + "-" + date?.[1]);
+                    } else {
+                      params.set("date", v);
+                    }
+                    return params;
+                  });
+                }}
+                className="hidden w-max py-3 lg:block"
+              >
+                <option value="" disabled>
+                  Annee
+                </option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+              </Select>
             )}
           </div>
           <table className="hidden w-full text-center text-lg lg:table">
@@ -861,7 +929,7 @@ export default function AdminAgentPiroguesPage() {
                     Nationalité
                   </th>
                   <th className="border-gray-300 border text-base">
-                    NBRE D'IMMIGRES
+                    NBRE D'ÉMIGRÉ
                   </th>
                   <th className="border-gray-300 border text-base">DEPART</th>
                   <th className="border-gray-300 border text-base">

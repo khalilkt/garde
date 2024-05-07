@@ -215,7 +215,7 @@ export default function MigrationIrregulierePage() {
     <div className="flex flex-col ">
       <MDialog
         isOpen={isImmigrantDialogOpen}
-        title={"Migration Irregulière Immigrants"}
+        title={"Migration Irregulière"}
         onClose={function (): void {
           setIsImmigrantDialogOpen(false);
         }}
