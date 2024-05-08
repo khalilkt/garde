@@ -14,7 +14,7 @@ class Pirogue(models.Model):
     lat = models.CharField(max_length=100, null= True, blank = True)
     long = models.CharField(max_length=100, null= True, blank = True)
     # numbers is a list of strings
-    motor_numbers = models.JSONField(default=map, blank = True)
+    motor_numbers = models.JSONField(default=dict, blank = True)
     puissance = models.IntegerField(blank=True, null=True)
     material = models.CharField(max_length=100, choices=[('wood', 'wood'), ('metal', 'metal'), ('plastic', 'plastic'), ('polyester', 'polyester')], null= True, blank = True)
     nationality = models.ForeignKey('Country', on_delete=models.PROTECT, related_name='pirogues')
