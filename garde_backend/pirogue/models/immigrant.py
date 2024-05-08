@@ -30,12 +30,8 @@ class Immigrant(models.Model):
     pirogue = models.ForeignKey('pirogue.Pirogue', on_delete=models.CASCADE, related_name="immigrants", null = True, blank = True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('authentication.User', on_delete=models.PROTECT, related_name='immigrants')
-
-
-
+    free_at = models.DateField( null = True, blank = True)
     
-    
-
     objects = ImmigrantManager()
 
 class ImmigrantSerializer(serializers.ModelSerializer):

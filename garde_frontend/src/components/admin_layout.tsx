@@ -77,6 +77,9 @@ export function AdminProtectedLayout() {
         <NavItem to="/admin/comparaison" icon={<StatsIcon />}>
           Comparaison
         </NavItem>
+        <NavItem to="/admin/liberation" icon={<ImmigrantIcon />}>
+          Libération
+        </NavItem>
         <DisconnectButton
           className="text-semibold mb-20 mt-auto self-center"
           onClick={() => {

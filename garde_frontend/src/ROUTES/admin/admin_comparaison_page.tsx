@@ -68,7 +68,7 @@ export default function AdminComparaisonPage() {
   let top_nats = Object.entries(data?.nationalities ?? {}).sort((a, b) => {
     return b[1].total - a[1].total;
   });
-  top_nats = top_nats.slice(0, 5);
+  top_nats = top_nats;
   return (
     <div>
       <Title>Comparaison</Title>
@@ -133,17 +133,22 @@ export default function AdminComparaisonPage() {
               {data.data["2024"].total_minors - data.data["2023"].total_minors}
             </Td>
           </Tr>
-          {top_nats.map(([id, value]) => (
-            <Tr>
-              <th>{value.name}</th>
-              <Td>{data.data["2023"].nationalities[id].total}</Td>
-              <Td>{data.data["2024"].nationalities[id].total}</Td>
-              <Td className="w-1/4 font-semibold">
-                {data.data["2024"].nationalities[id].total -
-                  data.data["2023"].nationalities[id].total}
-              </Td>
-            </Tr>
-          ))}
+          {top_nats.map(([id, value]) => {
+            const start = data.data["2023"].nationalities[id]?.total ?? 0;
+            const end = data.data["2024"].nationalities[id]?.total ?? 0;
+
+            return (
+              <Tr>
+                <th>{value.name}</th>
+                <Td>{start}</Td>
+                <Td>{end}</Td>
+                <Td className="w-1/4 font-semibold">
+                  {start < end && "+"}
+                  {end - start}
+                </Td>
+              </Tr>
+            );
+          })}
         </table>
       )}
     </div>

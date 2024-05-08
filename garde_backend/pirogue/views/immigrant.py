@@ -11,7 +11,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter, BaseFilterBacke
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import F
-
+from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 # import static files
 from django.templatetags.static import static
@@ -340,3 +340,26 @@ class ImmigrantBulkAdd(APIView):
 
 
         
+class LiberationImmigrantSerializer(ImmigrantSerializer):
+    departure = serializers.CharField( read_only=True, source="pirogue.departure")
+    destination = serializers.CharField( read_only=True, source="pirogue.destination")
+
+class ImmigrantLiberation(ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = Immigrant.objects.def_queryset().filter(free_at__isnull=True)
+    serializer_class = LiberationImmigrantSerializer
+    ordering = ['created_at']
+    pagination_class = None
+
+class BulkFreeImmigrationView(APIView):
+    permission_classes = [IsAdminUser]
+    def post(self, request):
+        data = request.data
+        ids = data.get("ids", [])
+        if not "free_at" in data:
+            return Response("free_at is required", status=400)
+        free_at = data["free_at"]
+        if free_at is not None:
+            free_at = datetime.strptime(free_at, "%Y-%m-%d")
+        ret = Immigrant.objects.filter(pk__in=ids).update(free_at=free_at)
+        return Response("ok")

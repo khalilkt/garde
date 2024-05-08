@@ -607,6 +607,12 @@ export default function AdminAgentPiroguesPage() {
         title: "Port",
         value: value,
       });
+    } else if (key === "material") {
+      tags.push({
+        id: key,
+        title: "Matériel",
+        value: MATERIAL_NAME[value],
+      });
     }
   });
 
@@ -631,6 +637,20 @@ export default function AdminAgentPiroguesPage() {
     }
   }
 
+  const totalGps =
+    list?.reduce((acc, pirogue) => {
+      return acc + pirogue.gps.filter((f) => f.length > 0).length;
+    }, 0) ?? 0;
+
+  const totalMotors =
+    list?.reduce((acc, pirogue) => {
+      return acc + pirogue.motor_numbers.filter((f) => f.length > 0).length;
+    }, 0) ?? 0;
+
+  const totalFuel =
+    list?.reduce((acc, pirogue) => {
+      return acc + pirogue.fuel;
+    }, 0) ?? 0;
   return (
     <div className="flex">
       {/* pb is for the floting button */}
@@ -839,6 +859,9 @@ export default function AdminAgentPiroguesPage() {
               <span className="">
                 <span>Total </span>
                 <span className="font-semibold">{list!.length}</span>
+                <span> - {totalGps} GPS</span>
+                <span> - {totalMotors} Moteurs</span>
+                <span> - {totalFuel} Bidons d'essence</span>
               </span>
             )}
           </div>
@@ -846,13 +869,13 @@ export default function AdminAgentPiroguesPage() {
             <thead className="">
               <tr className="font-bold text-gray">
                 <th className="text-medium  py-3 text-base">Numéro</th>
+                <th className="text-medium py-3 text-base">Num des moteurs</th>
                 <th className="text-medium py-3 text-base ">Agent</th>
                 <th className="text-medium py-3 text-base">Equipage</th>
-                <th className="text-medium py-3 text-base">Marque</th>
                 <th className="text-medium py-3 text-base">Port</th>
                 <th className="text-medium py-3 text-base">Nationalité</th>
                 <th className="text-medium py-3 text-base">Lieu de départ</th>
-                <th className="text-medium py-3 text-base">Destination</th>
+                <th className="text-medium py-3 text-base">Date</th>
                 <th className="text-medium w-20  py-3 text-base"></th>
               </tr>
             </thead>
@@ -866,17 +889,18 @@ export default function AdminAgentPiroguesPage() {
                   <input type="checkbox" className="h-5 w-5" />
                 </Td> */}
                     <Td className="flex items-center gap-x-2 gap-y-1 overflow-clip">
-                      -
+                      <span>{pirogue.number}</span>
                     </Td>
+                    <Td>{pirogue.motor_numbers.join(", ") ?? "-"}</Td>
                     <Td className="font-medium text-primary">
                       {pirogue.created_by_name ?? "-"}
                     </Td>
                     <Td>{pirogue.immigrants_count}</Td>
-                    <Td>{pirogue.brand ?? "-"}</Td>
                     <Td>{pirogue.port ?? "-"}</Td>
                     <Td>{pirogue.nationality_name ?? "-"}</Td>
                     <Td>{pirogue.departure ?? "-"}</Td>
-                    <Td>{pirogue.destination ?? "-"}</Td>
+                    <Td>{pirogue.created_at?.split("T")[0] ?? "-"}</Td>
+
                     <Td>
                       <button
                         onClick={() => {
@@ -938,6 +962,7 @@ export default function AdminAgentPiroguesPage() {
                     NBRE D'ÉMIGRÉ
                   </th>
                   <th className="border-gray-300 border text-base">DEPART</th>
+                  <th className="border-gray-300 border text-base">DATE</th>
                   <th className="border-gray-300 border text-base">
                     OBSERVATIONS
                   </th>
@@ -960,6 +985,10 @@ export default function AdminAgentPiroguesPage() {
                       <td className="border-gray-300 border ">
                         {pirogue.departure ?? "-"}
                       </td>
+                      <td className="border-gray-300 border">
+                        {pirogue.created_at.split("T")[0]}
+                      </td>
+
                       <td className="border-gray-300 border "></td>
                     </tr>
                   );
@@ -1101,6 +1130,30 @@ export default function AdminAgentPiroguesPage() {
                 <option value="nouadhibou">Nouadhibou</option>
                 <option value="nouakchott">Nouakchott</option>
                 <option value="tanit">Tanit</option>
+              </Select>
+              <Select
+                // disabled={isSubmitting}
+                value={searchParams.get("material") ?? ""}
+                onChange={(e) => {
+                  setSearchParams((params) => {
+                    if (e.target.value === "") {
+                      params.delete("material");
+                    } else {
+                      params.set("material", e.target.value);
+                    }
+                    params.set("page", "1");
+                    return params;
+                  });
+                }}
+                className={searchParams.get("material") ? "" : "text-gray"}
+              >
+                <option value="" className="text-gray " disabled>
+                  Matériel
+                </option>
+                <option value="wood">Bois</option>
+                <option value="metal">Métal</option>
+                <option value="plastic">Plastique</option>
+                <option value="polyester">Polyester</option>
               </Select>
             </div>
             {/* <FilledButton

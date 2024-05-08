@@ -416,9 +416,7 @@ export default function AdminAgentImmigrantsPage() {
               <th className="text-medium py-3 text-base">Nationalité</th>
               <th className="text-medium py-3 text-base">Pays de naissance</th>
               <th className="text-medium py-3 text-base">Date de naissance</th>
-              {isAdmin && (
-                <th className="text-medium py-3 text-base">Pirogue</th>
-              )}
+              <th className="text-medium py-3 text-base">Date</th>
               {isAdmin && <th className="text-medium py-3 text-base">Agent</th>}
             </tr>
           </thead>
@@ -446,7 +444,7 @@ export default function AdminAgentImmigrantsPage() {
                   <Border>{immigrant.birth_country_name}</Border>
                 </Td>
                 <Td>{immigrant.date_of_birth}</Td>
-                {isAdmin && <Td>{immigrant.pirogue_number}</Td>}
+                {<Td>{immigrant.created_at.split("T")[0]}</Td>}
                 {isAdmin && (
                   <Td className="text-primary">{immigrant.created_by_name}</Td>
                 )}
@@ -470,7 +468,7 @@ export default function AdminAgentImmigrantsPage() {
               )}
             </div>
           </div>
-          <table className="w-full text-center">
+          <table className="w-full text-center text-xs">
             <thead className="">
               <tr className="font-bold text-gray">
                 <th className="border-gray-300 border text-base">N°</th>
@@ -487,6 +485,7 @@ export default function AdminAgentImmigrantsPage() {
                   NATIONALITE
                 </th>
                 <th className="border-gray-300 border text-base">GENRE</th>
+                <th className="border-gray-300 border text-base">DATE</th>
                 <th className="border-gray-300 border text-base">
                   OBSERVATIONS
                 </th>
@@ -512,6 +511,9 @@ export default function AdminAgentImmigrantsPage() {
                     </td>
                     <td className="border-gray-300 border ">
                       {immigrant.is_male ? "M" : "F"}
+                    </td>
+                    <td className="border-gray-300 border ">
+                      {immigrant.created_at.split("T")[0]}
                     </td>
                     <td className="border-gray-300 border "></td>
                   </tr>

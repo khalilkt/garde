@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from pirogue.views.pirogue import MigrationIrregularList, PirogueList, PirogueDetail, MyPirogueList, PirogueStatsView
-from pirogue.views.immigrant import ImmigrantBulkAdd, ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, MyImmigrantsWoutPirogueList, PirogueImmigrantsList, ImmigrantStatsView
+from pirogue.views.immigrant import BulkFreeImmigrationView, ImmigrantBulkAdd, ImmigrantLiberation, ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, MyImmigrantsWoutPirogueList, PirogueImmigrantsList, ImmigrantStatsView
 from authentication.views import LoginTokenView, LoginView, PasswordUpdateView, UsersViewSet
 from pirogue.views.stats import ComparisonView, StatsView, CoutriesView, CountriesDetailView
 from pirogue.views.report import ReportList 
@@ -55,6 +55,9 @@ urlpatterns = [
     # BOTH
 
     path("pirogues/<int:pk>/", PirogueDetail.as_view(), name="pirogue-detail"),
+    path("immigrants/liberation", ImmigrantLiberation.as_view(), name="immigrant-liberation"),
+    path("immigrants/liberation/bulk/", BulkFreeImmigrationView.as_view(), name="immigrant-bulk-free"),
+    
     path("immigrants/<int:pk>/", ImmigrantDetail.as_view(), name = "immigrant-detail"),  
     path('pirogues/<int:pirogue_pk>/immigrants/', PirogueImmigrantsList.as_view(), name="pirogue-immigrants-list"),
 

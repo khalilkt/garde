@@ -35,7 +35,7 @@ export function OutlinedButton({
 >) {
   return (
     <button
-      onClick={onClick}
+      {...btnProps}
       className={
         "flex flex-row items-center justify-center gap-x-[10px] rounded-md border border-primary bg-white px-4 py-2 text-center font-medium text-primary transition-all duration-150 active:scale-95 " +
         (btnProps.className ?? "")
