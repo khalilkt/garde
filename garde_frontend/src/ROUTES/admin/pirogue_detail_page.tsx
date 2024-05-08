@@ -534,11 +534,7 @@ export default function PirogueDetailPage({
       </MDialog>
       <div className="mb-7 flex justify-between ">
         {data ? (
-          <Title className="">
-            {data?.motor_numbers.join(" ").length > 0
-              ? data?.motor_numbers.join(" ")
-              : "-"}
-          </Title>
+          <Title className="">{data.number ?? "-"}</Title>
         ) : (
           <Squelette width="w-10 " />
         )}

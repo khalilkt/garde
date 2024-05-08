@@ -203,8 +203,8 @@ export default function AdminLiberationPage() {
             <th>NATIONALITE</th>
             <th>GENRE</th>
             <th>DEPART</th>
-            <th>ARRIVEE</th>
             <th>REMIS</th>
+            <th>SÉJOUR</th>
           </tr>
         </thead>
         {!data ? (
@@ -234,8 +234,14 @@ export default function AdminLiberationPage() {
                 <Td>{immigrant.nationality_name ?? "-"}</Td>
                 <Td>{immigrant.is_male ? "M" : "F"}</Td>
                 <Td>{immigrant.departure}</Td>
-                <Td>{immigrant.destination}</Td>
                 <Td>DRS</Td>
+                <Td>
+                  {(
+                    (new Date().valueOf() -
+                      new Date(immigrant.created_at).valueOf()) /
+                    8.64e7
+                  ).toFixed(0) + " jour(s)"}
+                </Td>
               </Tr>
             ))}
           </tbody>
@@ -270,8 +276,8 @@ export default function AdminLiberationPage() {
                 <th className="border-gray-300 border ">NATIONALITE</th>
                 <th className="border-gray-300 border ">GENRE</th>
                 <th className="border-gray-300 border ">DEPART</th>
-                <th className="border-gray-300 border ">ARRIVEE</th>
                 <th className="border-gray-300 border ">REMIS</th>
+                <th className="border-gray-300 border ">SÉJOUR</th>
                 <th className="border-gray-300 border ">OBSERVATION</th>
               </tr>
             </thead>
@@ -300,10 +306,14 @@ export default function AdminLiberationPage() {
                       <td className="border-gray-300 border ">
                         {immigrant.departure}
                       </td>
-                      <td className="border-gray-300 border ">
-                        {immigrant.destination}
-                      </td>
                       <td className="border-gray-300 border ">DRS</td>
+                      <td className="border-gray-300 border ">
+                        {(
+                          (new Date().valueOf() -
+                            new Date(immigrant.created_at).valueOf()) /
+                          8.64e7
+                        ).toFixed(0) + " jour(s)"}
+                      </td>
                       <td className="border-gray-300 border ">{observation}</td>
                     </tr>
                   ))}

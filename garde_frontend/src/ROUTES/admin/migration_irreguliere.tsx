@@ -338,9 +338,9 @@ export default function MigrationIrregulierePage() {
                 <Td>{pirogue.fuel}</Td>
                 <Td>
                   <ul className="list-disc gap-y-1 text-sm">
-                    {pirogue.motor_numbers.join().length === 0
+                    {Object.keys(pirogue.motor_numbers).join().length === 0
                       ? "-"
-                      : pirogue.motor_numbers
+                      : Object.keys(pirogue.motor_numbers)
                           .filter((e) => e.length > 0)
                           .map((number) => (
                             <li className="max-w-52 overflow-x-hidden whitespace-pre-wrap break-words">
@@ -451,9 +451,10 @@ export default function MigrationIrregulierePage() {
                         <td className="border px-2 py-1">{pirogue.fuel}</td>
                         <td className="   border px-2 py-1">
                           <ul className="list-disc gap-y-1">
-                            {pirogue.motor_numbers.join().length === 0
+                            {Object.keys(pirogue.motor_numbers).join()
+                              .length === 0
                               ? "-"
-                              : pirogue.motor_numbers
+                              : Object.keys(pirogue.motor_numbers)
                                   .filter((e) => e.length > 0)
                                   .map((number) => (
                                     <li className="max-w-52 overflow-x-hidden whitespace-pre-wrap break-words">

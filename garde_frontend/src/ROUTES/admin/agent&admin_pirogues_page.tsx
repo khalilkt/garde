@@ -52,7 +52,7 @@ export interface PirogueInterface {
   description: string;
   created_at: string;
   created_by: number;
-  motor_numbers: string[];
+  motor_numbers: { [key: string]: number | null };
   puissance: number;
   port: string;
 
@@ -642,10 +642,19 @@ export default function AdminAgentPiroguesPage() {
       return acc + pirogue.gps.filter((f) => f.length > 0).length;
     }, 0) ?? 0;
 
-  const totalMotors =
-    list?.reduce((acc, pirogue) => {
-      return acc + pirogue.motor_numbers.filter((f) => f.length > 0).length;
-    }, 0) ?? 0;
+  let totalMotorByPower: { [key: string]: number } = {};
+  list?.forEach((pirogue) => {
+    const motorNumbers = pirogue.motor_numbers;
+    Object.entries(motorNumbers).forEach(([key, value]) => {
+      if (value) {
+        totalMotorByPower[value] = (totalMotorByPower[value] ?? 0) + 1;
+      }
+    });
+  });
+  const totalMotor = Object.values(totalMotorByPower).reduce(
+    (acc, value) => acc + value,
+    0,
+  );
 
   const totalFuel =
     list?.reduce((acc, pirogue) => {
@@ -730,15 +739,17 @@ export default function AdminAgentPiroguesPage() {
                 <span>Imprimer</span>
               </OutlinedButton>
             )}
-            <FilledButton
-              className="w-max"
-              onClick={() => {
-                setDialogState({ state: "adding" });
-              }}
-              isLight={true}
-            >
-              <span>Nouvelle pirogue</span> <PlusIcon />
-            </FilledButton>
+            {false && (
+              <FilledButton
+                className="w-max"
+                onClick={() => {
+                  setDialogState({ state: "adding" });
+                }}
+                isLight={true}
+              >
+                <span>Nouvelle pirogue</span> <PlusIcon />
+              </FilledButton>
+            )}
             {isAdmin && (
               <FilledButton
                 onClick={() => {
@@ -860,7 +871,14 @@ export default function AdminAgentPiroguesPage() {
                 <span>Total </span>
                 <span className="font-semibold">{list!.length}</span>
                 <span> - {totalGps} GPS</span>
-                <span> - {totalMotors} Moteurs</span>
+                <span> - {totalMotor} Moteurs</span>
+                <span className="text-sm">
+                  ({" "}
+                  {Object.entries(totalMotorByPower)
+                    .map(([key, value]) => `${value} ${key}CV`)
+                    .join(", ")}
+                  )
+                </span>
                 <span> - {totalFuel} Bidons d'essence</span>
               </span>
             )}
@@ -891,7 +909,9 @@ export default function AdminAgentPiroguesPage() {
                     <Td className="flex items-center gap-x-2 gap-y-1 overflow-clip">
                       <span>{pirogue.number}</span>
                     </Td>
-                    <Td>{pirogue.motor_numbers.join(", ") ?? "-"}</Td>
+                    <Td>
+                      {Object.keys(pirogue.motor_numbers).join(", ") ?? "-"}
+                    </Td>
                     <Td className="font-medium text-primary">
                       {pirogue.created_by_name ?? "-"}
                     </Td>
