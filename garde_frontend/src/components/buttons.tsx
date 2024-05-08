@@ -23,11 +23,9 @@ export function FilledButton({
 }
 
 export function OutlinedButton({
-  onClick,
   children,
   ...btnProps
 }: {
-  onClick?: () => void;
   children: ReactNode;
 } & React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
