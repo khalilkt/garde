@@ -651,10 +651,8 @@ export default function AdminAgentPiroguesPage() {
       }
     });
   });
-  const totalMotor = Object.values(totalMotorByPower).reduce(
-    (acc, value) => acc + value,
-    0,
-  );
+  const totalMotor =
+    list?.reduce((acc, p) => acc + Object.keys(p.motor_numbers).length, 0) ?? 0;
 
   const totalFuel =
     list?.reduce((acc, pirogue) => {
