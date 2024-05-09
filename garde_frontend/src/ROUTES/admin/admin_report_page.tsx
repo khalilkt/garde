@@ -84,24 +84,46 @@ interface ReportDateInterface {
 
 function getPirogueGenre(repot: PirogueReport) {
   let ret = "";
-  let hasMale = false;
-  let hasFemale = false;
-  let hasMinor = false;
+  // let hasMale = false;
+  // let hasFemale = false;
+  // let hasMinor = false;
 
+  // for (const [key, value] of Object.entries(repot.nationalities)) {
+  //   if (value.males > 0) {
+  //     hasMale = true;
+  //   }
+  //   if (value.females > 0) {
+  //     hasFemale = true;
+  //   }
+  //   if (value.minors > 0) {
+  //     hasMinor = true;
+  //   }
+  // }
+  // ret =
+  //   (hasMale ? "H," : "") + (hasFemale ? "F," : "") + (hasMinor ? "Mn," : "");
+  // return ret.slice(0, -1);
+  let totalMales = 0;
+  let totalFemales = 0;
+  let totalMinors = 0;
   for (const [key, value] of Object.entries(repot.nationalities)) {
-    if (value.males > 0) {
-      hasMale = true;
-    }
-    if (value.females > 0) {
-      hasFemale = true;
-    }
-    if (value.minors > 0) {
-      hasMinor = true;
-    }
+    totalMales += value.males;
+    totalFemales += value.females;
+    totalMinors += value.minors;
   }
-  ret =
-    (hasMale ? "H," : "") + (hasFemale ? "F," : "") + (hasMinor ? "Mn," : "");
-  return ret.slice(0, -1);
+  ret = "";
+  if (totalMales > 0) {
+    ret += "H=" + totalMales + " ";
+  }
+  if (totalFemales > 0) {
+    ret += "F=" + totalFemales + " ";
+  }
+  if (totalMinors > 0) {
+    ret += "Mn=" + totalMinors + " ";
+  }
+  if (ret.endsWith(" ")) {
+    ret = ret.slice(0, -1);
+  }
+  return ret;
 }
 
 function getPirogueNat(report: PirogueReport) {
@@ -356,7 +378,7 @@ export default function AdminReportPage() {
       {report && (
         <div
           ref={printRef}
-          className="mt-20 hidden flex-col items-center  gap-y-10 px-10 print:flex"
+          className="mt-20 hidden flex-col items-center gap-y-10 px-10 print:flex"
         >
           <span className={` text-center text-xl font-semibold `}>
             {MONTHS[startDate.month - 1] + " " + startDate.year}
@@ -387,7 +409,7 @@ export default function AdminReportPage() {
               ))}
             </tbody>
           </table>
-          <table className=" w-full text-center font-semibold">
+          <table className="text-center font-semibold">
             <thead>
               <tr>
                 <th className="border px-2 py-1">Date</th>

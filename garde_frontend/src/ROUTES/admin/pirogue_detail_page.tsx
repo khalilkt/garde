@@ -82,255 +82,255 @@ function DateOfBirthInput({
   );
 }
 
-export function AddEditImmigrantDialog({
-  pirogueId,
-  onDone,
-}: {
-  pirogueId: string | null;
-  onDone: () => void;
-}) {
-  const webcamRef = React.useRef<Webcam>(null);
-  const [ss, setSs] = React.useState<string>("");
-  const [formData, setFormData] = React.useState<{
-    name: string;
-    etat: string;
-    date_of_birth: DateInterface;
-    is_male: boolean | null;
-    image: string | null;
-    birth_country: number | null;
-    nationality: number | null;
-  }>({
-    etat: "alive",
-    name: "",
-    date_of_birth: {
-      day: null,
-      month: null,
-      year: null,
-    },
-    is_male: null,
-    image: null,
-    birth_country: null,
-    nationality: null,
-  });
-  const countriesNameCache = React.useRef<{ [key: number]: string }>({});
-  const token = useContext(AuthContext).authData?.token;
-  const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
-  const base64ToBlob = (base64String: string) => {
-    const byteCharacters = atob(base64String);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: "image/jpeg" });
-  };
+// export function AddEditImmigrantDialog({
+//   pirogueId,
+//   onDone,
+// }: {
+//   pirogueId: string | null;
+//   onDone: () => void;
+// }) {
+//   const webcamRef = React.useRef<Webcam>(null);
+//   const [ss, setSs] = React.useState<string>("");
+//   const [formData, setFormData] = React.useState<{
+//     name: string;
+//     etat: string;
+//     date_of_birth: DateInterface;
+//     is_male: boolean | null;
+//     image: string | null;
+//     birth_country: number | null;
+//     nationality: number | null;
+//   }>({
+//     etat: "alive",
+//     name: "",
+//     date_of_birth: {
+//       day: null,
+//       month: null,
+//       year: null,
+//     },
+//     is_male: null,
+//     image: null,
+//     birth_country: null,
+//     nationality: null,
+//   });
+//   const countriesNameCache = React.useRef<{ [key: number]: string }>({});
+//   const token = useContext(AuthContext).authData?.token;
+//   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
+//   const base64ToBlob = (base64String: string) => {
+//     const byteCharacters = atob(base64String);
+//     const byteNumbers = new Array(byteCharacters.length);
+//     for (let i = 0; i < byteCharacters.length; i++) {
+//       byteNumbers[i] = byteCharacters.charCodeAt(i);
+//     }
+//     const byteArray = new Uint8Array(byteNumbers);
+//     return new Blob([byteArray], { type: "image/jpeg" });
+//   };
 
-  async function createImmigrant() {
-    try {
-      // check if all fields are filled
-      let date_of_birth_str = null;
-      if (
-        formData.date_of_birth.day &&
-        formData.date_of_birth.month &&
-        formData.date_of_birth.year
-      ) {
-        date_of_birth_str =
-          formData.date_of_birth!.year +
-          `-` +
-          formData.date_of_birth!.month +
-          `-` +
-          formData.date_of_birth!.day;
-      }
+//   async function createImmigrant() {
+//     try {
+//       // check if all fields are filled
+//       let date_of_birth_str = null;
+//       if (
+//         formData.date_of_birth.day &&
+//         formData.date_of_birth.month &&
+//         formData.date_of_birth.year
+//       ) {
+//         date_of_birth_str =
+//           formData.date_of_birth!.year +
+//           `-` +
+//           formData.date_of_birth!.month +
+//           `-` +
+//           formData.date_of_birth!.day;
+//       }
 
-      if (!formData.name || formData.is_male === null) {
-        alert("Veuillez remplir tous les champs");
-        return;
-      }
+//       if (!formData.name || formData.is_male === null) {
+//         alert("Veuillez remplir tous les champs");
+//         return;
+//       }
 
-      const imageSrc = webcamRef.current?.getScreenshot()!;
-      let image = null;
-      if (imageSrc) {
-        image = base64ToBlob(imageSrc.split(",")[1]);
-      }
-      let sendFormData = new FormData();
-      if (date_of_birth_str) {
-        sendFormData.append("date_of_birth", date_of_birth_str);
-      }
-      sendFormData.append("name", formData.name);
-      sendFormData.append("is_male", formData.is_male?.toString() ?? "");
-      sendFormData.append("etat", formData.etat);
-      if (image) {
-        sendFormData.append("image", image, "image.jpeg");
-      }
-      sendFormData.append(
-        "birth_country",
-        formData.birth_country?.toString() ?? "",
-      );
-      sendFormData.append(
-        "nationality",
-        formData.nationality?.toString() ?? "",
-      );
-      if (pirogueId) {
-        sendFormData.append("pirogue", pirogueId);
-      }
+//       const imageSrc = webcamRef.current?.getScreenshot()!;
+//       let image = null;
+//       if (imageSrc) {
+//         image = base64ToBlob(imageSrc.split(",")[1]);
+//       }
+//       let sendFormData = new FormData();
+//       if (date_of_birth_str) {
+//         sendFormData.append("date_of_birth", date_of_birth_str);
+//       }
+//       sendFormData.append("name", formData.name);
+//       sendFormData.append("is_male", formData.is_male?.toString() ?? "");
+//       sendFormData.append("etat", formData.etat);
+//       if (image) {
+//         sendFormData.append("image", image, "image.jpeg");
+//       }
+//       sendFormData.append(
+//         "birth_country",
+//         formData.birth_country?.toString() ?? "",
+//       );
+//       sendFormData.append(
+//         "nationality",
+//         formData.nationality?.toString() ?? "",
+//       );
+//       if (pirogueId) {
+//         sendFormData.append("pirogue", pirogueId);
+//       }
 
-      setIsSubmitting(true);
-      let url = rootUrl;
-      if (pirogueId) {
-        url += "pirogues/" + pirogueId + "/immigrants/";
-      } else {
-        url += "me/immigrants/";
-      }
-      const response = await axios.post(url, sendFormData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Token ${token}`,
-        },
-      });
-      console.log(response);
-      onDone();
-    } catch (e) {
-      console.log(e);
-      alert("Une erreur s'est produite");
-      console.error(e);
-    }
-    setIsSubmitting(false);
-  }
+//       setIsSubmitting(true);
+//       let url = rootUrl;
+//       if (pirogueId) {
+//         url += "pirogues/" + pirogueId + "/immigrants/";
+//       } else {
+//         url += "me/immigrants/";
+//       }
+//       const response = await axios.post(url, sendFormData, {
+//         headers: {
+//           "Content-Type": "multipart/form-data",
+//           Authorization: `Token ${token}`,
+//         },
+//       });
+//       console.log(response);
+//       onDone();
+//     } catch (e) {
+//       console.log(e);
+//       alert("Une erreur s'est produite");
+//       console.error(e);
+//     }
+//     setIsSubmitting(false);
+//   }
 
-  return (
-    <div className="grid w-full grid-cols-2 gap-x-4 gap-y-6 lg:w-[550px]">
-      <div className="col-span-2 flex items-center justify-center rounded">
-        <Webcam
-          ref={webcamRef}
-          id="webcam_id"
-          className="h-40 rounded-xl"
-          audio={false}
-          screenshotFormat="image/jpeg"
-          videoConstraints={{
-            facingMode: "environment",
-          }}
-        />
-      </div>
-      <Input
-        className=" "
-        value={formData.name}
-        onChange={(e) => {
-          setFormData({ ...formData, name: (e as any).target.value });
-        }}
-        placeholder="Nom"
-        type="text"
-      />
-      <DateOfBirthInput
-        value={formData.date_of_birth}
-        onChange={(value) => {
-          setFormData({
-            ...formData,
-            date_of_birth: value,
-          });
-        }}
-      />
-      <Select
-        value={
-          formData.is_male === null
-            ? "none"
-            : formData.is_male
-              ? "true"
-              : "false"
-        }
-        onChange={(e) => {
-          setFormData({
-            ...formData,
-            is_male: (e as any).target.value === "true",
-          });
-        }}
-      >
-        <option className="text-gray" value={"none"} disabled>
-          Genre
-        </option>
-        <option value={"true"}>Homme</option>
-        <option value={"false"}>Femme</option>
-      </Select>
-      <Select
-        value={formData.etat}
-        onChange={(e) => {
-          setFormData({
-            ...formData,
-            etat: (e as any).target.value,
-          });
-        }}
-      >
-        <option value="alive">Vivant</option>
-        <option value="dead">Décédé</option>
-        <option value="sick_evacuation">Evacuation Sanitaire</option>
-        <option
-          value="pregnant"
-          disabled={formData.is_male === null || formData.is_male}
-        >
-          Enceinte
-        </option>
-      </Select>
+//   return (
+//     <div className="grid w-full grid-cols-2 gap-x-4 gap-y-6 lg:w-[550px]">
+//       <div className="col-span-2 flex items-center justify-center rounded">
+//         <Webcam
+//           ref={webcamRef}
+//           id="webcam_id"
+//           className="h-40 rounded-xl"
+//           audio={false}
+//           screenshotFormat="image/jpeg"
+//           videoConstraints={{
+//             facingMode: "environment",
+//           }}
+//         />
+//       </div>
+//       <Input
+//         className=" "
+//         value={formData.name}
+//         onChange={(e) => {
+//           setFormData({ ...formData, name: (e as any).target.value });
+//         }}
+//         placeholder="Nom"
+//         type="text"
+//       />
+//       <DateOfBirthInput
+//         value={formData.date_of_birth}
+//         onChange={(value) => {
+//           setFormData({
+//             ...formData,
+//             date_of_birth: value,
+//           });
+//         }}
+//       />
+//       <Select
+//         value={
+//           formData.is_male === null
+//             ? "none"
+//             : formData.is_male
+//               ? "true"
+//               : "false"
+//         }
+//         onChange={(e) => {
+//           setFormData({
+//             ...formData,
+//             is_male: (e as any).target.value === "true",
+//           });
+//         }}
+//       >
+//         <option className="text-gray" value={"none"} disabled>
+//           Genre
+//         </option>
+//         <option value={"true"}>Homme</option>
+//         <option value={"false"}>Femme</option>
+//       </Select>
+//       <Select
+//         value={formData.etat}
+//         onChange={(e) => {
+//           setFormData({
+//             ...formData,
+//             etat: (e as any).target.value,
+//           });
+//         }}
+//       >
+//         <option value="alive">Vivant</option>
+//         <option value="dead">Décédé</option>
+//         <option value="sick_evacuation">Evacuation Sanitaire</option>
+//         <option
+//           value="pregnant"
+//           disabled={formData.is_male === null || formData.is_male}
+//         >
+//           Enceinte
+//         </option>
+//       </Select>
 
-      <SearchSelect<CountryInterface>
-        value={
-          formData.nationality
-            ? countriesNameCache.current[formData.nationality]
-            : null
-        }
-        onSelected={function (value): void {
-          countriesNameCache.current[value.id] = value.name_fr;
-          setFormData({ ...formData, nationality: value.id });
-        }}
-        placeHolder={"Nationalité"}
-        search={true}
-        url={"countries"}
-        lookupColumn="name_fr"
-      />
-      <SearchSelect<CountryInterface>
-        value={
-          formData.birth_country
-            ? countriesNameCache.current[formData.birth_country]
-            : null
-        }
-        onSelected={function (value): void {
-          countriesNameCache.current[value.id] = value.name_fr;
-          setFormData({ ...formData, birth_country: value.id });
-        }}
-        placeHolder={"Pays de naissance"}
-        search={true}
-        url={"countries"}
-        lookupColumn="name_fr"
-      />
+//       <SearchSelect<CountryInterface>
+//         value={
+//           formData.nationality
+//             ? countriesNameCache.current[formData.nationality]
+//             : null
+//         }
+//         onSelected={function (value): void {
+//           countriesNameCache.current[value.id] = value.name_fr;
+//           setFormData({ ...formData, nationality: value.id });
+//         }}
+//         placeHolder={"Nationalité"}
+//         search={true}
+//         url={"countries"}
+//         lookupColumn="name_fr"
+//       />
+//       <SearchSelect<CountryInterface>
+//         value={
+//           formData.birth_country
+//             ? countriesNameCache.current[formData.birth_country]
+//             : null
+//         }
+//         onSelected={function (value): void {
+//           countriesNameCache.current[value.id] = value.name_fr;
+//           setFormData({ ...formData, birth_country: value.id });
+//         }}
+//         placeHolder={"Pays de naissance"}
+//         search={true}
+//         url={"countries"}
+//         lookupColumn="name_fr"
+//       />
 
-      {/* <Input
-        className=""
-        value={formData.date_of_birth}
-        onChange={(e) => {
-          setFormData({ ...formData, date_of_birth: (e as any).target.value });
-        }}
-        placeholder="Date de naissance"
-        type="date"
-      /> */}
+//       {/* <Input
+//         className=""
+//         value={formData.date_of_birth}
+//         onChange={(e) => {
+//           setFormData({ ...formData, date_of_birth: (e as any).target.value });
+//         }}
+//         placeholder="Date de naissance"
+//         type="date"
+//       /> */}
 
-      <Textarea
-        id={DESCRIPTION_TEXTAREA_ID}
-        className=" col-span-2"
-        placeholder="Description"
-      />
-      <FilledButton
-        onClick={() => {
-          onDone();
-        }}
-        isLight={true}
-        className="col-span-1"
-      >
-        Annuler
-      </FilledButton>
-      <FilledButton onClick={createImmigrant} className="col-span-1">
-        {isSubmitting ? <LoadingIcon /> : <span>Créer un Émigré</span>}
-      </FilledButton>
-    </div>
-  );
-}
+//       <Textarea
+//         id={DESCRIPTION_TEXTAREA_ID}
+//         className=" col-span-2"
+//         placeholder="Description"
+//       />
+//       <FilledButton
+//         onClick={() => {
+//           onDone();
+//         }}
+//         isLight={true}
+//         className="col-span-1"
+//       >
+//         Annuler
+//       </FilledButton>
+//       <FilledButton onClick={createImmigrant} className="col-span-1">
+//         {isSubmitting ? <LoadingIcon /> : <span>Créer un Émigré</span>}
+//       </FilledButton>
+//     </div>
+//   );
+// }
 
 interface DialogState {
   state: "none" | "adding" | "editing" | "image_view";
@@ -525,13 +525,7 @@ export default function PirogueDetailPage({
             }
           ></img>
         ) : (
-          <AddEditImmigrantDialog
-            onDone={() => {
-              setDialogState({ state: "none" });
-              loadImmigrants();
-            }}
-            pirogueId={pirogueId}
-          />
+          <div></div>
         )}
       </MDialog>
       <div className="mb-7 flex justify-between ">

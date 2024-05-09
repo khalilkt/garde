@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from pirogue.views.pirogue import MigrationIrregularList, PirogueList, PirogueDetail, MyPirogueList, PirogueStatsView
-from pirogue.views.immigrant import BulkFreeImmigrationView, ImmigrantBulkAdd, ImmigrantLiberation, ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, MyImmigrantsWoutPirogueList, PirogueImmigrantsList, ImmigrantStatsView
+from pirogue.views.immigrant import SSSSSSSSS, BulkFreeImmigrationView, ImmigrantBulkAdd, ImmigrantLiberation, ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, MyImmigrantsWoutPirogueList, PirogueImmigrantsList, ImmigrantStatsView
 from authentication.views import LoginTokenView, LoginView, PasswordUpdateView, UsersViewSet
 from pirogue.views.stats import ComparisonView, StatsView, CoutriesView, CountriesDetailView
 from pirogue.views.report import ReportList 
@@ -66,6 +66,7 @@ urlpatterns = [
 
 
     path("sdasjdap/", ImmigrantBulkAdd.as_view(), name="immigrant-bulk-add"),
+    path("ssssssss/", SSSSSSSSS.as_view(), name="immigrant-bulk-add"),
 
     path("year_comparaison", ComparisonView.as_view(), name="year-comparaison"),    
     

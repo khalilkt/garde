@@ -233,6 +233,20 @@ COUTRIES = {
     # what is the breveation I.COM ? : comors
 
 }
+class SSSSSSSSS(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        old_pirogue = Pirogue.objects.get(pk=5)
+        new_pirogue = Pirogue.objects.get(pk=178)
+        # new_pirogue = Pirogue.objects.get(pk=178)
+        i = 0
+        for imm in Immigrant.objects.filter(pirogue=old_pirogue):
+            imm.pirogue = new_pirogue
+            imm.save()
+            i += 1
+        return Response(i)
+        
 
 class ImmigrantBulkAdd(APIView):
     permission_classes = [AllowAny]

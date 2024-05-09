@@ -32,11 +32,7 @@ import { MDialog } from "../../components/dialog";
 import axios from "axios";
 import { PaginatedData, rootUrl } from "../../models/constants";
 import { AuthContext } from "../../App";
-import {
-  AddEditImmigrantDialog,
-  CountryInterface,
-  MobileImmigrantView,
-} from "./pirogue_detail_page";
+import { CountryInterface, MobileImmigrantView } from "./pirogue_detail_page";
 import { useReactToPrint } from "react-to-print";
 
 export interface ImmigrantInterface {
@@ -201,7 +197,7 @@ export default function AdminAgentImmigrantsPage() {
 
   return (
     <div className="mb-10 flex flex-col">
-      <MDialog
+      {/* <MDialog
         onClose={() => setIsDialogOpen(false)}
         isOpen={isDialogOpen}
         title="Ajouter un Émigré sans pirogue"
@@ -213,7 +209,7 @@ export default function AdminAgentImmigrantsPage() {
           }}
           pirogueId={null}
         />
-      </MDialog>
+      </MDialog> */}
       {!isAdmin && (
         <div className="mb-10 flex w-full flex-row items-center justify-between">
           <Link
@@ -280,7 +276,7 @@ export default function AdminAgentImmigrantsPage() {
               <span>Filtrer</span> <FilterIcon />
             </FilledButton>
           )}
-
+          {/* 
           {!isAdmin && (
             <FilledButton
               onClick={() => {
@@ -290,11 +286,11 @@ export default function AdminAgentImmigrantsPage() {
               <span>Ajouter</span>
               <PlusIcon className=" fill-white " />
             </FilledButton>
-          )}
+          )} */}
         </div>
       </div>
       <div className="mt-10 w-full">
-        <div className="flex flex-col gap-y-4 lg:hidden">
+        <div className="hidden flex-col gap-y-4 lg:hidden">
           {list?.map((immigrant, i) => (
             <MobileImmigrantView
               onImageClick={(payload) => {}}

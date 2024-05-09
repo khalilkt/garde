@@ -26,7 +26,7 @@ class PirogueRaportSerializer(serializers.ModelSerializer):
     
     def get_nationalities(self, obj):
         ret = {}
-        immigrants = Immigrant.objects.def_queryset().annotate(nationality_code = F('nationality__alpha3')).filter(pirogue=obj)
+        immigrants = Immigrant.objects.def_queryset().annotate(nationality_code = F('nationality__name_fr')).filter(pirogue=obj)
         for immigrant in immigrants:
             code  = immigrant.nationality_code or None
             if not code in ret:
@@ -52,6 +52,8 @@ class PirogueRaportSerializer(serializers.ModelSerializer):
         fields = ['created_at', 'immigrants_count', 'nationalities', 'departure', "created_at_epoch"]
 
 def filter_by_start_end_date(queryset, start_date_epoch, end_date_epoch):
+    # start_date_epoch = start_date_epoch * 1000000
+    # end_date_epoch = end_date_epoch * 1000000
     # ret = queryset.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))
     ret = queryset.annotate(created_at_epoch = Extract('created_at', 'epoch'))
     ret  = ret.filter(created_at_epoch__gte=start_date_epoch, created_at_epoch__lt=end_date_epoch)
@@ -98,13 +100,11 @@ class ReportList(APIView):
         pirogues = filter_by_start_end_date(Pirogue.objects.def_queryset(), start_date_epoch, end_date_epoch)
         immigrants_report = get_immigrant_report(start_date_epoch, end_date_epoch)
         # sss = Pirogue.objects.annotate(created_at_epoch =  ExpressionWrapper((F('created_at') - datetime(1970,1,1)).total_seconds(), output_field=IntegerField()))[:1]
-        sss = Pirogue.objects.annotate(created_at_epoch = Extract('created_at', 'epoch'))
         ret = {
             "pirogues" : PirogueRaportSerializer(pirogues, many=True).data,
             "immigrants" : immigrants_report,
             "start_date_epoch"  : start_date_epoch,
             "end_data_epoch" : end_date_epoch,
-            "sss" : str(sss[0].created_at_epoch)
         }
 
         return Response(ret)

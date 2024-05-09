@@ -761,7 +761,7 @@ export default function AdminAgentPiroguesPage() {
           </div>
         </div>
         <div className="mt-10">
-          <div className="flex flex-col gap-y-4 lg:hidden">
+          <div className="hidden flex-col gap-y-4 lg:hidden">
             {list?.map((pirogue, i) => <MobilePriogueView pirogue={pirogue} />)}
           </div>
           <FilledButton
