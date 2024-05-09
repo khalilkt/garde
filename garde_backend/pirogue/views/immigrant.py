@@ -52,17 +52,17 @@ class HasPirogueImmigrantsPermission(BasePermission):
         return pirogue.created_by == user
 
 def get_immigrant_filterset_fields():
-    return  ['pirogue', 'birth_country', 'nationality', 'created_by', 'is_male', 'etat' ]
+    return  ['pirogue', 'birth_country', 'nationality', 'created_by', 'is_male', 'etat', 'free_at', 'criminal_record']
 def get_immigrant_search_fields():
     return ['name']
 def get_immigrant_ordering_fields():
-    return ['name', 'date_of_birth', 'birth_country','nationality', 'created_by_name', 'created_by', 'pirogue_number', ]
+    return ['name', 'date_of_birth', 'birth_country','nationality', 'created_by_name', 'created_by', 'pirogue_number']
 
 class ImmigrantList(ListAPIView):
     permission_classes = [IsAdminUser]
     queryset = Immigrant.objects.def_queryset()
     serializer_class = ImmigrantSerializer
-    filterset_fields = get_immigrant_filterset_fields()
+    filterset_fields = get_immigrant_filterset_fields() 
     search_fields = get_immigrant_search_fields()
     ordering_fileds = get_immigrant_ordering_fields()
     ordering = ['-created_at']
@@ -97,7 +97,13 @@ class ImmigrantList(ListAPIView):
                 ret = ret.filter(created_at__year=year, created_at__month=month)
             else:
                 ret = ret.filter(created_at__year=year)
-            
+        
+        is_criminal = params.get("is_criminal", None)
+        if is_criminal:
+            if is_criminal == "true":
+                ret = ret.filter(is_criminal = True)
+            elif is_criminal == "false":
+                ret = ret.filter(is_criminal = False)
         return ret
     
 class MyImmigrantsWoutPirogueList(ListCreateAPIView):

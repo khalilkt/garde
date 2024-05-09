@@ -10,6 +10,12 @@ class ImmigrantManager(models.Manager):
         ret =  self.get_queryset().annotate(created_by_name = F('created_by__name')).annotate(pirogue_number = F('pirogue__number'))
         ret = ret.annotate(nationality_name = F('nationality__name_fr')).annotate(birth_country_name = F('birth_country__name_fr'))
         now = date.today()
+        ret = ret.annotate(
+            is_criminal = Case(
+                When(criminal_record__isnull=True, then=Value(False)),
+                default=Value(True),
+            )
+        )
         ret = ret.annotate(age = Case(
             When(date_of_birth__isnull=True, then=Value(None)),
             When(Q(date_of_birth__month__lte = now.month) |(Q(date_of_birth__month = now.month) & Q(date_of_birth__day__lte = now.day)), then=ExpressionWrapper(now.year - ExtractYear('date_of_birth', output_field=IntegerField()), output_field=IntegerField())),
@@ -31,6 +37,8 @@ class Immigrant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('authentication.User', on_delete=models.PROTECT, related_name='immigrants')
     free_at = models.DateField( null = True, blank = True)
+    criminal_record = models.CharField(max_length=100, null = True, blank = True, choices=[('killer', 'killer'), ('danger', 'danger'), ('thief', 'thief')])
+    criminal_note = models.TextField( blank = True, default="")
     
     objects = ImmigrantManager()
 

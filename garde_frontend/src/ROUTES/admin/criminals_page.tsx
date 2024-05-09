@@ -1,75 +1,71 @@
-import { Link, redirect, useParams, useSearchParams } from "react-router-dom";
-import {
-  DisconnectButton,
-  FilledButton,
-  OutlinedButton,
-  SelectButton,
-  SelectButtonTile,
-} from "../../components/buttons";
+import { useSearchParams } from "react-router-dom";
+import { FilledButton, OutlinedButton } from "../../components/buttons";
 import {
   Border,
   Input,
   SearchBar,
-  SearchSelect,
   Select,
   Tag,
   Textarea,
   Title,
 } from "../../components/comps";
-import {
-  DeleteIcon,
-  EditIcon,
-  FilterIcon,
-  LeftArrow,
-  MdpIcon,
-  MoreIcon,
-  PlusIcon,
-} from "../../components/icons";
 import { Pagination, Td, Tr } from "../../components/table";
-import { useContext, useEffect, useId } from "react";
+import { useContext, useEffect, useState } from "react";
 import React from "react";
-import { MDialog } from "../../components/dialog";
 import axios from "axios";
 import { PaginatedData, rootUrl } from "../../models/constants";
 import { AuthContext } from "../../App";
-import {
-  AddEditImmigrantDialog,
-  CountryInterface,
-  MobileImmigrantView,
-} from "./pirogue_detail_page";
 import { useReactToPrint } from "react-to-print";
+import { ImmigrantInterface } from "./agent&admin_immigrants_page";
+import { ImmigrantIcon } from "../../components/icons";
+import { MDialog } from "../../components/dialog";
 
-export interface ImmigrantInterface {
-  id: number;
-  created_by_name: string;
-  pirogue_number: string;
-  name: string;
-  date_of_birth: string;
-  is_male: boolean;
-  image: string;
-  created_at: string;
-  birth_country: number;
-  nationality: number;
-  nationality_name: string;
-  birth_country_name: string;
-  pirogue: number;
-  created_by: number;
-  criminal_record: "killer" | "thief" | "danger" | null;
+const CRIMINAL_RECORD_NAMES = {
+  killer: "Assassinat",
+  thief: "Voleur",
+  danger: "Dangereux",
+};
+
+function CriminalLiberationDialog({
+  onSubmit,
+}: {
+  onSubmit: (observation: string) => void;
+}) {
+  return (
+    <div className="flex w-[500px] flex-col gap-y-2">
+      <Textarea
+        id="liberation_observation_textarea"
+        placeholder="Ajouter une observation"
+      />
+      <FilledButton
+        onClick={() => {
+          const observation = (
+            document.getElementById(
+              "liberation_observation_textarea",
+            ) as HTMLTextAreaElement | null
+          )?.value;
+
+          if (observation != null) onSubmit(observation);
+        }}
+      >
+        Liberer et imprimer
+      </FilledButton>
+    </div>
+  );
 }
 
-export default function AdminAgentImmigrantsPage() {
+export default function CriminalsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTimer = React.useRef<NodeJS.Timeout>();
   const [data, setData] = React.useState<
     PaginatedData<ImmigrantInterface> | ImmigrantInterface[] | null
   >(null);
-  const isAdmin = useContext(AuthContext).authData?.user.is_admin;
+  const [selected, setSelected] = React.useState<number[]>([]);
 
   const authContext = useContext(AuthContext);
-  const countriesNameCache = React.useRef<{ [key: string]: string }>({});
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = React.useState(false);
+  const [observation, setObservation] = useState<string>("");
   const token = useContext(AuthContext).authData?.token;
-  const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const printRef = React.useRef<HTMLTableElement>(null);
 
   const handlePrint = useReactToPrint({
@@ -82,21 +78,21 @@ export default function AdminAgentImmigrantsPage() {
 
   async function load() {
     let url = rootUrl;
-    if (!isAdmin) {
-      url += "me/";
-    }
     url += "immigrants";
 
-    if (searchParams.size > 0) {
-      url += "?" + searchParams.toString();
-    }
-    // alert(url);
+    let params = new URLSearchParams();
+    searchParams.forEach((value, key) => {
+      params.set(key, value);
+    });
+    params.set("is_criminal", "true");
     try {
       const response = await axios.get(url, {
+        params: params,
         headers: {
           Authorization: `Token ${token}`,
         },
       });
+      setSelected([]);
       setData(response.data);
     } catch (e) {
       console.log(e);
@@ -104,19 +100,19 @@ export default function AdminAgentImmigrantsPage() {
   }
 
   async function init() {
-    searchParams.forEach((value, key) => {
-      if (key === "nationality" || key === "birth_country") {
-        axios
-          .get(rootUrl + "countries/" + value, {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-          })
-          .then((response) => {
-            countriesNameCache.current[value] = response.data.name_fr;
-          });
-      }
-    });
+    // searchParams.forEach((value, key) => {
+    //   if (key === "nationality" || key === "birth_country") {
+    //     axios
+    //       .get(rootUrl + "countries/" + value, {
+    //         headers: {
+    //           Authorization: `Token ${token}`,
+    //         },
+    //       })
+    //       .then((response) => {
+    //         countriesNameCache.current[value] = response.data.name_fr;
+    //       });
+    //   }
+    // });
   }
 
   useEffect(() => {
@@ -156,27 +152,27 @@ export default function AdminAgentImmigrantsPage() {
     title: string;
     value: string;
   }[] = [];
-  searchParams.forEach((value, key) => {
-    if (key === "nationality") {
-      tags.push({
-        id: key,
-        title: "Nationalité",
-        value: countriesNameCache.current[value] ?? "",
-      });
-    } else if (key === "birth_country") {
-      tags.push({
-        id: key,
-        title: "Pays de naissance",
-        value: countriesNameCache.current[value] ?? "",
-      });
-    } else if (key === "is_male") {
-      tags.push({
-        id: key,
-        title: "Genre",
-        value: value === "1" ? "Homme" : "Femme",
-      });
-    }
-  });
+  // searchParams.forEach((value, key) => {
+  //   if (key === "nationality") {
+  //     tags.push({
+  //       id: key,
+  //       title: "Nationalité",
+  //       value: countriesNameCache.current[value] ?? "",
+  //     });
+  //   } else if (key === "birth_country") {
+  //     tags.push({
+  //       id: key,
+  //       title: "Pays de naissance",
+  //       value: countriesNameCache.current[value] ?? "",
+  //     });
+  //   } else if (key === "is_male") {
+  //     tags.push({
+  //       id: key,
+  //       title: "Genre",
+  //       value: value === "1" ? "Homme" : "Femme",
+  //     });
+  //   }
+  // });
 
   let list: ImmigrantInterface[] | null = null;
   if (data) {
@@ -198,48 +194,57 @@ export default function AdminAgentImmigrantsPage() {
       selectedDateRange = "years";
     }
   }
+  async function free() {
+    try {
+      await axios.post(
+        `${rootUrl}immigrants/liberation/bulk/`,
+        {
+          ids: selected.map((i) => list![i].id),
+          free_at: new Date().toISOString().split("T")[0],
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      load();
+      handlePrint();
+      setObservation("");
+    } catch (e) {
+      console.log(e);
+      alert("Une erreur s'est produite. Veuillez réessayer.");
+    }
+  }
 
   return (
     <div className="mb-10 flex flex-col">
       <MDialog
-        onClose={() => setIsDialogOpen(false)}
-        isOpen={isDialogOpen}
-        title="Ajouter un Émigré sans pirogue"
+        isOpen={isPrintDialogOpen}
+        title={"Libération"}
+        onClose={function (): void {
+          setIsPrintDialogOpen(false);
+        }}
       >
-        <AddEditImmigrantDialog
-          onDone={() => {
-            setIsDialogOpen(false);
-            load();
+        <div></div>
+        <CriminalLiberationDialog
+          onSubmit={(observation) => {
+            setObservation(observation);
+            setTimeout(() => {
+              free();
+            }, 500);
+            setIsPrintDialogOpen(false);
           }}
-          pirogueId={null}
         />
       </MDialog>
-      {!isAdmin && (
-        <div className="mb-10 flex w-full flex-row items-center justify-between">
-          <Link
-            to="/"
-            className=" flex flex-row items-center gap-x-2 text-lg text-primary"
-          >
-            <LeftArrow className=" h-4 w-4 fill-primary" />
-            <h3>Page des pirogues </h3>
-          </Link>
-          (
-          <DisconnectButton
-            onClick={() => {
-              authContext.logOut();
-            }}
-          />
-          )
-        </div>
-      )}
-      <Title className="mb-10">Émigré</Title>
+      <Title className="mb-10">Infractions</Title>
       <div className="flex w-full flex-row justify-between ">
         <div className=" flex w-full flex-row justify-between ">
           <div className="flex w-full items-start gap-x-6 lg:w-auto ">
             <SearchBar
               id="pirogues_search_bar"
               onChange={onSearchChange}
-              placeholder="Chercher Émigrés"
+              placeholder="Chercher"
               className="w-full flex-1 lg:w-[300px]"
             />
             <div className="hidden gap-x-2 lg:flex">
@@ -261,17 +266,27 @@ export default function AdminAgentImmigrantsPage() {
           </div>
         </div>
         <div className="hidden flex-row gap-x-4 lg:flex ">
-          {isAdmin && (
-            <OutlinedButton
-              className="border-green-600 text-green-600"
-              onClick={() => {
-                handlePrint();
-              }}
-            >
-              <span>Imprimer</span>
-            </OutlinedButton>
-          )}
-          {isAdmin && (
+          <OutlinedButton
+            disabled={selected.length === 0}
+            className="disabled:cursor-not-allowed disabled:border-gray disabled:opacity-50"
+            onClick={() => {
+              // setIsPrintDialogOpen(true);
+            }}
+          >
+            Libérer
+            <ImmigrantIcon className="ml-2 fill-primary" />
+          </OutlinedButton>
+
+          <OutlinedButton
+            className="border-green-600 text-green-600"
+            onClick={() => {
+              handlePrint();
+            }}
+          >
+            <span>Imprimer</span>
+          </OutlinedButton>
+
+          {/* { (
             <FilledButton
               onClick={() => {
                 setIsFilterOpen(true);
@@ -279,38 +294,10 @@ export default function AdminAgentImmigrantsPage() {
             >
               <span>Filtrer</span> <FilterIcon />
             </FilledButton>
-          )}
-
-          {!isAdmin && (
-            <FilledButton
-              onClick={() => {
-                setIsDialogOpen(true);
-              }}
-            >
-              <span>Ajouter</span>
-              <PlusIcon className=" fill-white " />
-            </FilledButton>
-          )}
+          )} */}
         </div>
       </div>
       <div className="mt-10 w-full">
-        <div className="flex flex-col gap-y-4 lg:hidden">
-          {list?.map((immigrant, i) => (
-            <MobileImmigrantView
-              onImageClick={(payload) => {}}
-              immigrant={immigrant}
-            />
-          ))}
-        </div>
-        <FilledButton
-          onClick={() => {
-            setIsDialogOpen(true);
-          }}
-          className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
-        >
-          Nouveau Émigré
-          <PlusIcon className=" fill-white" />
-        </FilledButton>
         <div className="mb-2 mt-4 flex flex-row items-center gap-x-2">
           <Select
             onChange={(e) => {
@@ -412,22 +399,51 @@ export default function AdminAgentImmigrantsPage() {
         <table className="hidden w-full text-center text-lg lg:table">
           <thead className="w-full">
             <tr className="font-bold text-gray">
+              <th className="text-medium text-base">
+                <input
+                  checked={
+                    list !== null &&
+                    list.length > 0 &&
+                    selected.length === list.length
+                  }
+                  onChange={(e) => {
+                    if (!data) return;
+                    if (e.target.checked) {
+                      setSelected((list ?? []).map((_, i) => i));
+                    } else {
+                      setSelected([]);
+                    }
+                  }}
+                  type="checkbox"
+                  className="h-5 w-5"
+                />
+              </th>
               <th className="text-medium  py-3 text-base">Nom</th>
               <th className="text-medium  py-3 text-base">Genre</th>
               <th className="text-medium py-3 text-base">Nationalité</th>
-              <th className="text-medium py-3 text-base">Pays de naissance</th>
+              <th className="text-medium py-3 text-base">Type</th>
               <th className="text-medium py-3 text-base">Date de naissance</th>
               <th className="text-medium py-3 text-base">Date</th>
-
-              {isAdmin && <th className="text-medium py-3 text-base">Agent</th>}
+              {<th className="text-medium py-3 text-base">Agent</th>}
             </tr>
           </thead>
           <tbody>
             {list?.map((immigrant, i) => (
               <Tr>
-                {/* <Td>
-                  <input type="checkbox" className="h-5 w-5" />
-                </Td> */}
+                <Td>
+                  <input
+                    checked={selected.includes(i)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelected([...selected, i]);
+                      } else {
+                        setSelected(selected.filter((val) => val !== i));
+                      }
+                    }}
+                    type="checkbox"
+                    className="h-5 w-5"
+                  />
+                </Td>
                 <Td className="flex items-center justify-start gap-x-2">
                   {immigrant.image && (
                     <img
@@ -443,13 +459,13 @@ export default function AdminAgentImmigrantsPage() {
                   <Border>{immigrant.nationality_name}</Border>
                 </Td>
                 <Td>
-                  <Border>{immigrant.birth_country_name}</Border>
+                  {immigrant.criminal_record
+                    ? CRIMINAL_RECORD_NAMES[immigrant.criminal_record]
+                    : "-"}
                 </Td>
                 <Td>{immigrant.date_of_birth}</Td>
                 {<Td>{immigrant.created_at.split("T")[0]}</Td>}
-                {isAdmin && (
-                  <Td className="text-primary">{immigrant.created_by_name}</Td>
-                )}
+                {<Td className="text-primary">{immigrant.created_by_name}</Td>}
               </Tr>
             ))}
           </tbody>
@@ -480,9 +496,7 @@ export default function AdminAgentImmigrantsPage() {
                 <th className="border-gray-300 border text-base">
                   DATE DE NAISS
                 </th>
-                <th className="border-gray-300 border text-base">
-                  LIEU DE NAISS
-                </th>
+                <th className="border-gray-300 border text-base">TYPE</th>
                 <th className="border-gray-300 border text-base">
                   NATIONALITE
                 </th>
@@ -506,7 +520,9 @@ export default function AdminAgentImmigrantsPage() {
                       {immigrant.date_of_birth?.split("-")[0] ?? "-"}
                     </td>
                     <td className="border-gray-300 border ">
-                      {immigrant.birth_country_name}
+                      {immigrant.criminal_record
+                        ? CRIMINAL_RECORD_NAMES[immigrant.criminal_record]
+                        : "-"}
                     </td>
                     <td className="border-gray-300 border ">
                       {immigrant.nationality_name}
@@ -531,7 +547,7 @@ export default function AdminAgentImmigrantsPage() {
           )}
         </div>
       )}
-      {data && "total_pages" in data && (
+      {data && "total_pages" in data && data.count > 1 && (
         <Pagination
           className="mt-10"
           onItemClick={(page) => {
@@ -545,116 +561,6 @@ export default function AdminAgentImmigrantsPage() {
           }
           total={data?.total_pages ?? 1}
         />
-      )}
-      {isFilterOpen && (
-        <div className={""}>
-          <div
-            onClick={() => {
-              setIsFilterOpen(false);
-            }}
-            className={`fixed inset-0 z-10 flex items-center justify-center bg-gray opacity-70 `}
-          />
-          <div className="absolute right-0 top-0 z-30 h-screen w-1/4 bg-white px-9 pt-12 shadow-xl">
-            <div className="mb-9 flex justify-between">
-              <Title>Filtrer</Title>
-
-              <button
-                onClick={() => {
-                  setIsFilterOpen(false);
-                }}
-                className="rounded-full border border-gray p-2"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M1 1L11 11M11 1L1 11"
-                    stroke="#888888"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="flex flex-col gap-y-9">
-              <SearchSelect<CountryInterface>
-                value={
-                  countriesNameCache.current[
-                    searchParams.get("nationality") ?? ""
-                  ]
-                }
-                onSelected={function (value): void {
-                  countriesNameCache.current[value.id] = value.name_fr;
-                  setSearchParams((params) => {
-                    params.set("nationality", value.id.toString());
-                    params.delete("page");
-                    return params;
-                  });
-                }}
-                placeHolder={"Nationalité"}
-                search={true}
-                url={"countries"}
-                lookupColumn="name_fr"
-              />
-              <SearchSelect<CountryInterface>
-                value={
-                  countriesNameCache.current[
-                    searchParams.get("birth_country") ?? ""
-                  ]
-                }
-                onSelected={function (value): void {
-                  countriesNameCache.current[value.id] = value.name_fr;
-                  setSearchParams((params) => {
-                    params.set("birth_country", value.id.toString());
-                    params.delete("page");
-                    return params;
-                  });
-                }}
-                placeHolder={"Pays de naissance"}
-                search={true}
-                url={"countries"}
-                lookupColumn="name_fr"
-              />
-              <Select
-                value={
-                  searchParams.get("is_male") === null
-                    ? "none"
-                    : searchParams.get("is_male") === "1"
-                      ? "male"
-                      : "female"
-                }
-                onChange={(e) => {
-                  setSearchParams((params) => {
-                    const value = (e.target as any).value;
-                    if (value === "none") {
-                      params.delete("is_male");
-                    } else if (value === "male") {
-                      params.set("is_male", "1");
-                    } else if (value === "female") {
-                      params.set("is_male", "0");
-                    }
-                    return params;
-                  });
-                }}
-              >
-                <option value="none" className="text-gray" disabled>
-                  Genre
-                </option>
-                <option className="" value={"male"}>
-                  Homme
-                </option>
-                <option className="" value={"female"}>
-                  Femme
-                </option>
-              </Select>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

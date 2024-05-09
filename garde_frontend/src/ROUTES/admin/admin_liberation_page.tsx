@@ -229,7 +229,7 @@ export default function AdminLiberationPage() {
                 </Td>
                 <Td>{i + 1}</Td>
                 <Td>{immigrant.name}</Td>
-                <Td>{immigrant.date_of_birth?.split("T")[0] ?? "-`"}</Td>
+                <Td>{immigrant.date_of_birth?.split("T")[0] ?? "-"}</Td>
                 <Td>{immigrant.birth_country_name ?? "-"}</Td>
                 <Td>{immigrant.nationality_name ?? "-"}</Td>
                 <Td>{immigrant.is_male ? "M" : "F"}</Td>

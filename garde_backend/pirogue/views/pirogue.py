@@ -105,7 +105,7 @@ class MyPirogueList(ListCreateAPIView):
     filterset_fields = get_pirogue_filterset_fields()
     search_fields = get_pirogue_search_fields()
     ordering_fields = get_pirogue_ordering_fields()
-    ordering = ['created_at']
+    ordering = ['-created_at']
 
     def get_queryset(self):
         return Pirogue.objects.def_queryset().filter(created_by=self.request.user)
@@ -114,7 +114,7 @@ class MigrationIrregularList(ListAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = PirogueSerializer
     ordering_fileds = ["created_at"]
-    ordering = ["created_at"]  
+    ordering = ["-created_at"]  
     pagination_class = None
 
     def get_queryset(self):
