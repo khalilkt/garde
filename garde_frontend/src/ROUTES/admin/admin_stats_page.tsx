@@ -216,7 +216,8 @@ export default function AdminStatsPage() {
       //   series: [data.total_males, data.total_females],
       // });
 
-      document.getElementById("asssss2")!.innerText = data.total.toString();
+      document.getElementById("asssss2")!.innerText =
+        data.total?.toString() ?? 0;
     } catch (e) {
       console.log(e);
     }
@@ -255,8 +256,8 @@ export default function AdminStatsPage() {
           [key: string]: number;
         };
         top_nationalities: {
-          nationality: number;
-          name: string;
+          nationality: number | null;
+          name: string | null;
           total_immigrants: number;
         }[];
       } = response.data;
@@ -278,10 +279,13 @@ export default function AdminStatsPage() {
       setNationalityPieOptions({
         ...nationalityPieOptions,
         series: data.top_nationalities.map((item) => item.total_immigrants),
-        labels: data.top_nationalities.map((item) => item.name),
+        labels: data.top_nationalities.map(
+          (item) => item.name ?? "sans nationalité",
+        ),
       });
 
-      document.getElementById("asssss")!.innerText = data.total.toString();
+      document.getElementById("asssss")!.innerText =
+        data.total?.toString() ?? 0;
     } catch (e) {
       console.log(e);
     }

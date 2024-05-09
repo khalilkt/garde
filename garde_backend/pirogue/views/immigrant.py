@@ -205,6 +205,7 @@ class PirogueImmigrantsList(ListCreateAPIView):
     filterset_fields = get_immigrant_filterset_fields()
     search_fields = get_immigrant_search_fields()
     ordering_fileds = get_immigrant_ordering_fields()
+    ordering = ['-created_at']
 
     def get_queryset(self):
         pirogue_pk = self.kwargs.get('pirogue_pk')

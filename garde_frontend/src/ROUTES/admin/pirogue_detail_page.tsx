@@ -581,7 +581,7 @@ export default function PirogueDetailPage({
       <hr className="mt-6 border-[#888888]" />
       <div className="flex items-center justify-between">
         <Title className="mb-4 mt-6">Émigré</Title>
-        {true && (
+        {false && (
           <FilledButton
             className="hidden h-max rounded-md bg-primaryLight2 px-4 py-1 text-base font-semibold text-primary lg:block"
             onClick={() => {
