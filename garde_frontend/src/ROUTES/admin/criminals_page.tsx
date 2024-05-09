@@ -449,7 +449,7 @@ export default function CriminalsPage() {
                     <img
                       onClick={() => {}}
                       className="h-8 w-8 rounded-full"
-                      src={immigrant.image}
+                      src={immigrant.image.replace("http://", "https://")}
                     />
                   )}
                   <span>{immigrant.name}</span>

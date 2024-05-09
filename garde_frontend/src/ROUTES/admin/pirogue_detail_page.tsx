@@ -366,12 +366,12 @@ export function MobileImmigrantView({
           <img
             onClick={() => {
               onImageClick({
-                image: immigrant.image,
+                image: immigrant.image.replace("http://", "https://"),
                 immigrant_name: immigrant.name,
               });
             }}
             className="h-8 w-8 rounded-full"
-            src={immigrant.image}
+            src={immigrant.image.replace("http://", "https://")}
           />
         )}
         <h5 className="text-lg">{immigrant.name}</h5>
@@ -520,7 +520,9 @@ export default function PirogueDetailPage({
         {dialogState.state === "image_view" ? (
           <img
             className="h-fit w-[400px] rounded"
-            src={dialogState.payload?.image ?? ""}
+            src={
+              dialogState.payload?.image?.replace("http://", "https://") ?? ""
+            }
           ></img>
         ) : (
           <AddEditImmigrantDialog
@@ -634,7 +636,7 @@ export default function PirogueDetailPage({
                     setDialogState({
                       state: "image_view",
                       payload: {
-                        image: immigrant.image,
+                        image: immigrant.image.replace("http://", "https://"),
                         immigrant_name: immigrant.name,
                       },
                     });
@@ -644,7 +646,7 @@ export default function PirogueDetailPage({
                   {immigrant.image && (
                     <img
                       className="h-8 w-8 rounded-full"
-                      src={immigrant.image}
+                      src={immigrant.image.replace("http://", "https://")}
                     />
                   )}
                 </Td>
