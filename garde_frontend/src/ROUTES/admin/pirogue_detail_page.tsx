@@ -566,6 +566,16 @@ export default function PirogueDetailPage({
         )}
       </div>
       <hr className="border-[#888888]" />
+      {data && data!.video && (
+        <video className="mt-4" width="320" height="240" controls>
+          <source
+            src={data!.video?.replace("http://", "https://")}
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+      )}
+      {data && data.video && <hr className="mt-6 border-[#888888]" />}
       <Title className="mb-4 mt-6">Description</Title>
       {data ? (
         <p className="text-lg text-gray">{data?.description}</p>

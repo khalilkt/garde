@@ -63,6 +63,8 @@ export interface PirogueInterface {
   nationality_name: string;
   extra: string;
   fuel: number;
+
+  video: string | null;
 }
 
 function AddEditPirogueDialog({
