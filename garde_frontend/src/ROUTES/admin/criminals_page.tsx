@@ -19,36 +19,55 @@ import { useReactToPrint } from "react-to-print";
 import { ImmigrantInterface } from "./agent&admin_immigrants_page";
 import { ImmigrantIcon } from "../../components/icons";
 import { MDialog } from "../../components/dialog";
+import { PrintPage } from "../../components/print_page";
 
 const CRIMINAL_RECORD_NAMES = {
+  theft: "Vol",
+  homocide: "Homicide",
+  torture: "Torture",
+  human_trafficking: "Traite des êtres humains",
+  other: "Autre",
+
   killer: "Assassinat",
   thief: "Voleur",
   danger: "Dangereux",
 };
 
 function CriminalLiberationDialog({
+  selectedNames: selectedNames,
   onSubmit,
 }: {
-  onSubmit: (observation: string) => void;
+  selectedNames: string[];
+  onSubmit: (printData: { names: string[]; text: string }) => void;
 }) {
   return (
     <div className="flex w-[500px] flex-col gap-y-2">
-      <Textarea
-        id="liberation_observation_textarea"
-        placeholder="Ajouter une observation"
-      />
+      <div className="flex flex-col gap-y-2 text-gray">
+        <span className="font-medium">{selectedNames.join(", ")}</span>
+      </div>
+      <Textarea id="liberation_text_textarea" placeholder="text" />
+      <Textarea id="liberation_names_textarea" placeholder="Noms" />
       <FilledButton
         onClick={() => {
-          const observation = (
+          const text = (
             document.getElementById(
-              "liberation_observation_textarea",
+              "liberation_text_textarea",
             ) as HTMLTextAreaElement | null
           )?.value;
 
-          if (observation != null) onSubmit(observation);
+          let names =
+            (
+              document.getElementById(
+                "liberation_names_textarea",
+              ) as HTMLTextAreaElement | null
+            )?.value
+              ?.split("\n")
+              .filter((name) => name.length > 0) ?? [];
+
+          if (text != null) onSubmit({ names: names, text: text });
         }}
       >
-        Liberer et imprimer
+        Déferer et imprimer
       </FilledButton>
     </div>
   );
@@ -64,9 +83,13 @@ export default function CriminalsPage() {
 
   const authContext = useContext(AuthContext);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = React.useState(false);
-  const [observation, setObservation] = useState<string>("");
   const token = useContext(AuthContext).authData?.token;
   const printRef = React.useRef<HTMLTableElement>(null);
+
+  const [printData, setPrintData] = React.useState<{
+    text: string;
+    names: string[];
+  }>({ text: "", names: [] });
 
   const handlePrint = useReactToPrint({
     onBeforeGetContent() {},
@@ -152,27 +175,6 @@ export default function CriminalsPage() {
     title: string;
     value: string;
   }[] = [];
-  // searchParams.forEach((value, key) => {
-  //   if (key === "nationality") {
-  //     tags.push({
-  //       id: key,
-  //       title: "Nationalité",
-  //       value: countriesNameCache.current[value] ?? "",
-  //     });
-  //   } else if (key === "birth_country") {
-  //     tags.push({
-  //       id: key,
-  //       title: "Pays de naissance",
-  //       value: countriesNameCache.current[value] ?? "",
-  //     });
-  //   } else if (key === "is_male") {
-  //     tags.push({
-  //       id: key,
-  //       title: "Genre",
-  //       value: value === "1" ? "Homme" : "Femme",
-  //     });
-  //   }
-  // });
 
   let list: ImmigrantInterface[] | null = null;
   if (data) {
@@ -210,7 +212,10 @@ export default function CriminalsPage() {
       );
       load();
       handlePrint();
-      setObservation("");
+      setPrintData({
+        text: "",
+        names: [],
+      });
     } catch (e) {
       console.log(e);
       alert("Une erreur s'est produite. Veuillez réessayer.");
@@ -221,20 +226,20 @@ export default function CriminalsPage() {
     <div className="mb-10 flex flex-col">
       <MDialog
         isOpen={isPrintDialogOpen}
-        title={"Libération"}
+        title={"Déferation"}
         onClose={function (): void {
           setIsPrintDialogOpen(false);
         }}
       >
-        <div></div>
         <CriminalLiberationDialog
-          onSubmit={(observation) => {
-            setObservation(observation);
+          onSubmit={(printData) => {
+            setPrintData(printData);
             setTimeout(() => {
               free();
             }, 500);
             setIsPrintDialogOpen(false);
           }}
+          selectedNames={selected.map((i) => list![i].name)}
         />
       </MDialog>
       <Title className="mb-10">Infractions</Title>
@@ -270,20 +275,11 @@ export default function CriminalsPage() {
             disabled={selected.length === 0}
             className="disabled:cursor-not-allowed disabled:border-gray disabled:opacity-50"
             onClick={() => {
-              // setIsPrintDialogOpen(true);
+              setIsPrintDialogOpen(true);
             }}
           >
-            Libérer
+            Déferer
             <ImmigrantIcon className="ml-2 fill-primary" />
-          </OutlinedButton>
-
-          <OutlinedButton
-            className="border-green-600 text-green-600"
-            onClick={() => {
-              handlePrint();
-            }}
-          >
-            <span>Imprimer</span>
           </OutlinedButton>
 
           {/* { (
@@ -326,6 +322,7 @@ export default function CriminalsPage() {
             <option value={"months"}>Par Mois</option>
             <option value={"years"}>Par Année</option>
           </Select>
+
           {selectedDateRange === "days" && (
             <Input
               value={searchParams.get("date") ?? ""}
@@ -395,6 +392,25 @@ export default function CriminalsPage() {
               <span className="font-semibold">{list!.length}</span>
             </span>
           )}
+        </div>
+        <div className="my-4 flex gap-x-2 font-medium">
+          <input
+            type="checkbox"
+            className="h-5 w-5"
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setSearchParams((params) => {
+                if (!checked) {
+                  params.delete("is_free");
+                } else {
+                  params.set("is_free", "false");
+                }
+                return params;
+              });
+            }}
+            checked={searchParams.get("is_free") === "false"}
+          />
+          <span>Afficher Seulement les non diférés</span>
         </div>
         <table className="hidden w-full text-center text-lg lg:table">
           <thead className="w-full">
@@ -471,82 +487,25 @@ export default function CriminalsPage() {
           </tbody>
         </table>
       </div>
-      {list && (
-        <div ref={printRef} className="hidden flex-col px-10 print:flex">
-          <div className="my-12 flex flex-col items-end self-center">
-            <h1 className="text-2xl font-bold">
-              LA MIGRATION ILLEGALE PAR VOIE MARITIME
-            </h1>
-            <div className="flex flex-row">
-              <span>Nouadhibou</span>
-              {searchParams.get("date") && (
-                <span>
-                  , le {searchParams.get("date")?.replaceAll("-", "/")}
-                </span>
-              )}
-            </div>
-          </div>
-          <table className="w-full text-center text-xs">
-            <thead className="">
-              <tr className="font-bold text-gray">
-                <th className="border-gray-300 border text-base">N°</th>
-                <th className="border-gray-300 border text-base ">
-                  NOM ET PRENOM
-                </th>
-                <th className="border-gray-300 border text-base">
-                  DATE DE NAISS
-                </th>
-                <th className="border-gray-300 border text-base">TYPE</th>
-                <th className="border-gray-300 border text-base">
-                  NATIONALITE
-                </th>
-                <th className="border-gray-300 border text-base">GENRE</th>
-                <th className="border-gray-300 border text-base">DATE</th>
-                <th className="border-gray-300 border text-base">
-                  OBSERVATIONS
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((immigrant, index) => {
-                return (
-                  <tr>
-                    {/* border */}
-                    <td className="border-gray-300 border ">{index + 1}</td>
-                    <td className="border-gray-300 border ">
-                      {immigrant.name}
-                    </td>
-                    <td className="border-gray-300 border ">
-                      {immigrant.date_of_birth?.split("-")[0] ?? "-"}
-                    </td>
-                    <td className="border-gray-300 border ">
-                      {immigrant.criminal_record
-                        ? CRIMINAL_RECORD_NAMES[immigrant.criminal_record]
-                        : "-"}
-                    </td>
-                    <td className="border-gray-300 border ">
-                      {immigrant.nationality_name}
-                    </td>
-                    <td className="border-gray-300 border ">
-                      {immigrant.is_male ? "M" : "F"}
-                    </td>
-                    <td className="border-gray-300 border ">
-                      {immigrant.created_at.split("T")[0]}
-                    </td>
-                    <td className="border-gray-300 border "></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {selectedDateRange !== null && list !== null && (
-            <span className="mt-4 self-end">
-              <span>Total </span>
-              <span className="font-semibold">{list!.length}</span>
+      <div ref={printRef} className="hidden print:block">
+        <PrintPage text="" objectText={null} isArabic={true}>
+          <div className="flex flex-col  items-start">
+            <span>
+              {/* حسب شهادات مهاجرين غير شرعين من السنغال و نواكشوط و التي تؤكد
+              جرائم القتل و التعذيب على متن زورقين ، اتشرف بإحالت اربع متهمين
+              حسب تصريحات متوترة من رجال و نساء كانو مشتركين في الرحلتين
+              المعنيتين ، */}
+              {printData.text}
             </span>
-          )}
-        </div>
-      )}
+            <span className="mt-12">والمعنيون هم</span>
+            <span className="mt-1 flex flex-col">
+              {printData.names.map((name) => (
+                <span>{name}</span>
+              ))}
+            </span>
+          </div>
+        </PrintPage>
+      </div>
       {data && "total_pages" in data && data.count > 1 && (
         <Pagination
           className="mt-10"

@@ -24,6 +24,7 @@ class Pirogue(models.Model):
     fuel = models.IntegerField(default=0)
     port = models.CharField(max_length=100, choices=[('ndagou', 'ndagou'), ('nouadhibou', 'nouadhibou'), ('nouakchott', 'nouakchott'), ('tanit', 'tanit'), ("unknown", "-")], )
     extra  = models.CharField(max_length=4000, default="", blank=True, null=True)
+    days_at_sea = models.IntegerField(null=True, blank=True)
 
     departure = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)

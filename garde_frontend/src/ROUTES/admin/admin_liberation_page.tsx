@@ -16,7 +16,6 @@ import {
 import { PirogueInterface } from "./agent&admin_pirogues_page";
 import { TableBodySquelette, Td, Tr } from "../../components/table";
 import axios from "axios";
-import { PrintPage } from "../../components/print_page";
 import { FilledButton, OutlinedButton } from "../../components/buttons";
 import { useReactToPrint } from "react-to-print";
 import { MDialog } from "../../components/dialog";
@@ -165,7 +164,7 @@ export default function AdminLiberationPage() {
           }
         }}
       >
-        <option value={""}>Selectionner</option>
+        <option value="">Selectionner</option>
         <option value={10}>10</option>
         <option value={20}>20</option>
         <option value={20}>30</option>

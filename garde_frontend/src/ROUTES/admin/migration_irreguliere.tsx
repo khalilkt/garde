@@ -118,6 +118,7 @@ function MigrationIrreguliereImmigrantDialog({
       </FilledButton>
       <div ref={immPrintRef} className="hidden print:block">
         <PrintPage
+          objectText="Migration irrégulière"
           text={`J'ai l'honneur de vous faire parvenir en annexe la liste de ${
             formState.filter((e) => e.country && e.value > 0).length
           } personnes remis par la
@@ -406,6 +407,7 @@ export default function MigrationIrregulierePage() {
       {data && (
         <div className="hidden print:block" ref={printRef}>
           <PrintPage
+            objectText="Migration irrégulière"
             text={`J'ai l'honneur de vous faire parvenir ci-dessous la situation de la
             pirogue arraisonnée par la GCM dans le cadre de la lutte contre la
             migration irrégulière par voie maritime du

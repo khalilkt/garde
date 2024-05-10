@@ -492,7 +492,7 @@ export default function PirogueDetailPage({
   if (data) {
     infos = {
       Agent: data.created_by_name,
-      "Nbre d'émigré": data.immigrants_count?.toString(),
+      "Nbre de migrants": data.immigrants_count?.toString(),
       latitude: data.lat ? positionToString(data.lat) : null,
       longitude: data.long ? positionToString(data.long) : null,
       Départ: data.departure,
@@ -574,7 +574,7 @@ export default function PirogueDetailPage({
       )}
       <hr className="mt-6 border-[#888888]" />
       <div className="flex items-center justify-between">
-        <Title className="mb-4 mt-6">Émigré</Title>
+        <Title className="mb-4 mt-6">Migrant</Title>
         {false && (
           <FilledButton
             className="hidden h-max rounded-md bg-primaryLight2 px-4 py-1 text-base font-semibold text-primary lg:block"
@@ -605,7 +605,7 @@ export default function PirogueDetailPage({
         }}
         className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
       >
-        Nouveau émigré
+        Nouveau Migrant
         <PlusIcon className=" fill-white" />
       </FilledButton>
       <table className="text-md hidden w-full text-center font-medium lg:table">

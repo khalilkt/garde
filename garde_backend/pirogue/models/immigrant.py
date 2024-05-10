@@ -13,6 +13,7 @@ class ImmigrantManager(models.Manager):
         ret = ret.annotate(
             is_criminal = Case(
                 When(criminal_record__isnull=True, then=Value(False)),
+                When(criminal_record__exact='', then=Value(False)),
                 default=Value(True),
             )
         )
@@ -37,7 +38,14 @@ class Immigrant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('authentication.User', on_delete=models.PROTECT, related_name='immigrants')
     free_at = models.DateField( null = True, blank = True)
-    criminal_record = models.CharField(max_length=100, null = True, choices=[('killer', 'killer'), ('danger', 'danger'), ('thief', 'thief')])
+    criminal_record = models.CharField(max_length=100, null = True, choices=[
+        ('theft', 'theft'),
+        ('homocide', 'homocide'),
+        ('torture', 'torture'),
+        ('human_trafficking', 'human_trafficking'),
+        ('other', 'other')
+
+    ])
     criminal_note = models.TextField( blank = True, default="")
     
     objects = ImmigrantManager()

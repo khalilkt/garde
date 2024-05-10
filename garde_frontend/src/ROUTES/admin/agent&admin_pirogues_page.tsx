@@ -687,7 +687,7 @@ export default function AdminAgentPiroguesPage() {
               className=" flex flex-row items-center gap-x-2 text-lg text-primary"
             >
               <LeftArrow className=" h-4 w-4 fill-primary" />
-              <h3>Page d'émigrés </h3>
+              <h3>Page des Migrants </h3>
             </Link>
             {
               <DisconnectButton
@@ -977,7 +977,7 @@ export default function AdminAgentPiroguesPage() {
                     Nationalité
                   </th>
                   <th className="border-gray-300 border text-base">
-                    NBRE D'ÉMIGRÉ
+                    NBRE DE MIGRANTS
                   </th>
                   <th className="border-gray-300 border text-base">DEPART</th>
                   <th className="border-gray-300 border text-base">DATE</th>

@@ -104,6 +104,13 @@ class ImmigrantList(ListAPIView):
                 ret = ret.filter(is_criminal = True)
             elif is_criminal == "false":
                 ret = ret.filter(is_criminal = False)
+        
+        is_free = params.get("is_free", None)
+        if is_free:
+            if is_free == "true":
+                ret = ret.filter(free_at__isnull = False)
+            elif is_free == "false":
+                ret = ret.filter(free_at__isnull = True)
         return ret
     
 class MyImmigrantsWoutPirogueList(ListCreateAPIView):
@@ -233,20 +240,6 @@ COUTRIES = {
     # what is the breveation I.COM ? : comors
 
 }
-class SSSSSSSSS(APIView):
-    permission_classes = [AllowAny]
-    
-    def post(self, request):
-        old_pirogue = Pirogue.objects.get(pk=5)
-        new_pirogue = Pirogue.objects.get(pk=178)
-        # new_pirogue = Pirogue.objects.get(pk=178)
-        i = 0
-        for imm in Immigrant.objects.filter(pirogue=old_pirogue):
-            imm.pirogue = new_pirogue
-            imm.save()
-            i += 1
-        return Response(i)
-        
 
 class ImmigrantBulkAdd(APIView):
     permission_classes = [AllowAny]
@@ -367,7 +360,7 @@ class LiberationImmigrantSerializer(ImmigrantSerializer):
 
 class ImmigrantLiberation(ListAPIView):
     permission_classes = [IsAdminUser]
-    queryset = Immigrant.objects.def_queryset().filter(free_at__isnull=True)
+    queryset = Immigrant.objects.def_queryset().filter(free_at__isnull=True, is_criminal=False)
     serializer_class = LiberationImmigrantSerializer
     ordering = ['created_at']
     pagination_class = None

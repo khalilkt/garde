@@ -50,7 +50,17 @@ export interface ImmigrantInterface {
   birth_country_name: string;
   pirogue: number;
   created_by: number;
-  criminal_record: "killer" | "thief" | "danger" | null;
+  criminal_record:
+    | "killer"
+    | "thief"
+    | "danger"
+    //
+    | "theft"
+    | "homocide"
+    | "torture"
+    | "human_trafficking"
+    | "other"
+    | null;
 }
 
 export default function AdminAgentImmigrantsPage() {
@@ -200,7 +210,7 @@ export default function AdminAgentImmigrantsPage() {
       {/* <MDialog
         onClose={() => setIsDialogOpen(false)}
         isOpen={isDialogOpen}
-        title="Ajouter un Émigré sans pirogue"
+        title="Ajouter un Migrant sans pirogue"
       >
         <AddEditImmigrantDialog
           onDone={() => {
@@ -228,14 +238,14 @@ export default function AdminAgentImmigrantsPage() {
           )
         </div>
       )}
-      <Title className="mb-10">Émigré</Title>
+      <Title className="mb-10">Migrant</Title>
       <div className="flex w-full flex-row justify-between ">
         <div className=" flex w-full flex-row justify-between ">
           <div className="flex w-full items-start gap-x-6 lg:w-auto ">
             <SearchBar
               id="pirogues_search_bar"
               onChange={onSearchChange}
-              placeholder="Chercher Émigrés"
+              placeholder="Chercher Migrants"
               className="w-full flex-1 lg:w-[300px]"
             />
             <div className="hidden gap-x-2 lg:flex">
@@ -304,7 +314,7 @@ export default function AdminAgentImmigrantsPage() {
           }}
           className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
         >
-          Nouveau Émigré
+          Nouveau Migrant
           <PlusIcon className=" fill-white" />
         </FilledButton>
         <div className="mb-2 mt-4 flex flex-row items-center gap-x-2">

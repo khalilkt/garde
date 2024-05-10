@@ -338,7 +338,7 @@ export default function AdminAgentsPage() {
               <th className="text-medium  py-3 text-base">Nom d'utilisateur</th>
               <th className="text-medium py-3 text-base">Dernière Connexion</th>
               <th className="text-medium py-3 text-base">Pirogues</th>
-              <th className="text-medium py-3 text-base">Émigrés</th>
+              <th className="text-medium py-3 text-base">Migrants</th>
               <th className="text-medium w-20  py-3 text-base"></th>
             </tr>
           </thead>

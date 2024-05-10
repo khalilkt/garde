@@ -487,7 +487,7 @@ export default function AdminStatsPage() {
         <div className="w-[60%] rounded-xl border-2 border-primaryBorder p-7">
           <div className="flex flex-col gap-y-4">
             <h1 className=" text-2xl font-semibold">
-              Total Émigrés en {selectedYear}
+              Total Migrants en {selectedYear}
             </h1>
             <span className="mb-10" id="asssss">
               {}
