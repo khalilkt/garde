@@ -73,6 +73,8 @@ export default function AdminAgentImmigrantsPage() {
 
   const authContext = useContext(AuthContext);
   const countriesNameCache = React.useRef<{ [key: string]: string }>({});
+  const agentNamesCache = React.useRef<{ [key: string]: string }>({});
+
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const token = useContext(AuthContext).authData?.token;
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
@@ -120,6 +122,16 @@ export default function AdminAgentImmigrantsPage() {
           })
           .then((response) => {
             countriesNameCache.current[value] = response.data.name_fr;
+          });
+      } else if (key === "created_by") {
+        axios
+          .get(rootUrl + "users/" + value, {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          })
+          .then((response) => {
+            agentNamesCache.current[value] = response.data.name;
           });
       }
     });
@@ -180,6 +192,12 @@ export default function AdminAgentImmigrantsPage() {
         id: key,
         title: "Genre",
         value: value === "1" ? "Homme" : "Femme",
+      });
+    } else if (key === "created_by") {
+      tags.push({
+        id: key,
+        title: "Agent",
+        value: agentNamesCache.current[value] ?? "",
       });
     }
   });
@@ -425,7 +443,9 @@ export default function AdminAgentImmigrantsPage() {
               <th className="text-medium py-3 text-base">Date de naissance</th>
               <th className="text-medium py-3 text-base">Date</th>
 
-              {isAdmin && <th className="text-medium py-3 text-base">Agent</th>}
+              {isAdmin && (
+                <th className="text-medium py-3 text-base">Utilisateur</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -588,6 +608,31 @@ export default function AdminAgentImmigrantsPage() {
               </button>
             </div>
             <div className="flex flex-col gap-y-9">
+              <SearchSelect<any>
+                value={
+                  agentNamesCache.current[
+                    searchParams.get("created_by") ?? ""
+                  ] ?? null
+                }
+                onSelected={function (value): void {
+                  agentNamesCache.current[value.id.toString()] = value.name;
+                  setSearchParams((params) => {
+                    if (value) {
+                      params.set("created_by", value.id.toString());
+                    } else {
+                      params.delete("created_by");
+                    }
+                    params.set("page", "1");
+
+                    return params;
+                  });
+                }}
+                placeHolder={"Agent"}
+                search={true}
+                url={"users"}
+                lookupColumn="name"
+              />
+
               <SearchSelect<CountryInterface>
                 value={
                   countriesNameCache.current[

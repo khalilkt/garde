@@ -888,7 +888,7 @@ export default function AdminAgentPiroguesPage() {
               <tr className="font-bold text-gray">
                 <th className="text-medium  py-3 text-base">Numéro</th>
                 <th className="text-medium py-3 text-base">Num des moteurs</th>
-                <th className="text-medium py-3 text-base ">Agent</th>
+                <th className="text-medium py-3 text-base ">Utilisateur</th>
                 <th className="text-medium py-3 text-base">Equipage</th>
                 <th className="text-medium py-3 text-base">Port</th>
                 <th className="text-medium py-3 text-base">Nationalité</th>
