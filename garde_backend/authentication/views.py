@@ -58,6 +58,15 @@ class UsersViewSet(viewsets.ModelViewSet):
         ret = User.objects
         ret = ret.annotate(total_pirogues = Count("pirogues")).annotate(total_immigrants = Count("pirogues__immigrants"))
         return ret
+    
+    def partial_update(self, request, *args, **kwargs):
+        if "password" in request.data:
+            return Response({"error" : "Password cannot be updated this way"}, status=400)
+        if "city_name" in request.data:
+            this = self.get_object()
+            this.city_name = request.data['city_name']
+            this.save()
+        return super().partial_update(request, *args, **kwargs)
 
 class PasswordUpdateView(APIView):
     permission_classes = [IsAdminUser]

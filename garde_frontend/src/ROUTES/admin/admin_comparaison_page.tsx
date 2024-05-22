@@ -91,7 +91,7 @@ export default function AdminComparaisonPage() {
             <th></th>
           </Tr>
           <Tr>
-            <th>Total Pirogue</th>
+            <Td className="border-t border-t-primaryBorder">Total Pirogue</Td>
             <Td className="w-1/4">{data.data["2023"].total_pirogues}</Td>
             <Td className="w-1/4">{data.data["2024"].total_pirogues}</Td>
             <Td className="w-1/4 font-semibold">
@@ -100,7 +100,7 @@ export default function AdminComparaisonPage() {
             </Td>
           </Tr>
           <Tr>
-            <th>Total Immigrants</th>
+            <Td>Total Immigrants</Td>
             <Td>{data.data["2023"].total_immigrants}</Td>
             <Td>{data.data["2024"].total_immigrants}</Td>
             <Td className="w-1/4 font-semibold">
@@ -109,7 +109,7 @@ export default function AdminComparaisonPage() {
             </Td>
           </Tr>
           <Tr>
-            <th>Total Hommes</th>
+            <Td>Total Hommes</Td>
             <Td>{data.data["2023"].total_males}</Td>
             <Td>{data.data["2024"].total_males}</Td>
             <Td className="w-1/4 font-semibold">
@@ -117,7 +117,7 @@ export default function AdminComparaisonPage() {
             </Td>
           </Tr>
           <Tr>
-            <th>Total Femmes</th>
+            <Td>Total Femmes</Td>
             <Td>{data.data["2023"].total_females}</Td>
             <Td>{data.data["2024"].total_females}</Td>
             <Td className="w-1/4 font-semibold">
@@ -126,7 +126,7 @@ export default function AdminComparaisonPage() {
             </Td>
           </Tr>
           <Tr>
-            <th>Total Mineurs</th>
+            <Td>Total Mineurs</Td>
             <Td>{data.data["2023"].total_minors}</Td>
             <Td>{data.data["2024"].total_minors}</Td>
             <Td className="w-1/4 font-semibold">
@@ -139,7 +139,7 @@ export default function AdminComparaisonPage() {
 
             return (
               <Tr>
-                <th>{value.name}</th>
+                <Td>{value.name}</Td>
                 <Td>{start}</Td>
                 <Td>{end}</Td>
                 <Td className="w-1/4 font-semibold">

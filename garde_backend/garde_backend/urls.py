@@ -20,7 +20,7 @@ from pirogue.views.pirogue import MigrationIrregularList, PirogueList, PirogueDe
 from pirogue.views.immigrant import BulkFreeImmigrationView, ImmigrantBulkAdd, ImmigrantLiberation, ImmigrantList, ImmigrantDetail, ImmigrantsPDFExportView, MyImmigrantsWoutPirogueList, PirogueImmigrantsList, ImmigrantStatsView
 from authentication.views import LoginTokenView, LoginView, PasswordUpdateView, UsersViewSet
 from pirogue.views.stats import ComparisonView, StatsView, CoutriesView, CountriesDetailView
-from pirogue.views.report import ReportList 
+from pirogue.views.report import ReportList , GeneralReport
 
 from rest_framework import routers
 from django.conf import settings
@@ -46,6 +46,7 @@ urlpatterns = [
 
     path("migration_irregular/", MigrationIrregularList.as_view(), name="migration-irregular-list"),
     path("report/", ReportList.as_view(), name="report"),
+    path("general_report/", GeneralReport.as_view(), name="general-report"),
  
     # AGENT
     

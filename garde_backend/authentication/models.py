@@ -31,6 +31,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
     REQUIRED_FIELDS = ['name']
     USERNAME_FIELD = 'username'
+    city_name = models.CharField(max_length=255, default="")
 
     @property
     def is_staff(self):

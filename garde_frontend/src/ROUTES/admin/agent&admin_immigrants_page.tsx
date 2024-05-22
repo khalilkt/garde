@@ -48,6 +48,7 @@ export interface ImmigrantInterface {
   nationality: number;
   nationality_name: string;
   birth_country_name: string;
+  age: number | null;
   pirogue: number;
   created_by: number;
   criminal_record:
@@ -220,6 +221,22 @@ export default function AdminAgentImmigrantsPage() {
       selectedDateRange = "months";
     } else if (selectedDate?.split("-").length === 1) {
       selectedDateRange = "years";
+    }
+  }
+
+  let totalMales = 0;
+  let totalFemales = 0;
+  let totalMinors = 0;
+
+  for (const imm of list ?? []) {
+    if (imm.age && imm.age < 18) {
+      totalMinors++;
+    }
+    if (imm.is_male) {
+      totalMales++;
+    }
+    if (!imm.is_male) {
+      totalFemales++;
     }
   }
 
@@ -429,7 +446,9 @@ export default function AdminAgentImmigrantsPage() {
           {selectedDateRange !== null && list !== null && (
             <span>
               <span>Total </span>
-              <span className="font-semibold">{list!.length}</span>
+              <span className="font-semibold">
+                {list!.length} ({totalMales}, {totalFemales}, {totalMinors})
+              </span>
             </span>
           )}
         </div>
@@ -442,6 +461,7 @@ export default function AdminAgentImmigrantsPage() {
               <th className="text-medium py-3 text-base">Pays de naissance</th>
               <th className="text-medium py-3 text-base">Date de naissance</th>
               <th className="text-medium py-3 text-base">Date</th>
+              <th className="text-medium py-3 text-base">Séjour</th>
 
               {isAdmin && (
                 <th className="text-medium py-3 text-base">Utilisateur</th>
@@ -473,6 +493,13 @@ export default function AdminAgentImmigrantsPage() {
                 </Td>
                 <Td>{immigrant.date_of_birth}</Td>
                 {<Td>{immigrant.created_at.split("T")[0]}</Td>}
+                <Td>
+                  {(
+                    (new Date().valueOf() -
+                      new Date(immigrant.created_at).valueOf()) /
+                    8.64e7
+                  ).toFixed(0) + " jour(s)"}
+                </Td>
                 {isAdmin && (
                   <Td className="text-primary">{immigrant.created_by_name}</Td>
                 )}
@@ -514,6 +541,7 @@ export default function AdminAgentImmigrantsPage() {
                 </th>
                 <th className="border-gray-300 border text-base">GENRE</th>
                 <th className="border-gray-300 border text-base">DATE</th>
+                <th className="border-gray-300 border text-base">SEJOUR</th>
                 <th className="border-gray-300 border text-base">
                   OBSERVATIONS
                 </th>
@@ -543,17 +571,36 @@ export default function AdminAgentImmigrantsPage() {
                     <td className="border-gray-300 border ">
                       {immigrant.created_at.split("T")[0]}
                     </td>
+                    <td className="border-gray-300 border ">
+                      {(
+                        (new Date().valueOf() -
+                          new Date(immigrant.created_at).valueOf()) /
+                        8.64e7
+                      ).toFixed(0) + " jour(s)"}
+                    </td>
                     <td className="border-gray-300 border "></td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+          <br />
+          <br />
           {selectedDateRange !== null && list !== null && (
-            <span className="mt-4 self-end">
-              <span>Total </span>
-              <span className="font-semibold">{list!.length}</span>
-            </span>
+            <table className="w-max">
+              <tr>
+                <td className="border-gray-300 border">Hommes </td>
+                <td className="border-gray-300 border">Femmes </td>
+                <td className="border-gray-300 border">Mineur </td>
+                <td className="border-gray-300 border">Total </td>
+              </tr>
+              <tr>
+                <td className="border-gray-300 border">{totalMales}</td>
+                <td className="border-gray-300 border">{totalFemales}</td>
+                <td className="border-gray-300 border">{totalMinors}</td>
+                <td className="border-gray-300 border">{list!.length}</td>
+              </tr>
+            </table>
           )}
         </div>
       )}
@@ -702,6 +749,27 @@ export default function AdminAgentImmigrantsPage() {
                 <option className="" value={"female"}>
                   Femme
                 </option>
+              </Select>
+
+              <Select
+                value={searchParams.get("age") ?? "none"}
+                onChange={(e) => {
+                  setSearchParams((params) => {
+                    const value = (e.target as any).value;
+                    if (value === "none") {
+                      params.delete("age");
+                    } else {
+                      params.set("age", value);
+                    }
+                    return params;
+                  });
+                }}
+              >
+                <option value="none" className="text-gray" disabled>
+                  Age
+                </option>
+                <option value={"major"}>Majeur</option>
+                <option value={"minor"}>Mineur</option>
               </Select>
             </div>
           </div>

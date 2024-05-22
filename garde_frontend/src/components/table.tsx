@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { LeftArrow } from "./icons";
 
 export function Tr({ children }: { children: React.ReactNode }) {
-  return <tr className="odd:bg-primaryLight">{children}</tr>;
+  return <tr className="">{children}</tr>;
 }
 
 export function Td({
@@ -16,7 +16,7 @@ export function Td({
   return (
     <td
       {...tdProps}
-      className={`first:rounded-l-xl last:rounded-r-xl ${tdProps.className ?? ""} ${isSmall ? "px-4 py-1" : "px-7 py-3 "}`}
+      className={`border-b border-b-primaryBorder ${tdProps.className ?? ""} ${isSmall ? "px-4 py-1" : "px-7 py-3 "}`}
     >
       {children}
     </td>

@@ -153,11 +153,14 @@ function getPirogueNat(report: PirogueReport) {
   return ret;
 }
 
-export default function AdminReportPage() {
+export default function AdminGeneralReport() {
   const token = useContext(AuthContext).authData?.token;
   const [searchParams, setSearchParams] = useSearchParams();
   const [report, setReport] = useState<ReportInterface | null>(null);
-
+  const [startDate, setStartDate] = useState<ReportDateInterface>({
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
+  });
   const printRef = React.createRef<HTMLDivElement>();
 
   const handlePrint = useReactToPrint({
@@ -169,19 +172,14 @@ export default function AdminReportPage() {
   });
 
   useEffect(() => {
-    setReport(null);
     fetch();
-  }, [searchParams.get("year")]);
-
-  const selectedYear =
-    searchParams.get("year") ?? new Date().getFullYear().toString();
+  }, [startDate]);
 
   async function fetch() {
     const parms = {
-      start: selectedYear + "-" + "01",
-      end: parseInt(selectedYear) + 1 + "-" + "01",
+      start: startDate.year + "-" + startDate.month.toString().padStart(2, "0"),
+      end: endDate.year + "-" + endDate.month.toString().padStart(2, "0"),
     };
-
     try {
       const res = await axios.get(rootUrl + "report/", {
         headers: {
@@ -195,30 +193,94 @@ export default function AdminReportPage() {
       console.log(e);
     }
   }
-
+  const selectedRange: "monthly" | "trimestrial" | "yearly" =
+    (searchParams.get("range") as any) ?? "monthly";
   const selectedTab: "pirogues" | "immigrants" =
     (searchParams.get("tab") as any) ?? "pirogues";
+  let endDate: ReportDateInterface = {
+    year: startDate.year,
+    month: startDate.month,
+  };
+  if (selectedRange === "trimestrial") {
+    endDate.month += 3;
+    if (endDate.month > 12) {
+      endDate.month -= 12;
+      endDate.year += 1;
+    }
+  } else if (selectedRange === "yearly") {
+    endDate.year += 1;
+  }
 
   return (
     <div className="flex flex-col">
-      <Title className="mb-9">Rapports</Title>
+      <Title className="mb-9">Rapport Généraux</Title>
+      <div className="flex flex-row items-center gap-x-2 text-sm">
+        <Tab
+          onClick={() => {
+            setSearchParams((prev) => {
+              prev.set("range", "monthly");
+              return prev;
+            });
+          }}
+          active={
+            !searchParams.get("range") ||
+            searchParams.get("range") === "monthly"
+          }
+        >
+          Mensuelle
+        </Tab>
+        <Tab
+          onClick={() => {
+            setSearchParams((prev) => {
+              prev.set("range", "trimestrial");
+              return prev;
+            });
+          }}
+          active={searchParams.get("range") === "trimestrial"}
+        >
+          Trimestrielle
+        </Tab>
+        <Tab
+          onClick={() => {
+            setSearchParams((prev) => {
+              prev.set("range", "yearly");
+              return prev;
+            });
+          }}
+          active={searchParams.get("range") === "yearly"}
+        >
+          Annuelle
+        </Tab>
+      </div>
       <div className="mt-4 flex w-max items-center justify-center gap-x-6 self-center rounded border-2 border-primaryBorder p-2 px-2 font-semibold">
         <button
           onClick={() => {
-            setSearchParams((prev) => {
-              prev.set("year", (parseInt(selectedYear) - 1).toString());
-              return prev;
+            setStartDate((prev) => {
+              if (prev.month === 1) {
+                return { year: prev.year - 1, month: 12 };
+              } else {
+                return { year: prev.year, month: prev.month - 1 };
+              }
             });
           }}
         >
           <LeftArrow className="h-4 w-4 fill-primary" />
         </button>
-        <span className={` w-[130px] text-center`}>{selectedYear}</span>
+        <span
+          className={` text-center ${selectedRange === "monthly" ? "w-[130px]" : "w-[260px]"}`}
+        >
+          {MONTHS[startDate.month - 1] + " " + startDate.year}
+          {selectedRange !== "monthly" &&
+            " - " + MONTHS[endDate.month - 1] + " " + endDate.year}
+        </span>
         <button
           onClick={() => {
-            setSearchParams((prev) => {
-              prev.set("year", (parseInt(selectedYear) + 1).toString());
-              return prev;
+            setStartDate((prev) => {
+              if (prev.month === 12) {
+                return { year: prev.year + 1, month: 1 };
+              } else {
+                return { year: prev.year, month: prev.month + 1 };
+              }
             });
           }}
         >
@@ -319,7 +381,9 @@ export default function AdminReportPage() {
           className="mt-20 hidden flex-col items-center gap-y-10 px-10 print:flex"
         >
           <span className={` text-center text-xl font-semibold `}>
-            {selectedYear}
+            {MONTHS[startDate.month - 1] + " " + startDate.year}
+            {selectedRange !== "monthly" &&
+              " - " + MONTHS[endDate.month - 1] + " " + endDate.year}
           </span>
           <table className="w-full  text-center font-semibold">
             <thead>

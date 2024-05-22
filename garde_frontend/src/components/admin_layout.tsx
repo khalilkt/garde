@@ -4,34 +4,37 @@ import React from "react";
 import {
   AgentsIcon,
   ImmigrantIcon,
+  LeftArrow,
   MigrationIrregulierIcon,
   PiroguesIcon,
   StatsIcon,
 } from "./icons";
 import { DisconnectButton } from "./buttons";
-import AdminReportPage from "../ROUTES/admin/admin_report_page";
 
 function NavItem({
   to,
   children,
   icon,
+  isOpen,
 }: {
   to: string;
   icon: React.ReactNode;
   children: React.ReactNode;
+  isOpen: boolean;
 }) {
   const { pathname } = useLocation();
   const isActive = pathname === to;
+
   return (
     <li>
       <Link
-        className={`flex flex-row gap-x-2 rounded-md p-3 text-sm font-semibold transition-all duration-100 ${isActive ? "bg-[#E5EEFF] text-primary" : "bg-transparent text-gray"}`}
+        className={`flex flex-row gap-x-2 overflow-x-clip text-ellipsis rounded-md p-3 text-sm font-semibold transition-all duration-100 ${isActive ? "bg-[#E5EEFF] text-primary" : "bg-transparent text-gray"}`}
         to={to}
       >
         <span className={` ${isActive ? "fill-primary " : "fill-gray"}`}>
           {icon}
         </span>
-        {children}
+        {isOpen && children}
       </Link>
     </li>
   );
@@ -39,12 +42,28 @@ function NavItem({
 
 export function AdminProtectedLayout() {
   const authContext = React.useContext(AuthContext);
+  const [isOpen, setIsOpen] = React.useState(true);
+
   if (!authContext.authData || !authContext.authData.user.is_admin) {
     return <Navigate to="/" />;
   }
   return (
     <div className="flex h-screen flex-row">
-      <ul className="flex w-[14%] flex-col gap-y-2 border-r-2 border-r-primaryBorder bg-white px-6 pt-20">
+      <ul
+        className={
+          "relative flex flex-col gap-y-2 border-r-2 border-r-primaryBorder bg-white px-6 pt-20 transition-all duration-150 " +
+          (isOpen ? "w-[14%]" : "w-[100px]")
+        }
+      >
+        <button
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+          className={`absolute right-0 flex h-10 w-10 translate-x-1/2 items-center justify-center rounded-full bg-primaryBorder p-3 transition-all ${isOpen ? "" : "rotate-180"}`}
+        >
+          {/* arrow icon */}
+          <LeftArrow className="h-3 w-3 fill-black" />
+        </button>
         <h3
           onClick={() => {
             // authContext.logOut();
@@ -53,34 +72,51 @@ export function AdminProtectedLayout() {
         >
           Menu
         </h3>
-        <NavItem to="/admin" icon={<StatsIcon />}>
+        <NavItem isOpen={isOpen} to="/admin" icon={<StatsIcon />}>
           Statistiques
         </NavItem>
-        <NavItem to="/admin/agents" icon={<AgentsIcon />}>
+        <NavItem isOpen={isOpen} to="/admin/agents" icon={<AgentsIcon />}>
           Agents
         </NavItem>
-        <NavItem to="/admin/pirogues" icon={<PiroguesIcon />}>
+        <NavItem isOpen={isOpen} to="/admin/pirogues" icon={<PiroguesIcon />}>
           Pirogues
         </NavItem>
-        <NavItem to="/admin/immigrants" icon={<ImmigrantIcon />}>
+        <NavItem
+          isOpen={isOpen}
+          to="/admin/immigrants"
+          icon={<ImmigrantIcon />}
+        >
           Migrants
         </NavItem>
         <NavItem
+          isOpen={isOpen}
           to="/admin/migration_irreguliere"
           icon={<MigrationIrregulierIcon />}
         >
           Migration Irrégulière
         </NavItem>
-        <NavItem to="/admin/rapports" icon={<StatsIcon />}>
+        <NavItem
+          isOpen={isOpen}
+          to="/admin/general_rapports"
+          icon={<StatsIcon />}
+        >
+          Rapports Généraux
+        </NavItem>
+        <NavItem isOpen={isOpen} to="/admin/rapports" icon={<StatsIcon />}>
           Rapports
         </NavItem>
-        <NavItem to="/admin/comparaison" icon={<StatsIcon />}>
+        <NavItem isOpen={isOpen} to="/admin/comparaison" icon={<StatsIcon />}>
           Comparaison
         </NavItem>
-        <NavItem to="/admin/liberation" icon={<ImmigrantIcon />}>
+        <NavItem
+          isOpen={isOpen}
+          to="/admin/liberation"
+          icon={<ImmigrantIcon />}
+        >
           Libération
         </NavItem>
         <NavItem
+          isOpen={isOpen}
           to="/admin/criminals"
           icon={
             <svg

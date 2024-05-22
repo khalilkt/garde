@@ -39,6 +39,7 @@ import {
   PositionInterface,
 } from "../../components/position_input";
 import { useReactToPrint } from "react-to-print";
+import { AnimatePresence, motion } from "framer-motion";
 
 export interface PirogueInterface {
   id: number;
@@ -63,6 +64,7 @@ export interface PirogueInterface {
   nationality_name: string;
   extra: string;
   fuel: number;
+  etat: string;
 
   video: string | null;
 }
@@ -660,6 +662,22 @@ export default function AdminAgentPiroguesPage() {
     list?.reduce((acc, pirogue) => {
       return acc + pirogue.fuel;
     }, 0) ?? 0;
+
+  let totalPirogueSaisie = 0;
+  let totalPirogueCassee = 0;
+  let totalPirogueAbandonnee = 0;
+
+  for (const pirogue of list ?? []) {
+    if (pirogue !== null) {
+      if (pirogue.etat === "saisie") {
+        totalPirogueSaisie++;
+      } else if (pirogue.etat === "casse") {
+        totalPirogueCassee++;
+      } else if (pirogue.etat === "abandonnee") {
+        totalPirogueAbandonnee++;
+      }
+    }
+  }
   return (
     <div className="flex">
       {/* pb is for the floting button */}
@@ -869,7 +887,10 @@ export default function AdminAgentPiroguesPage() {
             {selectedDateRange !== null && list !== null && (
               <span className="">
                 <span>Total </span>
-                <span className="font-semibold">{list!.length}</span>
+                <span className="font-semibold">
+                  {list!.length}({totalPirogueSaisie}, {totalPirogueAbandonnee},
+                  {totalPirogueCassee})
+                </span>
                 <span> - {totalGps} GPS</span>
                 <span> - {totalMotor} Moteurs</span>
                 <span className="text-sm">
@@ -888,12 +909,12 @@ export default function AdminAgentPiroguesPage() {
               <tr className="font-bold text-gray">
                 <th className="text-medium  py-3 text-base">Numéro</th>
                 <th className="text-medium py-3 text-base">Num des moteurs</th>
-                <th className="text-medium py-3 text-base ">Utilisateur</th>
                 <th className="text-medium py-3 text-base">Equipage</th>
                 <th className="text-medium py-3 text-base">Port</th>
                 <th className="text-medium py-3 text-base">Nationalité</th>
                 <th className="text-medium py-3 text-base">Lieu de départ</th>
                 <th className="text-medium py-3 text-base">Date</th>
+                <th className="text-medium py-3 text-base ">Utilisateur</th>
                 <th className="text-medium w-20  py-3 text-base"></th>
               </tr>
             </thead>
@@ -912,15 +933,15 @@ export default function AdminAgentPiroguesPage() {
                     <Td>
                       {Object.keys(pirogue.motor_numbers).join(", ") ?? "-"}
                     </Td>
-                    <Td className="font-medium text-primary">
-                      {pirogue.created_by_name ?? "-"}
-                    </Td>
+
                     <Td>{pirogue.immigrants_count}</Td>
                     <Td>{pirogue.port ?? "-"}</Td>
                     <Td>{pirogue.nationality_name ?? "-"}</Td>
                     <Td>{pirogue.departure ?? "-"}</Td>
                     <Td>{pirogue.created_at?.split("T")[0] ?? "-"}</Td>
-
+                    <Td className="font-medium text-primary">
+                      {pirogue.created_by_name ?? "-"}
+                    </Td>
                     <Td>
                       <button
                         onClick={() => {
@@ -1015,11 +1036,32 @@ export default function AdminAgentPiroguesPage() {
                 })}
               </tbody>
             </table>
+
             {selectedDateRange !== null && list !== null && (
-              <span className="mt-4 self-end">
-                <span>Total </span>
-                <span className="font-semibold">{list!.length}</span>
-              </span>
+              <>
+                <br />
+                <br />
+                <table className="w-max">
+                  <tr>
+                    <td className="border-gray-300 border px-4">Sasie</td>
+                    <td className="border-gray-300 border px-4">Cassée</td>
+                    <td className="border-gray-300 border px-4">Abandonnée</td>
+                    <td className="border-gray-300 border px-4">Total</td>
+                  </tr>
+                  <tr className="text-center font-bold">
+                    <td className="border-gray-300 border">
+                      {totalPirogueSaisie}
+                    </td>
+                    <td className="border-gray-300 border">
+                      {totalPirogueCassee}
+                    </td>
+                    <td className="border-gray-300 border">
+                      {totalPirogueAbandonnee}
+                    </td>
+                    <td className="border-gray-300 border">{list.length}</td>
+                  </tr>
+                </table>
+              </>
             )}
           </div>
         )}
@@ -1043,146 +1085,158 @@ export default function AdminAgentPiroguesPage() {
         )}
       </div>
       {isFilterOpen && (
-        <div className={""}>
+        <div key={1}>
           <div
+            key={2}
             onClick={() => {
               setIsFilterOpen(false);
             }}
             className={`fixed inset-0 z-10 flex items-center justify-center bg-gray opacity-70 `}
           />
-          <div className="absolute right-0 top-0 z-30 h-screen w-1/4 bg-white px-9 pt-12 shadow-xl">
-            <div className="mb-9 flex justify-between">
-              <Title>Filtrer</Title>
-
-              <button
-                onClick={() => {
-                  setIsFilterOpen(false);
-                }}
-                className="rounded-full border border-gray p-2"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M1 1L11 11M11 1L1 11"
-                    stroke="#888888"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="flex flex-col gap-y-9">
-              <SearchSelect<any>
-                value={
-                  agentNamesCache.current[
-                    searchParams.get("created_by") ?? ""
-                  ] ?? null
-                }
-                onSelected={function (value): void {
-                  agentNamesCache.current[value.id.toString()] = value.name;
-                  setSearchParams((params) => {
-                    if (value) {
-                      params.set("created_by", value.id.toString());
-                    } else {
-                      params.delete("created_by");
-                    }
-                    params.set("page", "1");
-
-                    return params;
-                  });
-                }}
-                placeHolder={"Agent"}
-                search={true}
-                url={"users"}
-                lookupColumn="name"
-              />
-              <SearchSelect<CountryInterface>
-                value={
-                  countriesNameCache.current[
-                    searchParams.get("nationality") ?? ""
-                  ] ?? null
-                }
-                onSelected={function (value): void {
-                  countriesNameCache.current[value.id.toString()] =
-                    value.name_fr;
-                  setSearchParams((params) => {
-                    if (value) {
-                      params.set("nationality", value.id.toString());
-                    } else {
-                      params.delete("nationality");
-                    }
-                    params.set("page", "1");
-
-                    return params;
-                  });
-                }}
-                placeHolder={"Nationalité"}
-                search={true}
-                url={"countries"}
-                lookupColumn="name_fr"
-              />
-              <Select
-                // disabled={isSubmitting}
-                value={searchParams.get("port") ?? ""}
-                onChange={(e) => {
-                  setSearchParams((params) => {
-                    if (e.target.value === "") {
-                      params.delete("port");
-                    } else {
-                      params.set("port", e.target.value);
-                    }
-                    params.set("page", "1");
-                    return params;
-                  });
-                }}
-                className={searchParams.get("port") ? "" : "text-gray"}
-              >
-                <option value="" disabled>
-                  Port
-                </option>
-                <option value="ndagou">Ndagou</option>
-                <option value="nouadhibou">Nouadhibou</option>
-                <option value="nouakchott">Nouakchott</option>
-                <option value="tanit">Tanit</option>
-              </Select>
-              <Select
-                // disabled={isSubmitting}
-                value={searchParams.get("material") ?? ""}
-                onChange={(e) => {
-                  setSearchParams((params) => {
-                    if (e.target.value === "") {
-                      params.delete("material");
-                    } else {
-                      params.set("material", e.target.value);
-                    }
-                    params.set("page", "1");
-                    return params;
-                  });
-                }}
-                className={searchParams.get("material") ? "" : "text-gray"}
-              >
-                <option value="" className="text-gray " disabled>
-                  Matériel
-                </option>
-                <option value="wood">Bois</option>
-                <option value="metal">Métal</option>
-                <option value="plastic">Plastique</option>
-                <option value="polyester">Polyester</option>
-              </Select>
-            </div>
-            {/* <FilledButton
-              onClick={() => {}}
-              className="mt-32 w-full self-center"
+          <AnimatePresence>
+            <motion.div
+              key={3}
+              // initial={{
+              //   x: "100%",
+              // }}
+              // animate={{
+              //   x: "0%",
+              // }}
+              // exit={{
+              //   x: "100%",
+              // }}
+              // transition={{
+              //   duration: 0.1,
+              // }}
+              className="absolute right-0 top-0 z-30 h-screen w-1/4 bg-white px-9 pt-12 shadow-xl"
             >
-              Appliquer
-            </FilledButton> */}
-          </div>
+              <div className="mb-9 flex justify-between">
+                <Title>Filtrer</Title>
+
+                <button
+                  onClick={() => {
+                    setIsFilterOpen(false);
+                  }}
+                  className="rounded-full border border-gray p-2"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M1 1L11 11M11 1L1 11"
+                      stroke="#888888"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex flex-col gap-y-9">
+                <SearchSelect<any>
+                  value={
+                    agentNamesCache.current[
+                      searchParams.get("created_by") ?? ""
+                    ] ?? null
+                  }
+                  onSelected={function (value): void {
+                    agentNamesCache.current[value.id.toString()] = value.name;
+                    setSearchParams((params) => {
+                      if (value) {
+                        params.set("created_by", value.id.toString());
+                      } else {
+                        params.delete("created_by");
+                      }
+                      params.set("page", "1");
+
+                      return params;
+                    });
+                  }}
+                  placeHolder={"Agent"}
+                  search={true}
+                  url={"users"}
+                  lookupColumn="name"
+                />
+                <SearchSelect<CountryInterface>
+                  value={
+                    countriesNameCache.current[
+                      searchParams.get("nationality") ?? ""
+                    ] ?? null
+                  }
+                  onSelected={function (value): void {
+                    countriesNameCache.current[value.id.toString()] =
+                      value.name_fr;
+                    setSearchParams((params) => {
+                      if (value) {
+                        params.set("nationality", value.id.toString());
+                      } else {
+                        params.delete("nationality");
+                      }
+                      params.set("page", "1");
+
+                      return params;
+                    });
+                  }}
+                  placeHolder={"Nationalité"}
+                  search={true}
+                  url={"countries"}
+                  lookupColumn="name_fr"
+                />
+                <Select
+                  // disabled={isSubmitting}
+                  value={searchParams.get("port") ?? ""}
+                  onChange={(e) => {
+                    setSearchParams((params) => {
+                      if (e.target.value === "") {
+                        params.delete("port");
+                      } else {
+                        params.set("port", e.target.value);
+                      }
+                      params.set("page", "1");
+                      return params;
+                    });
+                  }}
+                  className={searchParams.get("port") ? "" : "text-gray"}
+                >
+                  <option value="" disabled>
+                    Port
+                  </option>
+                  <option value="ndagou">Ndagou</option>
+                  <option value="nouadhibou">Nouadhibou</option>
+                  <option value="nouakchott">Nouakchott</option>
+                  <option value="tanit">Tanit</option>
+                </Select>
+                <Select
+                  // disabled={isSubmitting}
+                  value={searchParams.get("material") ?? ""}
+                  onChange={(e) => {
+                    setSearchParams((params) => {
+                      if (e.target.value === "") {
+                        params.delete("material");
+                      } else {
+                        params.set("material", e.target.value);
+                      }
+                      params.set("page", "1");
+                      return params;
+                    });
+                  }}
+                  className={searchParams.get("material") ? "" : "text-gray"}
+                >
+                  <option value="" className="text-gray " disabled>
+                    Matériel
+                  </option>
+                  <option value="wood">Bois</option>
+                  <option value="metal">Métal</option>
+                  <option value="plastic">Plastique</option>
+                  <option value="polyester">Polyester</option>
+                </Select>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       )}
       {searchParams.get("selected_pirogue") && (

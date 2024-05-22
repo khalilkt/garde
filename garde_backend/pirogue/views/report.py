@@ -2,6 +2,7 @@ from rest_framework.views import APIView, Response, status
 from rest_framework.permissions import IsAdminUser
 from rest_framework import serializers
 from datetime import datetime
+from authentication.models import User
 from pirogue.models import Pirogue, Immigrant
 from django.db.models import F, ExpressionWrapper, IntegerField
 from dateutil.relativedelta import relativedelta
@@ -59,8 +60,11 @@ def filter_by_start_end_date(queryset, start_date_epoch, end_date_epoch):
     ret  = ret.filter(created_at_epoch__gte=start_date_epoch, created_at_epoch__lt=end_date_epoch)
     return ret
 
-def get_immigrant_report(start_date_epoch, end_date_epoch):
+def get_immigrant_report(start_date_epoch, end_date_epoch, user = None):
+
     immigrants = filter_by_start_end_date(Immigrant.objects.def_queryset(), start_date_epoch, end_date_epoch)
+    if user:
+        immigrants = immigrants.filter(created_by=user)
     ret = {}
     for imm in immigrants: 
         nat = imm.nationality.id if imm.nationality else None
@@ -111,3 +115,60 @@ class ReportList(APIView):
 
 
 
+class GeneralReport (APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request): 
+        immigrant_report_by_month = {}
+        
+        if not  "year" in request.query_params: 
+            return Response({"error": "year is required"}, status=status.HTTP_400_BAD_REQUEST)
+        year = request.query_params["year"] 
+        if len(year) != 4:
+            return Response({"error": "year must be in the format YYYY"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        month = 1
+        users = User.objects.all()
+        for user in users:
+            immigrant_report_by_month[user.city_name] = {}
+            while month <= 12:  
+                start_date = f"{year}-{month:02}" 
+                end_date = f"{year}-{month+1:02}" if month < 12 else f"{int(year)+1:04}-01"
+                start_date_epoch = datetime.strptime(start_date, "%Y-%m").timestamp()
+                end_date_epoch = datetime.strptime(end_date, "%Y-%m").timestamp()
+
+                month_report = get_immigrant_report(start_date_epoch, end_date_epoch, user = user )
+                immigrant_report_by_month[user.city_name][month] = month_report
+                month += 1
+
+
+        pirogue_report_by_month = {}
+
+        pirogues = Pirogue.objects.def_queryset()
+        for user in users:
+            pirogue_report_by_month[user.city_name] = {}
+            month = 1
+            while month <= 12:  
+                start_date = f"{year}-{month:02}" 
+                end_date = f"{year}-{month+1:02}" if month < 12 else f"{int(year)+1:04}-01"
+                start_date_epoch = datetime.strptime(start_date, "%Y-%m").timestamp()
+                end_date_epoch = datetime.strptime(end_date, "%Y-%m").timestamp()
+
+                pirogues_report = filter_by_start_end_date(pirogues, start_date_epoch, end_date_epoch)
+                pirogues_report = pirogues_report.filter(created_by=user)
+
+                saisie = pirogues_report.filter(etat='saisie').count()
+                casse = pirogues_report.filter(etat='casse').count()
+                abandonnee = pirogues_report.filter(etat='abandonnee').count()
+                pirogue_report_by_month[user.city_name][month] = {
+                    "saisie" : saisie,
+                    "casse" : casse,
+                    "abandonnee" : abandonnee,
+                }
+                month += 1
+        
+        return Response({
+            "immigrant_report" : immigrant_report_by_month,
+            "pirogue_report" : pirogue_report_by_month,
+        })
+        
