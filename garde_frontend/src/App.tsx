@@ -149,10 +149,10 @@ function App() {
                   element={<MigrationIrregulierePage />}
                 />
                 <Route path="rapports" element={<AdminReportPage />} />
-                <Route
+                {/* <Route
                   path="general_rapports"
                   element={<AdminGeneralReport />}
-                />
+                /> */}
                 <Route path="comparaison" element={<AdminComparaisonPage />} />
                 <Route path="liberation" element={<AdminLiberationPage />} />
                 <Route path="criminals" element={<CriminalsPage />} />

@@ -95,13 +95,13 @@ export function AdminProtectedLayout() {
         >
           Migration Irrégulière
         </NavItem>
-        <NavItem
+        {/* <NavItem
           isOpen={isOpen}
           to="/admin/general_rapports"
           icon={<StatsIcon />}
         >
           Rapports Généraux
-        </NavItem>
+        </NavItem> */}
         <NavItem isOpen={isOpen} to="/admin/rapports" icon={<StatsIcon />}>
           Rapports
         </NavItem>
