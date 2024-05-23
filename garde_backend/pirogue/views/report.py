@@ -127,10 +127,10 @@ class GeneralReport (APIView):
         if len(year) != 4:
             return Response({"error": "year must be in the format YYYY"}, status=status.HTTP_400_BAD_REQUEST)
         
-        month = 1
         users = User.objects.all()
         for user in users:
             immigrant_report_by_month[user.city_name] = {}
+            month = 1
             while month <= 12:  
                 start_date = f"{year}-{month:02}" 
                 end_date = f"{year}-{month+1:02}" if month < 12 else f"{int(year)+1:04}-01"

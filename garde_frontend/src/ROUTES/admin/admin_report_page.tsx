@@ -126,6 +126,46 @@ function getPirogueGenre(repot: PirogueReport) {
   return ret;
 }
 
+interface ReportInterface2 {
+  [month: string]: { [city: string]: NationalityDetails };
+  // pirogue_report: { [key: string]: {[key:string] : {}} };
+}
+
+function getReportFromData(data: any) {
+  const immgrantReport = data["immigrant_report"];
+  let immigrantReportByMonth = [];
+  // {
+  // city : {
+  //   "1" : data,
+  //   "2" : data,
+  //   "3" : data,
+  // ...
+  // }
+  // ,
+  // city_2 :{
+  //   "1" : data,
+  //   "2" : data,
+  //   "3" : data,
+  // }
+  let mm = 1;
+  while (mm <= 12) {
+    let monthReport: {
+      [city: string]: NationalityDetails;
+    } = {};
+    for (const [key, value] of Object.entries(immgrantReport)) {
+      monthReport[key] = (value as { [month: string]: NationalityDetails })[
+        mm.toString()
+      ];
+    }
+
+    immigrantReportByMonth.push(monthReport);
+
+    mm = mm + 1;
+  }
+
+  return immigrantReportByMonth;
+}
+
 function getPirogueNat(report: PirogueReport) {
   let ret = "";
   for (const [key, value] of Object.entries(report.nationalities)) {
@@ -157,6 +197,9 @@ export default function AdminReportPage() {
   const token = useContext(AuthContext).authData?.token;
   const [searchParams, setSearchParams] = useSearchParams();
   const [report, setReport] = useState<ReportInterface | null>(null);
+  const [dd, setDd] = useState<{ [city: string]: NationalityDetails }[] | null>(
+    null,
+  );
 
   const printRef = React.createRef<HTMLDivElement>();
 
@@ -178,19 +221,24 @@ export default function AdminReportPage() {
 
   async function fetch() {
     const parms = {
-      start: selectedYear + "-" + "01",
-      end: parseInt(selectedYear) + 1 + "-" + "01",
+      // start: selectedYear + "-" + "01",
+      // end: parseInt(selectedYear) + 1 + "-" + "01",
+      year: selectedYear.toString(),
     };
 
     try {
-      const res = await axios.get(rootUrl + "report/", {
+      const res = await axios.get(rootUrl + "general_report/", {
         headers: {
           Authorization: `Token ${token}`,
         },
         params: parms,
       });
       console.log(res.data);
-      setReport(res.data);
+      const ret = getReportFromData(res.data);
+      console.log(ret);
+      setDd(ret as any);
+
+      // setReport(res.data);
     } catch (e) {
       console.log(e);
     }
@@ -257,6 +305,45 @@ export default function AdminReportPage() {
       >
         Imprimer
       </FilledButton>
+
+      {dd &&
+        dd.map((monthReport, i: number) => (
+          <div className="flex flex-col items-center">
+            <span className="mt-10 text-lg font-semibold text-gray">
+              {MONTHS[i]}
+            </span>
+            {Object.entries(monthReport).map(([city, value], index) => (
+              <div className="flex flex-col">
+                <span className="mt-10 text-lg font-semibold text-primary">
+                  {city}
+                </span>
+                <table>
+                  <thead>
+                    <tr>
+                      <th className="text-medium  py-3 text-base">
+                        Nationalités
+                      </th>
+                      <th className="text-medium  py-3 text-base">
+                        Effectif global
+                      </th>
+                      <th className="text-medium py-3 text-base">Hommes</th>
+                      <th className="text-medium py-3 text-base">Femmes</th>
+                      <th className="text-medium py-3 text-base">Mineurs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <Tr>
+                      <Td>{value.name ?? "-"}</Td>
+                      <Td>{value.males}</Td>
+                      <Td>{value.females}</Td>
+                      <Td>{value.minors}</Td>
+                    </Tr>
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        ))}
       <table
         className={`mt-10 w-full text-center text-lg ${selectedTab === "pirogues" ? "" : "hidden"}`}
       >
@@ -285,6 +372,7 @@ export default function AdminReportPage() {
           <TableBodySquelette columnCount={5} />
         )}
       </table>
+
       <table
         className={`mt-10 w-full text-center text-lg ${selectedTab === "immigrants" ? "" : "hidden"}`}
       >
