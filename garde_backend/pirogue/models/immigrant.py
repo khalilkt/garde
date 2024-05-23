@@ -24,6 +24,11 @@ class ImmigrantManager(models.Manager):
             output_field=IntegerField()
         ))
 
+        ret = ret.annotate(
+            pirogue_sejour = F("pirogue__sejour")           )
+
+
+
         return ret
 
 class Immigrant(models.Model):
@@ -56,6 +61,7 @@ class ImmigrantSerializer(serializers.ModelSerializer):
     birth_country_name = serializers.CharField( read_only=True)
     nationality_name = serializers.CharField( read_only=True)
     age = serializers.CharField(read_only=True)
+    pirogue_sejour = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Immigrant

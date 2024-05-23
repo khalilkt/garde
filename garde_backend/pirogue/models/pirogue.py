@@ -26,6 +26,8 @@ class Pirogue(models.Model):
     extra  = models.CharField(max_length=4000, default="", blank=True, null=True)
     days_at_sea = models.IntegerField(null=True, blank=True)
 
+    sejour = models.IntegerField( null = True, blank = True)
+
     departure = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)

@@ -422,7 +422,7 @@ function AddEditPirogueDialog({
 }
 
 export interface DialogState {
-  state: "none" | "adding" | "editing";
+  state: "none" | "adding" | "editing" | "sejour_edit";
   payload?: {
     [key: string]: any;
   };
@@ -678,6 +678,20 @@ export default function AdminAgentPiroguesPage() {
       }
     }
   }
+
+  function getDialogTitle() {
+    switch (dialogState.state) {
+      case "editing":
+        return "Modifier Pirogue";
+      case "adding":
+        return "Ajouter Pirogue";
+      case "sejour_edit":
+        return "Modifier Séjour";
+      default:
+        return "";
+    }
+  }
+
   return (
     <div className="flex">
       {/* pb is for the floting button */}
@@ -685,20 +699,36 @@ export default function AdminAgentPiroguesPage() {
         <MDialog
           onClose={() => setDialogState({ state: "none" })}
           isOpen={dialogState.state !== "none"}
-          title={
-            dialogState.state === "editing"
-              ? "Modifier Pirogue"
-              : "Ajouter Pirogue"
-          }
+          title={getDialogTitle()}
         >
-          <AddEditPirogueDialog
-            onDone={(added) => {
-              setDialogState({ state: "none" });
-              if (added) {
-                load();
-              }
-            }}
-          />
+          <>
+            {dialogState.state === "adding" && (
+              <AddEditPirogueDialog
+                onDone={(added) => {
+                  setDialogState({ state: "none" });
+                  if (added) {
+                    load();
+                  }
+                }}
+              />
+            )}
+            {dialogState.state === "sejour_edit" && (
+              <div className="flex flex-col gap-y-3">
+                <Input
+                  placeholder="Nouveau séjour (jours)"
+                  type="number"
+                  className="w-[300px]"
+                />
+                <FilledButton
+                  onClick={() => {
+                    setDialogState({ state: "none" });
+                  }}
+                >
+                  Enregistrer
+                </FilledButton>
+              </div>
+            )}
+          </>
         </MDialog>
         {!isAdmin && (
           <div className="mb-10 flex w-full flex-row items-center justify-between">
@@ -927,9 +957,7 @@ export default function AdminAgentPiroguesPage() {
                     {/* <Td>
                   <input type="checkbox" className="h-5 w-5" />
                 </Td> */}
-                    <Td className="flex items-center gap-x-2 gap-y-1 overflow-clip">
-                      <span>{pirogue.number}</span>
-                    </Td>
+                    <Td className="">{pirogue.number}</Td>
                     <Td>
                       {Object.keys(pirogue.motor_numbers).join(", ") ?? "-"}
                     </Td>
@@ -943,31 +971,44 @@ export default function AdminAgentPiroguesPage() {
                       {pirogue.created_by_name ?? "-"}
                     </Td>
                     <Td>
-                      <button
-                        onClick={() => {
-                          setSearchParams((params) => {
-                            params.set(
-                              "selected_pirogue",
-                              pirogue.id.toString(),
-                            );
-                            return params;
-                          });
-                        }}
-                        className=" transition-all duration-100 active:scale-90"
-                      >
-                        <svg
-                          width="23"
-                          height="16"
-                          viewBox="0 0 23 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                      <div className="flex flex-row gap-x-4">
+                        <button
+                          onClick={() => {
+                            setDialogState({
+                              state: "sejour_edit",
+                              payload: { pirogue_id: pirogue.id },
+                            });
+                          }}
+                          className=" transition-all duration-100 active:scale-90"
                         >
-                          <path
-                            d="M11.5 12.6666C12.8021 12.6666 13.9089 12.2109 14.8203 11.2994C15.7318 10.388 16.1875 9.28121 16.1875 7.97913C16.1875 6.67704 15.7318 5.57027 14.8203 4.65881C13.9089 3.74735 12.8021 3.29163 11.5 3.29163C10.1979 3.29163 9.09115 3.74735 8.17969 4.65881C7.26823 5.57027 6.8125 6.67704 6.8125 7.97913C6.8125 9.28121 7.26823 10.388 8.17969 11.2994C9.09115 12.2109 10.1979 12.6666 11.5 12.6666ZM11.5 10.7916C10.7188 10.7916 10.0547 10.5182 9.50781 9.97131C8.96094 9.42444 8.6875 8.76038 8.6875 7.97913C8.6875 7.19788 8.96094 6.53381 9.50781 5.98694C10.0547 5.44006 10.7188 5.16663 11.5 5.16663C12.2812 5.16663 12.9453 5.44006 13.4922 5.98694C14.0391 6.53381 14.3125 7.19788 14.3125 7.97913C14.3125 8.76038 14.0391 9.42444 13.4922 9.97131C12.9453 10.5182 12.2812 10.7916 11.5 10.7916ZM11.5 15.7916C9.17361 15.7916 7.05122 15.1666 5.13281 13.9166C3.21441 12.6666 1.69965 11.0173 0.588542 8.96871C0.501736 8.81246 0.436632 8.65187 0.393229 8.48694C0.349826 8.32201 0.328125 8.15274 0.328125 7.97913C0.328125 7.80551 0.349826 7.63624 0.393229 7.47131C0.436632 7.30638 0.501736 7.14579 0.588542 6.98954C1.69965 4.94093 3.21441 3.29163 5.13281 2.04163C7.05122 0.791626 9.17361 0.166626 11.5 0.166626C13.8264 0.166626 15.9488 0.791626 17.8672 2.04163C19.7856 3.29163 21.3003 4.94093 22.4115 6.98954C22.4983 7.14579 22.5634 7.30638 22.6068 7.47131C22.6502 7.63624 22.6719 7.80551 22.6719 7.97913C22.6719 8.15274 22.6502 8.32201 22.6068 8.48694C22.5634 8.65187 22.4983 8.81246 22.4115 8.96871C21.3003 11.0173 19.7856 12.6666 17.8672 13.9166C15.9488 15.1666 13.8264 15.7916 11.5 15.7916ZM11.5 13.7083C13.4618 13.7083 15.263 13.1918 16.9036 12.1588C18.5443 11.1258 19.7986 9.7326 20.6667 7.97913C19.7986 6.22565 18.5443 4.83242 16.9036 3.79944C15.263 2.76645 13.4618 2.24996 11.5 2.24996C9.53819 2.24996 7.73698 2.76645 6.09635 3.79944C4.45573 4.83242 3.20139 6.22565 2.33333 7.97913C3.20139 9.7326 4.45573 11.1258 6.09635 12.1588C7.73698 13.1918 9.53819 13.7083 11.5 13.7083Z"
-                            fill="#888888"
-                          />
-                        </svg>
-                      </button>
+                          <EditIcon />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSearchParams((params) => {
+                              params.set(
+                                "selected_pirogue",
+                                pirogue.id.toString(),
+                              );
+                              return params;
+                            });
+                          }}
+                          className=" transition-all duration-100 active:scale-90"
+                        >
+                          <svg
+                            width="23"
+                            height="16"
+                            viewBox="0 0 23 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M11.5 12.6666C12.8021 12.6666 13.9089 12.2109 14.8203 11.2994C15.7318 10.388 16.1875 9.28121 16.1875 7.97913C16.1875 6.67704 15.7318 5.57027 14.8203 4.65881C13.9089 3.74735 12.8021 3.29163 11.5 3.29163C10.1979 3.29163 9.09115 3.74735 8.17969 4.65881C7.26823 5.57027 6.8125 6.67704 6.8125 7.97913C6.8125 9.28121 7.26823 10.388 8.17969 11.2994C9.09115 12.2109 10.1979 12.6666 11.5 12.6666ZM11.5 10.7916C10.7188 10.7916 10.0547 10.5182 9.50781 9.97131C8.96094 9.42444 8.6875 8.76038 8.6875 7.97913C8.6875 7.19788 8.96094 6.53381 9.50781 5.98694C10.0547 5.44006 10.7188 5.16663 11.5 5.16663C12.2812 5.16663 12.9453 5.44006 13.4922 5.98694C14.0391 6.53381 14.3125 7.19788 14.3125 7.97913C14.3125 8.76038 14.0391 9.42444 13.4922 9.97131C12.9453 10.5182 12.2812 10.7916 11.5 10.7916ZM11.5 15.7916C9.17361 15.7916 7.05122 15.1666 5.13281 13.9166C3.21441 12.6666 1.69965 11.0173 0.588542 8.96871C0.501736 8.81246 0.436632 8.65187 0.393229 8.48694C0.349826 8.32201 0.328125 8.15274 0.328125 7.97913C0.328125 7.80551 0.349826 7.63624 0.393229 7.47131C0.436632 7.30638 0.501736 7.14579 0.588542 6.98954C1.69965 4.94093 3.21441 3.29163 5.13281 2.04163C7.05122 0.791626 9.17361 0.166626 11.5 0.166626C13.8264 0.166626 15.9488 0.791626 17.8672 2.04163C19.7856 3.29163 21.3003 4.94093 22.4115 6.98954C22.4983 7.14579 22.5634 7.30638 22.6068 7.47131C22.6502 7.63624 22.6719 7.80551 22.6719 7.97913C22.6719 8.15274 22.6502 8.32201 22.6068 8.48694C22.5634 8.65187 22.4983 8.81246 22.4115 8.96871C21.3003 11.0173 19.7856 12.6666 17.8672 13.9166C15.9488 15.1666 13.8264 15.7916 11.5 15.7916ZM11.5 13.7083C13.4618 13.7083 15.263 13.1918 16.9036 12.1588C18.5443 11.1258 19.7986 9.7326 20.6667 7.97913C19.7986 6.22565 18.5443 4.83242 16.9036 3.79944C15.263 2.76645 13.4618 2.24996 11.5 2.24996C9.53819 2.24996 7.73698 2.76645 6.09635 3.79944C4.45573 4.83242 3.20139 6.22565 2.33333 7.97913C3.20139 9.7326 4.45573 11.1258 6.09635 12.1588C7.73698 13.1918 9.53819 13.7083 11.5 13.7083Z"
+                              fill="#888888"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </Td>
                   </Tr>
                 ))}
