@@ -27,7 +27,7 @@ class ImmigrantManager(models.Manager):
         ret = ret.annotate(
             pirogue_sejour = F("pirogue__sejour")           )
 
-
+        ret = ret.filter(deleted_at__isnull=True)
 
         return ret
 
@@ -43,6 +43,7 @@ class Immigrant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('authentication.User', on_delete=models.PROTECT, related_name='immigrants')
     free_at = models.DateField( null = True, blank = True)
+    deleted_at = models.DateTimeField( null = True, blank = True)
     criminal_record = models.CharField(max_length=100, null = True, choices=[
         ('theft', 'theft'),
         ('homocide', 'homocide'),

@@ -46,6 +46,7 @@ export interface PirogueInterface {
   number: string;
   created_by_name: string;
   immigrants_count: number;
+  sejour: number | null;
   lat: string;
   long: string;
   departure: string;
@@ -692,6 +693,20 @@ export default function AdminAgentPiroguesPage() {
     }
   }
 
+  async function onSejourEdit(pirogue_id: number, sejour: number) {
+    await axios
+      .patch(
+        rootUrl + "pirogues/" + pirogue_id + "/",
+        { sejour: sejour },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      )
+      .then((res) => {});
+  }
+
   return (
     <div className="flex">
       {/* pb is for the floting button */}
@@ -715,12 +730,25 @@ export default function AdminAgentPiroguesPage() {
             {dialogState.state === "sejour_edit" && (
               <div className="flex flex-col gap-y-3">
                 <Input
+                  id="pirogue_sejour_input"
                   placeholder="Nouveau séjour (jours)"
                   type="number"
                   className="w-[300px]"
                 />
                 <FilledButton
                   onClick={() => {
+                    onSejourEdit(
+                      dialogState.payload!.pirogue_id,
+                      parseInt(
+                        (
+                          document.getElementById(
+                            "pirogue_sejour_input",
+                          ) as HTMLInputElement
+                        ).value,
+                      ),
+                    ).then((_) => {
+                      load();
+                    });
                     setDialogState({ state: "none" });
                   }}
                 >

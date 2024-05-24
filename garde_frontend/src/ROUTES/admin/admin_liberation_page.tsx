@@ -235,11 +235,9 @@ export default function AdminLiberationPage() {
                 <Td>{immigrant.departure}</Td>
                 <Td>DRS</Td>
                 <Td>
-                  {(
-                    (new Date().valueOf() -
-                      new Date(immigrant.created_at).valueOf()) /
-                    8.64e7
-                  ).toFixed(0) + " jour(s)"}
+                  {immigrant.pirogue_sejour
+                    ? immigrant.pirogue_sejour + " jour(s)"
+                    : "-"}
                 </Td>
               </Tr>
             ))}
@@ -307,11 +305,14 @@ export default function AdminLiberationPage() {
                       </td>
                       <td className="border-gray-300 border ">DRS</td>
                       <td className="border-gray-300 border ">
-                        {(
+                        {/* {(
                           (new Date().valueOf() -
                             new Date(immigrant.created_at).valueOf()) /
                           8.64e7
-                        ).toFixed(0) + " jour(s)"}
+                        ).toFixed(0) + " jour(s)"} */}
+                        {immigrant.pirogue_sejour
+                          ? immigrant.pirogue_sejour + " jour(s)"
+                          : "-"}
                       </td>
                       <td className="border-gray-300 border ">{observation}</td>
                     </tr>

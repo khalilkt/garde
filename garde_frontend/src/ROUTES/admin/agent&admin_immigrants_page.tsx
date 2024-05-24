@@ -28,12 +28,12 @@ import {
 import { Pagination, Td, Tr } from "../../components/table";
 import { useContext, useEffect, useId } from "react";
 import React from "react";
-import { MDialog } from "../../components/dialog";
 import axios from "axios";
 import { PaginatedData, rootUrl } from "../../models/constants";
 import { AuthContext } from "../../App";
 import { CountryInterface, MobileImmigrantView } from "./pirogue_detail_page";
 import { useReactToPrint } from "react-to-print";
+import * as Dialog from "@radix-ui/react-dialog";
 
 export interface ImmigrantInterface {
   id: number;
@@ -51,6 +51,7 @@ export interface ImmigrantInterface {
   age: number | null;
   pirogue: number;
   created_by: number;
+  pirogue_sejour: number | null;
   criminal_record:
     | "killer"
     | "thief"
@@ -75,6 +76,8 @@ export default function AdminAgentImmigrantsPage() {
   const authContext = useContext(AuthContext);
   const countriesNameCache = React.useRef<{ [key: string]: string }>({});
   const agentNamesCache = React.useRef<{ [key: string]: string }>({});
+
+  const [deletingId, setDeletingId] = React.useState<number | null>(null);
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const token = useContext(AuthContext).authData?.token;
@@ -466,6 +469,7 @@ export default function AdminAgentImmigrantsPage() {
               {isAdmin && (
                 <th className="text-medium py-3 text-base">Utilisateur</th>
               )}
+              {isAdmin && <th></th>}
             </tr>
           </thead>
           <tbody>
@@ -494,15 +498,93 @@ export default function AdminAgentImmigrantsPage() {
                 <Td>{immigrant.date_of_birth}</Td>
                 {<Td>{immigrant.created_at.split("T")[0]}</Td>}
                 <Td>
-                  {(
-                    (new Date().valueOf() -
-                      new Date(immigrant.created_at).valueOf()) /
-                    8.64e7
-                  ).toFixed(0) + " jour(s)"}
+                  {
+                    // (
+                    //   (new Date().valueOf() -
+                    //     new Date(immigrant.created_at).valueOf()) /
+                    //   8.64e7
+                    // ).toFixed(0)
+
+                    immigrant.pirogue_sejour
+                      ? immigrant.pirogue_sejour + " jour(s)"
+                      : "-"
+                  }
                 </Td>
                 {isAdmin && (
                   <Td className="text-primary">{immigrant.created_by_name}</Td>
                 )}
+                <Td>
+                  {isAdmin && (
+                    <>
+                      <Dialog.Root
+                        open={deletingId !== null}
+                        onOpenChange={
+                          deletingId === null
+                            ? () => {}
+                            : (open) => {
+                                if (!open) {
+                                  setDeletingId(null);
+                                }
+                              }
+                        }
+                      >
+                        <button
+                          onClick={() => {
+                            setDeletingId(immigrant.id);
+                          }}
+                          className=" transition-all duration-100 active:scale-90"
+                        >
+                          <DeleteIcon />
+                        </button>
+                        <Dialog.Overlay className="fixed inset-0 z-20 bg-black opacity-10" />
+                        <Dialog.Content className="fixed left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded bg-white px-4 py-4">
+                          <Dialog.Title>
+                            <h2 className="pb-8 text-xl font-semibold">
+                              Supprimer un migrant
+                            </h2>
+                          </Dialog.Title>
+                          <Dialog.Description>
+                            <p>
+                              Vous êtes sur le point de supprimer un migrant de
+                              la base de données.
+                              <br /> Veuillez confirmer cette action.
+                            </p>
+                          </Dialog.Description>
+                          <div className="mt-10 flex flex-row gap-x-4">
+                            <OutlinedButton
+                              onClick={() => {
+                                setDeletingId(null);
+                              }}
+                              className=""
+                            >
+                              Annuler
+                            </OutlinedButton>
+                            <FilledButton
+                              onClick={() => {
+                                setDeletingId(null);
+                                axios
+                                  .delete(
+                                    rootUrl + "immigrants/" + deletingId + "/",
+                                    {
+                                      headers: {
+                                        Authorization: `Token ${token}`,
+                                      },
+                                    },
+                                  )
+                                  .then((response) => {
+                                    load();
+                                  });
+                              }}
+                              className=" bg-red-500 text-white "
+                            >
+                              Supprimer
+                            </FilledButton>
+                          </div>
+                        </Dialog.Content>
+                      </Dialog.Root>
+                    </>
+                  )}
+                </Td>
               </Tr>
             ))}
           </tbody>
@@ -572,11 +654,14 @@ export default function AdminAgentImmigrantsPage() {
                       {immigrant.created_at.split("T")[0]}
                     </td>
                     <td className="border-gray-300 border ">
-                      {(
+                      {immigrant.pirogue_sejour
+                        ? immigrant.pirogue_sejour + " jour(s)"
+                        : "-"}
+                      {/* {(
                         (new Date().valueOf() -
                           new Date(immigrant.created_at).valueOf()) /
                         8.64e7
-                      ).toFixed(0) + " jour(s)"}
+                      ).toFixed(0) + " jour(s)"} */}
                     </td>
                     <td className="border-gray-300 border "></td>
                   </tr>

@@ -27,7 +27,7 @@ class StatsView(APIView):
     def get(self, request):
         year= 2024
         total_pirogues = Pirogue.objects.filter(created_at__year=year).count()
-        total_immigrants = Immigrant.objects.filter(created_at__year=year).count()
+        total_immigrants = Immigrant.objects.filter(deleted_at__isnull = True).filter(created_at__year=year).count()
         return Response(StatsSerializer({
             'total_pirogues': total_pirogues,
             'total_immigrants': total_immigrants,

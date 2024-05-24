@@ -206,6 +206,13 @@ class ImmigrantDetail(RetrieveUpdateDestroyAPIView):
     queryset = Immigrant.objects.def_queryset()
     serializer_class = ImmigrantSerializer
 
+    # overide delete
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.deleted_at = datetime.now()
+        instance.save()
+        return Response("ok")
+
 class PirogueImmigrantsList(ListCreateAPIView):
     serializer_class = ImmigrantSerializer
     permission_classes = [ HasPirogueImmigrantsPermission]
@@ -344,7 +351,7 @@ class ImmigrantBulkAdd(APIView):
             "total males" : males_count,
             "total females" : females_count,
             "total minors" : minors_count, 
-            "total general" : Immigrant.objects.count()
+            "total general" : Immigrant.objects.filter(deleted_at__isnull = True).count()
         }
         return Response(response)
 
