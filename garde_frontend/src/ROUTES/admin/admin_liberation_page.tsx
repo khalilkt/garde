@@ -22,6 +22,7 @@ import { MDialog } from "../../components/dialog";
 import { CountryInterface } from "./pirogue_detail_page";
 import { ImmigrantInterface } from "./agent&admin_immigrants_page";
 import { AuthContext } from "../../App";
+import { getImmigrantGenre } from "../../models/utils";
 
 function LiberationDialog({
   onSubmit,
@@ -231,7 +232,7 @@ export default function AdminLiberationPage() {
                 <Td>{immigrant.date_of_birth?.split("T")[0] ?? "-"}</Td>
                 <Td>{immigrant.birth_country_name ?? "-"}</Td>
                 <Td>{immigrant.nationality_name ?? "-"}</Td>
-                <Td>{immigrant.is_male ? "M" : "F"}</Td>
+                <Td>{getImmigrantGenre(immigrant)}</Td>
                 <Td>{immigrant.departure}</Td>
                 <Td>DRS</Td>
                 <Td>
@@ -298,7 +299,7 @@ export default function AdminLiberationPage() {
                         {immigrant.nationality_name ?? "-"}
                       </td>
                       <td className="border-gray-300 border ">
-                        {immigrant.is_male ? "M" : "F"}
+                        {getImmigrantGenre(immigrant)}
                       </td>
                       <td className="border-gray-300 border ">
                         {immigrant.departure}

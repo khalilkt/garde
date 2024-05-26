@@ -34,6 +34,7 @@ import { AuthContext } from "../../App";
 import { CountryInterface, MobileImmigrantView } from "./pirogue_detail_page";
 import { useReactToPrint } from "react-to-print";
 import * as Dialog from "@radix-ui/react-dialog";
+import { getImmigrantGenre } from "../../models/utils";
 
 export interface ImmigrantInterface {
   id: number;
@@ -648,7 +649,7 @@ export default function AdminAgentImmigrantsPage() {
                       {immigrant.nationality_name}
                     </td>
                     <td className="border-gray-300 border ">
-                      {immigrant.is_male ? "M" : "F"}
+                      {getImmigrantGenre(immigrant)}
                     </td>
                     <td className="border-gray-300 border ">
                       {immigrant.created_at.split("T")[0]}
