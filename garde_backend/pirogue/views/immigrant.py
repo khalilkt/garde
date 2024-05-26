@@ -111,6 +111,13 @@ class ImmigrantList(ListAPIView):
                 ret = ret.filter(free_at__isnull = False)
             elif is_free == "false":
                 ret = ret.filter(free_at__isnull = True)
+        
+        has_pirogue = params.get("has_pirogue", None)
+        if has_pirogue:
+            if has_pirogue == "true":
+                ret = ret.filter(pirogue__isnull = False)
+            elif has_pirogue == "false":
+                ret = ret.filter(pirogue__isnull = True)
         return ret
     
 class MyImmigrantsWoutPirogueList(ListCreateAPIView):
