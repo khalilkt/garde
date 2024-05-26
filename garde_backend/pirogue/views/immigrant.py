@@ -221,17 +221,16 @@ class PirogueImmigrantsList(ListCreateAPIView):
     ordering_fileds = get_immigrant_ordering_fields()
     ordering = ['-created_at']
 
-    def get_paginated_response(self, data):
-        # if in the args there is all = true then return all the data
-        if self.request.query_params.get("all", None) == "true":
-            return Response(data)
-        return super().get_paginated_response(data)
+    @property
+    def pagination_class(self):
+        if "all" in self.request.query_params and self.request.query_params["all"] == "true":
+            return None
+        else:
+            return super().pagination_class
 
     def get_queryset(self):
         pirogue_pk = self.kwargs.get('pirogue_pk')
         return Immigrant.objects.def_queryset().filter(pirogue=pirogue_pk)
-    
-
 
 COUTRIES = {
     "senegal" : "193",
@@ -250,8 +249,6 @@ COUTRIES = {
     "cameroun" : "36",
     "turc" : "220",
     "somali" : "200",
-    # what is the breveation I.COM ? : comors
-
 }
 
 class ImmigrantBulkAdd(APIView):
