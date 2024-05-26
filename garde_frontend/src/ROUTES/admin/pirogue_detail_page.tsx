@@ -19,7 +19,7 @@ import { MDialog } from "../../components/dialog";
 import Webcam, { WebcamProps } from "react-webcam";
 import { LoadingIcon, PlusIcon } from "../../components/icons";
 import { useReactToPrint } from "react-to-print";
-import { getImmigrantGenre } from "../../models/utils";
+import { getImmigrantGenre, getImmigrantSejour } from "../../models/utils";
 
 function Squelette({ width }: { width: string }) {
   return (
@@ -533,9 +533,7 @@ export default function PirogueDetailPage({
                       {immigrant.created_at.split("T")[0]}
                     </td>
                     <td className="border-gray-300 border ">
-                      {immigrant.pirogue_sejour
-                        ? immigrant.pirogue_sejour + " jour(s)"
-                        : "-"}
+                      {getImmigrantSejour(immigrant)}
                       {/* {(
                         (new Date().valueOf() -
                           new Date(immigrant.created_at).valueOf()) /

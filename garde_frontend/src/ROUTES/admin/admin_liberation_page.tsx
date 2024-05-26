@@ -22,7 +22,7 @@ import { MDialog } from "../../components/dialog";
 import { CountryInterface } from "./pirogue_detail_page";
 import { ImmigrantInterface } from "./agent&admin_immigrants_page";
 import { AuthContext } from "../../App";
-import { getImmigrantGenre } from "../../models/utils";
+import { getImmigrantGenre, getImmigrantSejour } from "../../models/utils";
 
 function LiberationDialog({
   onSubmit,
@@ -235,11 +235,7 @@ export default function AdminLiberationPage() {
                 <Td>{getImmigrantGenre(immigrant)}</Td>
                 <Td>{immigrant.departure}</Td>
                 <Td>DRS</Td>
-                <Td>
-                  {immigrant.pirogue_sejour
-                    ? immigrant.pirogue_sejour + " jour(s)"
-                    : "-"}
-                </Td>
+                <Td>{getImmigrantSejour(immigrant)}</Td>
               </Tr>
             ))}
           </tbody>
@@ -311,9 +307,7 @@ export default function AdminLiberationPage() {
                             new Date(immigrant.created_at).valueOf()) /
                           8.64e7
                         ).toFixed(0) + " jour(s)"} */}
-                        {immigrant.pirogue_sejour
-                          ? immigrant.pirogue_sejour + " jour(s)"
-                          : "-"}
+                        {getImmigrantSejour(immigrant)}
                       </td>
                       <td className="border-gray-300 border ">{observation}</td>
                     </tr>

@@ -34,7 +34,8 @@ import { AuthContext } from "../../App";
 import { CountryInterface, MobileImmigrantView } from "./pirogue_detail_page";
 import { useReactToPrint } from "react-to-print";
 import * as Dialog from "@radix-ui/react-dialog";
-import { getImmigrantGenre } from "../../models/utils";
+import { getImmigrantGenre, getImmigrantSejour } from "../../models/utils";
+import { MDialog } from "../../components/dialog";
 
 export interface ImmigrantInterface {
   id: number;
@@ -53,6 +54,7 @@ export interface ImmigrantInterface {
   pirogue: number;
   created_by: number;
   pirogue_sejour: number | null;
+  sejour: number | null;
   criminal_record:
     | "killer"
     | "thief"
@@ -84,6 +86,9 @@ export default function AdminAgentImmigrantsPage() {
   const token = useContext(AuthContext).authData?.token;
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const printRef = React.useRef<HTMLTableElement>(null);
+
+  const [editingSejourImmigrantId, setEditingSejourImmigrantId] =
+    React.useState<number | null>(null);
 
   const handlePrint = useReactToPrint({
     onBeforeGetContent() {},
@@ -166,6 +171,20 @@ export default function AdminAgentImmigrantsPage() {
     }, 500);
   }
 
+  async function onSejourEdit(immigrant_id: number, sejour: number) {
+    await axios
+      .patch(
+        rootUrl + "immigrants/" + immigrant_id + "/",
+        { sejour: sejour },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      )
+      .then((res) => {});
+  }
+
   useEffect(() => {
     const searchBar = document.getElementById("immigrants_search_bar");
     const searchParam = searchParams.get("search");
@@ -203,6 +222,12 @@ export default function AdminAgentImmigrantsPage() {
         id: key,
         title: "Agent",
         value: agentNamesCache.current[value] ?? "",
+      });
+    } else if (key === "has_pirogue") {
+      tags.push({
+        id: key,
+        title: "Avec pirogue",
+        value: value === "true" ? "Oui" : "Non",
       });
     }
   });
@@ -246,19 +271,46 @@ export default function AdminAgentImmigrantsPage() {
 
   return (
     <div className="mb-10 flex flex-col">
-      {/* <MDialog
-        onClose={() => setIsDialogOpen(false)}
-        isOpen={isDialogOpen}
-        title="Ajouter un Migrant sans pirogue"
+      <MDialog
+        onClose={() => {
+          setEditingSejourImmigrantId(null);
+        }}
+        isOpen={editingSejourImmigrantId !== null}
+        title={"Modifier le séjour"}
       >
-        <AddEditImmigrantDialog
-          onDone={() => {
-            setIsDialogOpen(false);
-            load();
-          }}
-          pirogueId={null}
-        />
-      </MDialog> */}
+        <>
+          {editingSejourImmigrantId && (
+            <div className="flex flex-col gap-y-3">
+              <Input
+                id="pirogue_sejour_input"
+                placeholder="Nouveau séjour (jours)"
+                type="number"
+                className="w-[300px]"
+              />
+              <FilledButton
+                onClick={() => {
+                  onSejourEdit(
+                    editingSejourImmigrantId!,
+                    parseInt(
+                      (
+                        document.getElementById(
+                          "pirogue_sejour_input",
+                        ) as HTMLInputElement
+                      ).value,
+                    ),
+                  ).then((_) => {
+                    load();
+                  });
+                  setEditingSejourImmigrantId(null);
+                }}
+              >
+                Enregistrer
+              </FilledButton>
+            </div>
+          )}
+        </>
+      </MDialog>
+
       {!isAdmin && (
         <div className="mb-10 flex w-full flex-row items-center justify-between">
           <Link
@@ -506,85 +558,98 @@ export default function AdminAgentImmigrantsPage() {
                     //   8.64e7
                     // ).toFixed(0)
 
-                    immigrant.pirogue_sejour
-                      ? immigrant.pirogue_sejour + " jour(s)"
-                      : "-"
+                    getImmigrantSejour(immigrant)
                   }
                 </Td>
                 {isAdmin && (
                   <Td className="text-primary">{immigrant.created_by_name}</Td>
                 )}
                 <Td>
-                  {isAdmin && (
-                    <>
-                      <Dialog.Root
-                        open={deletingId !== null}
-                        onOpenChange={
-                          deletingId === null
-                            ? () => {}
-                            : (open) => {
-                                if (!open) {
-                                  setDeletingId(null);
-                                }
-                              }
-                        }
+                  <div className="flex gap-x-4">
+                    {immigrant.pirogue === null && (
+                      <button
+                        onClick={() => {
+                          setEditingSejourImmigrantId(immigrant.id);
+                        }}
+                        className=" transition-all duration-100 active:scale-90"
                       >
-                        <button
-                          onClick={() => {
-                            setDeletingId(immigrant.id);
-                          }}
-                          className=" transition-all duration-100 active:scale-90"
+                        <EditIcon />
+                      </button>
+                    )}
+                    {isAdmin && (
+                      <>
+                        <Dialog.Root
+                          open={deletingId !== null}
+                          onOpenChange={
+                            deletingId === null
+                              ? () => {}
+                              : (open) => {
+                                  if (!open) {
+                                    setDeletingId(null);
+                                  }
+                                }
+                          }
                         >
-                          <DeleteIcon />
-                        </button>
-                        <Dialog.Overlay className="fixed inset-0 z-20 bg-black opacity-10" />
-                        <Dialog.Content className="fixed left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded bg-white px-4 py-4">
-                          <Dialog.Title>
-                            <h2 className="pb-8 text-xl font-semibold">
-                              Supprimer un migrant
-                            </h2>
-                          </Dialog.Title>
-                          <Dialog.Description>
-                            <p>
-                              Vous êtes sur le point de supprimer un migrant de
-                              la base de données.
-                              <br /> Veuillez confirmer cette action.
-                            </p>
-                          </Dialog.Description>
-                          <div className="mt-10 flex flex-row gap-x-4">
-                            <OutlinedButton
-                              onClick={() => {
-                                setDeletingId(null);
-                              }}
-                              className=""
-                            >
-                              Annuler
-                            </OutlinedButton>
-                            <FilledButton
-                              onClick={() => {
-                                setDeletingId(null);
-                                axios
-                                  .delete(
-                                    rootUrl + "immigrants/" + deletingId + "/",
-                                    {
-                                      headers: {
-                                        Authorization: `Token ${token}`,
+                          <button
+                            onClick={() => {
+                              setDeletingId(immigrant.id);
+                            }}
+                            className=" transition-all duration-100 active:scale-90"
+                          >
+                            <DeleteIcon />
+                          </button>
+                          <Dialog.Overlay className="fixed inset-0 z-20 bg-black opacity-10" />
+                          <Dialog.Content className="fixed left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded bg-white px-4 py-4">
+                            <Dialog.Title>
+                              <h2 className="pb-8 text-xl font-semibold">
+                                Supprimer un migrant
+                              </h2>
+                            </Dialog.Title>
+                            <Dialog.Description>
+                              <p>
+                                Vous êtes sur le point de supprimer un migrant
+                                de la base de données.
+                                <br /> Veuillez confirmer cette action.
+                              </p>
+                            </Dialog.Description>
+                            <div className="mt-10 flex flex-row gap-x-4">
+                              <OutlinedButton
+                                onClick={() => {
+                                  setDeletingId(null);
+                                }}
+                                className=""
+                              >
+                                Annuler
+                              </OutlinedButton>
+                              <FilledButton
+                                onClick={() => {
+                                  setDeletingId(null);
+                                  axios
+                                    .delete(
+                                      rootUrl +
+                                        "immigrants/" +
+                                        deletingId +
+                                        "/",
+                                      {
+                                        headers: {
+                                          Authorization: `Token ${token}`,
+                                        },
                                       },
-                                    },
-                                  )
-                                  .then((response) => {
-                                    load();
-                                  });
-                              }}
-                              className=" bg-red-500 text-white "
-                            >
-                              Supprimer
-                            </FilledButton>
-                          </div>
-                        </Dialog.Content>
-                      </Dialog.Root>
-                    </>
-                  )}
+                                    )
+                                    .then((response) => {
+                                      load();
+                                    });
+                                }}
+                                className=" bg-red-500 text-white "
+                              >
+                                Supprimer
+                              </FilledButton>
+                            </div>
+                          </Dialog.Content>
+                        </Dialog.Root>
+                      </>
+                    )}
+                  </div>
                 </Td>
               </Tr>
             ))}
@@ -655,9 +720,7 @@ export default function AdminAgentImmigrantsPage() {
                       {immigrant.created_at.split("T")[0]}
                     </td>
                     <td className="border-gray-300 border ">
-                      {immigrant.pirogue_sejour
-                        ? immigrant.pirogue_sejour + " jour(s)"
-                        : "-"}
+                      {getImmigrantSejour(immigrant)}
                       {/* {(
                         (new Date().valueOf() -
                           new Date(immigrant.created_at).valueOf()) /
@@ -856,6 +919,27 @@ export default function AdminAgentImmigrantsPage() {
                 </option>
                 <option value={"major"}>Majeur</option>
                 <option value={"minor"}>Mineur</option>
+              </Select>
+
+              <Select
+                value={searchParams.get("has_pirogue") ?? "none"}
+                onChange={(e) => {
+                  setSearchParams((params) => {
+                    const value = (e.target as any).value;
+                    if (value === "none") {
+                      params.delete("has_pirogue");
+                    } else {
+                      params.set("has_pirogue", value);
+                    }
+                    return params;
+                  });
+                }}
+              >
+                <option value="none" className="text-gray">
+                  Avec et sans pirogue
+                </option>
+                <option value={"true"}>Avec Pirogue</option>
+                <option value={"false"}>Sans Pirogue</option>
               </Select>
             </div>
           </div>

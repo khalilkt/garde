@@ -14,3 +14,19 @@ export function getImmigrantGenre(imm: ImmigrantInterface) {
   }
   return ret;
 }
+
+export function getImmigrantSejour(imm: ImmigrantInterface) {
+  let ret = "";
+
+  if (imm.sejour) {
+    ret = imm.sejour.toString();
+  } else if (imm.pirogue_sejour) {
+    ret = imm.pirogue_sejour.toString();
+  }
+  if (ret.length > 0) {
+    ret += " jour(s)";
+  } else {
+    ret = "-";
+  }
+  return ret;
+}

@@ -377,10 +377,12 @@ class LiberationImmigrantSerializer(ImmigrantSerializer):
 
 class ImmigrantLiberation(ListAPIView):
     permission_classes = [IsAdminUser]
-    queryset = Immigrant.objects.def_queryset().filter(free_at__isnull=True, is_criminal=False)
     serializer_class = LiberationImmigrantSerializer
     ordering = ['created_at']
     pagination_class = None
+
+    def get_queryset(self):
+        return Immigrant.objects.def_queryset().filter(free_at__isnull=True, is_criminal=False).exclude(created_by = 2)
 
 class BulkFreeImmigrationView(APIView):
     permission_classes = [IsAdminUser]
