@@ -221,6 +221,12 @@ class PirogueImmigrantsList(ListCreateAPIView):
     ordering_fileds = get_immigrant_ordering_fields()
     ordering = ['-created_at']
 
+    def get_paginated_response(self, data):
+        # if in the args there is all = true then return all the data
+        if self.request.query_params.get("all", None) == "true":
+            return Response(data)
+        return super().get_paginated_response(data)
+
     def get_queryset(self):
         pirogue_pk = self.kwargs.get('pirogue_pk')
         return Immigrant.objects.def_queryset().filter(pirogue=pirogue_pk)
