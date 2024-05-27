@@ -487,7 +487,7 @@ export default function CriminalsPage() {
           </tbody>
         </table>
       </div>
-      <div ref={printRef} className="hidden print:block">
+      <div ref={printRef} className="opacity-0 print:opacity-100">
         <PrintPage text="" objectText={null} isArabic={true}>
           <div className="flex flex-col  items-start">
             <span>

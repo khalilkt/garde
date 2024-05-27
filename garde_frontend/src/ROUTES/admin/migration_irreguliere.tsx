@@ -45,7 +45,7 @@ function MigrationIrreguliereImmigrantDialog({
   ]);
 
   return (
-    <div className="flex w-[500px] flex-col gap-y-6">
+    <div className="w--[500px] flex flex-col gap-y-6">
       {formState.map((state, i) => (
         <div className="flex flex-row gap-x-2">
           <SearchSelect<CountryInterface>
@@ -116,15 +116,19 @@ function MigrationIrreguliereImmigrantDialog({
       <FilledButton onClick={handlePrint} className="col-span-2 mt-10">
         Imprimer
       </FilledButton>
-      <div ref={immPrintRef} className="hidden print:block">
+      <div
+        ref={immPrintRef}
+        className="absolute -z-30 opacity-0 print:opacity-100"
+      >
         <PrintPage
+          isOnePage={true}
           objectText="Migration irrégulière"
           text={`J'ai l'honneur de vous faire parvenir en annexe la liste de ${
             formState.filter((e) => e.country && e.value > 0).length
           } personnes remis par la
 B10 de la 1er Région à la GCM dans le cadre de la lutte contre la migration irrégulière par voie maritime le ${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()}  .`}
         >
-          {formState
+          {[...formState]
             .filter((e) => e.country && e.value > 0)
             .map((state, i) => (
               <div className="flex gap-x-2">
@@ -405,7 +409,7 @@ export default function MigrationIrregulierePage() {
         )}
       </table>
       {data && (
-        <div className="hidden print:block" ref={printRef}>
+        <div className="opacity-0 print:opacity-100" ref={printRef}>
           <PrintPage
             objectText="Migration irrégulière"
             text={`J'ai l'honneur de vous faire parvenir ci-dessous la situation de la
@@ -433,7 +437,24 @@ export default function MigrationIrregulierePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data
+                  {[
+                    ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                    // ...data,
+                  ]
                     .filter((_, i) => selected.includes(i))
                     .map((pirogue, i) => (
                       <tr key={i}>
