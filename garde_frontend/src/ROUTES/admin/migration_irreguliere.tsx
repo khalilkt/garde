@@ -409,7 +409,7 @@ export default function MigrationIrregulierePage() {
         )}
       </table>
       {data && (
-        <div className="opacity-100 print:opacity-100" ref={printRef}>
+        <div className="opacity-0 print:opacity-100" ref={printRef}>
           <PrintPage
             objectText="Migration irrégulière"
             text={`J'ai l'honneur de vous faire parvenir ci-dessous la situation de la
