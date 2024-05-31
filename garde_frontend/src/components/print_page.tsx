@@ -1,5 +1,6 @@
 import rim from "../assets/rim.png";
 import joumhouria from "../assets/joumhouria_image.png";
+import logo from "../assets/logo.jpeg";
 import { useEffect, useState } from "react";
 
 export function PrintPage({
@@ -68,21 +69,26 @@ export function PrintPage({
               />
             </div>
             <div className="mb-6 flex w-full flex-row justify-between pl-4 pr-36 text-xs">
-              <div className="flex w-fit flex-col  items-center  font-semibold leading-4">
+              <div className="flex w-fit flex-col items-center  font-semibold leading-4">
                 <h1>وزارة الصيد والبحري الإقتصاد</h1>
-                <h1>Ministère des Pêche et de l'Economie</h1>
-                <h1 className="mt-2 border-b border-b-black">Maritime</h1>
+                <h1>Ministère des Pêche et de l'Economie Maritime</h1>
 
                 <h1> خفر السواحل الموريتاني</h1>
                 <h1>Garde-côtes Mauritaniennnes</h1>
+                <img
+                  src={logo}
+                  className="mt-3 h-[60px] w-fit self-center bg-red-400"
+                />
               </div>
-              <div className="ml-2 mt-1 flex w-fit  flex-col  items-center text-sm font-medium leading-4">
+
+              <div className="ml-2 mt-1 flex w-fit flex-col  items-center text-sm font-medium leading-4">
                 <h1 className=" font-semibold">
                   RÉPUBLIQUE ISLAMIQUE DE MAURITANIE
                 </h1>
                 <h1 className=" text-xs">Honeur - Fraternité - Justice</h1>
               </div>
             </div>
+
             <div className="2 flex flex-col self-end text-xs">
               {/* after en arbae */}
               <span>
@@ -102,7 +108,7 @@ export function PrintPage({
             dir="ltr"
             className="self- mr-20 mt-10 self-end text-center font-medium rtl:self-start"
           >
-            <div className="relative mb-10 ml-auto flex items-center justify-end gap-x-32 self-end ">
+            <div className="relative mb-10 ml-auto flex items-center justify-end gap-x-32  ">
               {!isArabic && <h1 className="text-xl font-semibold">A</h1>}
               <h1 className=" text-xl font-semibold text-green-800">
                 Le Commandant

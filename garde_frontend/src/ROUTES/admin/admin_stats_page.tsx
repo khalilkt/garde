@@ -437,7 +437,7 @@ export default function AdminStatsPage() {
           )}
         </div>
         <div className="flex items-center gap-x-1">
-          <SearchSelect<CountryInterface>
+          {/* <SearchSelect<CountryInterface>
             className={"w-48"}
             value={
               searchParams.get("birth_country")
@@ -455,7 +455,7 @@ export default function AdminStatsPage() {
             search={true}
             url={"countries"}
             lookupColumn="name_fr"
-          />
+          /> */}
           {/* close icon */}
           {searchParams.get("birth_country") && (
             <button

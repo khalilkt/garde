@@ -21,6 +21,7 @@ import {
   EditIcon,
   FilterIcon,
   LeftArrow,
+  LoadingIcon,
   MdpIcon,
   MoreIcon,
   PlusIcon,
@@ -68,6 +69,12 @@ export interface ImmigrantInterface {
     | null;
 }
 
+const ll = [
+  5929, 5928, 5927, 5926, 5925, 5924, 5923, 5922, 5921, 5920, 5919, 5918, 5917,
+  5916, 5915, 5914, 5913, 5912, 5911, 5910, 5909, 5908, 5907, 5906, 5905, 5904,
+  5903, 5902, 5728, 5639, 5609, 5600, 5433,
+];
+
 export default function AdminAgentImmigrantsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTimer = React.useRef<NodeJS.Timeout>();
@@ -87,8 +94,12 @@ export default function AdminAgentImmigrantsPage() {
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const printRef = React.useRef<HTMLTableElement>(null);
 
-  const [editingSejourImmigrantId, setEditingSejourImmigrantId] =
-    React.useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
+
+  const [editingSejourImmigrantIds, setEditingSejourImmigrantIds] =
+    React.useState<number[]>([]);
+
+  const [isSubmitingSejour, setIsSubmitingSejour] = React.useState(false);
 
   const handlePrint = useReactToPrint({
     onBeforeGetContent() {},
@@ -115,6 +126,7 @@ export default function AdminAgentImmigrantsPage() {
           Authorization: `Token ${token}`,
         },
       });
+      setSelectedIds([]);
       setData(response.data);
     } catch (e) {
       console.log(e);
@@ -257,6 +269,8 @@ export default function AdminAgentImmigrantsPage() {
   let totalFemales = 0;
   let totalMinors = 0;
 
+  let showChangeSelectedSejour = selectedIds.length > 0;
+
   for (const imm of list ?? []) {
     if (imm.age && imm.age < 18) {
       totalMinors++;
@@ -267,47 +281,74 @@ export default function AdminAgentImmigrantsPage() {
     if (!imm.is_male) {
       totalFemales++;
     }
+
+    if (selectedIds.includes(imm.id) && imm.pirogue !== null) {
+      showChangeSelectedSejour = false;
+      break;
+    }
   }
 
   return (
     <div className="mb-10 flex flex-col">
       <MDialog
         onClose={() => {
-          setEditingSejourImmigrantId(null);
+          setEditingSejourImmigrantIds([]);
         }}
-        isOpen={editingSejourImmigrantId !== null}
-        title={"Modifier le séjour"}
+        isOpen={editingSejourImmigrantIds.length !== 0}
+        title={
+          "Modifier le séjour " +
+          (editingSejourImmigrantIds.length > 1
+            ? `de ${editingSejourImmigrantIds.length} migrants`
+            : "du migrant")
+        }
       >
         <>
-          {editingSejourImmigrantId && (
-            <div className="flex flex-col gap-y-3">
-              <Input
-                id="pirogue_sejour_input"
-                placeholder="Nouveau séjour (jours)"
-                type="number"
-                className="w-[300px]"
-              />
-              <FilledButton
-                onClick={() => {
-                  onSejourEdit(
-                    editingSejourImmigrantId!,
-                    parseInt(
+          {editingSejourImmigrantIds.length > 0 &&
+            !editingSejourImmigrantIds
+              .map((e) => {
+                const imm = list?.find((imm) => imm.id === e);
+                return imm?.pirogue === null;
+              })
+              .includes(true) && (
+              <div className="flex flex-col gap-y-3">
+                <Input
+                  id="pirogue_sejour_input"
+                  placeholder="Nouveau séjour (jours)"
+                  type="number"
+                  className="w-[300px]"
+                />
+                <FilledButton
+                  onClick={async () => {
+                    if (editingSejourImmigrantIds.length === 0) {
+                      return;
+                    }
+
+                    const sejour = parseInt(
                       (
                         document.getElementById(
                           "pirogue_sejour_input",
                         ) as HTMLInputElement
                       ).value,
-                    ),
-                  ).then((_) => {
+                    );
+
+                    const promises = editingSejourImmigrantIds.map((id) =>
+                      onSejourEdit(id, sejour),
+                    );
+                    setIsSubmitingSejour(true);
+                    try {
+                      await Promise.all(promises);
+                    } catch (e) {
+                      console.log(e);
+                    }
+                    setIsSubmitingSejour(false);
                     load();
-                  });
-                  setEditingSejourImmigrantId(null);
-                }}
-              >
-                Enregistrer
-              </FilledButton>
-            </div>
-          )}
+                    setEditingSejourImmigrantIds([]);
+                  }}
+                >
+                  {isSubmitingSejour ? <LoadingIcon /> : "Enregistrer"}
+                </FilledButton>
+              </div>
+            )}
         </>
       </MDialog>
 
@@ -507,10 +548,37 @@ export default function AdminAgentImmigrantsPage() {
               </span>
             </span>
           )}
+          {showChangeSelectedSejour && (
+            <OutlinedButton
+              className="ml-auto"
+              onClick={() => {
+                setEditingSejourImmigrantIds(selectedIds);
+              }}
+            >
+              <span>Modifier les séjour</span>
+            </OutlinedButton>
+          )}
         </div>
         <table className="hidden w-full text-center text-lg lg:table">
           <thead className="w-full">
             <tr className="font-bold text-gray">
+              <th className="text-medium py-3 text-base">
+                <input
+                  checked={
+                    selectedIds.length !== 0 &&
+                    selectedIds.length === list?.length
+                  }
+                  type="checkbox"
+                  className="h-5 w-5"
+                  onChange={() => {
+                    if (selectedIds.length === list?.length) {
+                      setSelectedIds([]);
+                    } else {
+                      setSelectedIds(list?.map((imm) => imm.id) ?? []);
+                    }
+                  }}
+                />
+              </th>
               <th className="text-medium  py-3 text-base">Nom</th>
               <th className="text-medium  py-3 text-base">Genre</th>
               <th className="text-medium py-3 text-base">Nationalité</th>
@@ -528,9 +596,23 @@ export default function AdminAgentImmigrantsPage() {
           <tbody>
             {list?.map((immigrant, i) => (
               <Tr>
-                {/* <Td>
-                  <input type="checkbox" className="h-5 w-5" />
-                </Td> */}
+                <Td>
+                  <input
+                    checked={selectedIds.includes(immigrant.id)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      if (checked) {
+                        setSelectedIds((ids) => [...ids, immigrant.id]);
+                      } else {
+                        setSelectedIds((ids) =>
+                          ids.filter((id) => id !== immigrant.id),
+                        );
+                      }
+                    }}
+                    type="checkbox"
+                    className="h-5 w-5"
+                  />
+                </Td>
                 <Td className="flex items-center justify-start gap-x-2">
                   {immigrant.image && (
                     <img
@@ -569,7 +651,7 @@ export default function AdminAgentImmigrantsPage() {
                     {immigrant.pirogue === null && (
                       <button
                         onClick={() => {
-                          setEditingSejourImmigrantId(immigrant.id);
+                          setEditingSejourImmigrantIds([immigrant.id]);
                         }}
                         className=" transition-all duration-100 active:scale-90"
                       >
@@ -624,6 +706,7 @@ export default function AdminAgentImmigrantsPage() {
                               <FilledButton
                                 onClick={() => {
                                   setDeletingId(null);
+
                                   axios
                                     .delete(
                                       rootUrl +
