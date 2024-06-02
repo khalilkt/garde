@@ -53,11 +53,11 @@ class PirogueRaportSerializer(serializers.ModelSerializer):
         fields = ['created_at', 'immigrants_count', 'nationalities', 'departure', "created_at_epoch"]
 
 def filter_by_start_end_date(queryset, start_date_epoch, end_date_epoch):
-    start_date_epoch = start_date_epoch * 1000000
-    end_date_epoch = end_date_epoch * 1000000
-    ret = queryset.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))
+    # start_date_epoch = start_date_epoch * 1000000
+    # end_date_epoch = end_date_epoch * 1000000
+    # ret = queryset.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))
    
-    # ret = queryset.annotate(created_at_epoch = Extract('created_at', 'epoch'))
+    ret = queryset.annotate(created_at_epoch = Extract('created_at', 'epoch'))
     ret  = ret.filter(created_at_epoch__gte=start_date_epoch, created_at_epoch__lt=end_date_epoch)
     return ret
 
