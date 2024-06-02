@@ -9,12 +9,18 @@ export function PrintPage({
   objectText,
   isArabic = false,
   isOnePage = null,
+  signatureLeft = null,
+  signatureRight = null,
+  topTitle = null,
   ...divProps
 }: {
   text: string;
   isArabic?: boolean;
   objectText: string | null;
+  topTitle?: string | null;
   isOnePage?: boolean | null;
+  signatureLeft?: string | null;
+  signatureRight?: string | null;
   children: React.ReactNode;
 } & React.HTMLProps<HTMLDivElement> & {
     divProps?: React.HTMLProps<HTMLDivElement>;
@@ -104,33 +110,42 @@ export function PrintPage({
             </div>
           </div>
 
-          <div
-            dir="ltr"
-            className="self- mr-20 mt-10 self-end text-center font-medium rtl:self-start"
-          >
-            <div className="relative mb-10 ml-auto flex items-center justify-end gap-x-32  ">
-              {!isArabic && <h1 className="text-xl font-semibold">A</h1>}
-              <h1 className=" text-xl font-semibold text-green-800">
-                Le Commandant
-              </h1>
-              <h1 className=" text-xl font-semibold text-green-800">القائد</h1>
+          {topTitle === null && (
+            <div
+              dir="ltr"
+              className="self- mr-20 mt-10 self-end text-center font-medium rtl:self-start"
+            >
+              <div className="relative mb-10 ml-auto flex items-center justify-end gap-x-32  ">
+                {!isArabic && <h1 className="text-xl font-semibold">A</h1>}
+                <h1 className="text-xl font-semibold text-green-800">
+                  Le Commandant
+                </h1>
+                <h1 className="text-xl font-semibold text-green-800">القائد</h1>
+              </div>
             </div>
+          )}
+          <div
+            className={`font-medium ${topTitle !== null ? "self-center text-center" : "self-start"}`}
+          >
+            {topTitle === null &&
+              (isArabic
+                ? "السيد المدير الجهوي لأمن داخلة نواذيبو"
+                : "Monsieur le Directeur Régional de la Sureté de Dakhlet Nouadhibou")}
           </div>
-          <span className="self-center font-medium">
-            {isArabic
-              ? "السيد المدير الجهوي لأمن داخلة نواذيبو"
-              : "Monsieur le Directeur Régional de la Sureté de Dakhlet Nouadhibou"}
-          </span>
         </div>
       </thead>
       <tbody>
         <tr>
-          <td>
-            <div className="px-6">
-              {objectText && (
-                <div className=" mt-10 self-start">
-                  <h4 className="inline text-xl font-semibold">Objet: </h4>
-                  <span className="inline">{objectText}</span>
+          <td className={`${topTitle !== null ? "pt-10 align-top" : ""}`}>
+            <div className=" px-6">
+              {(objectText || topTitle) && (
+                <div
+                  className={`mt-10  ${topTitle !== null ? "mb-10 self-center text-center text-2xl font-semibold" : "mb-4 self-start text-start"}`}
+                >
+                  {objectText && (
+                    <h4 className="inline text-xl font-semibold">Objet: </h4>
+                  )}
+                  <span className="inline">{topTitle || objectText}</span>
                 </div>
               )}
               <span className="t mb-3 mt-3">{text}</span>
@@ -143,8 +158,14 @@ export function PrintPage({
         <tr>
           <td>
             <div className="px-6">
-              <div className="mt-10 flex w-full justify-between px-10 text-sm font-semibold">
-                {isArabic ? (
+              <div className="mt-10  flex w-full justify-between px-10 text-sm font-semibold">
+                {signatureLeft !== null ? (
+                  <div>
+                    {signatureLeft.split("\n").map((line, index) => (
+                      <div key={index}>{line}</div>
+                    ))}
+                  </div>
+                ) : isArabic ? (
                   <div className="flex flex-col">
                     توزيع <br /> والي داخلت نواذيبو
                     <br /> الأرشيف
@@ -158,7 +179,13 @@ export function PrintPage({
                     <span>-ARC</span>
                   </div>
                 )}
-                {isArabic ? (
+                {signatureRight !== null ? (
+                  <div>
+                    {signatureRight.split("\n").map((line, index) => (
+                      <div key={index}>{line}</div>
+                    ))}
+                  </div>
+                ) : isArabic ? (
                   <div>
                     العقيد البحري <br /> الشيخ حتمي لحمود <br /> وبالنيابة{" "}
                     <br />

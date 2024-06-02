@@ -53,10 +53,11 @@ class PirogueRaportSerializer(serializers.ModelSerializer):
         fields = ['created_at', 'immigrants_count', 'nationalities', 'departure', "created_at_epoch"]
 
 def filter_by_start_end_date(queryset, start_date_epoch, end_date_epoch):
-    # start_date_epoch = start_date_epoch * 1000000
-    # end_date_epoch = end_date_epoch * 1000000
-    # ret = queryset.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))
-    ret = queryset.annotate(created_at_epoch = Extract('created_at', 'epoch'))
+    start_date_epoch = start_date_epoch * 1000000
+    end_date_epoch = end_date_epoch * 1000000
+    ret = queryset.annotate(created_at_epoch =  ExpressionWrapper(F('created_at') - datetime(1970,1,1), output_field=IntegerField()))
+   
+    # ret = queryset.annotate(created_at_epoch = Extract('created_at', 'epoch'))
     ret  = ret.filter(created_at_epoch__gte=start_date_epoch, created_at_epoch__lt=end_date_epoch)
     return ret
 
@@ -86,32 +87,32 @@ def get_immigrant_report(start_date_epoch, end_date_epoch, user = None):
     return ret
     
 
-class ReportList(APIView):
-    permission_classes = [IsAdminUser]
+# class ReportList(APIView):
+#     permission_classes = [IsAdminUser]
 
-    def get(self, request):
-        params = request.query_params
-        start_date = params.get('start', None)
-        end_date = params.get('end', None) 
-        if not start_date or not end_date:
-            return Response({"error": "start and end dates are required"}, status=status.HTTP_400_BAD_REQUEST)
-        if len(start_date) != 7 or len(end_date) != 7:   
-            return Response({"error": "start and end dates must be in the format YYYY-MM"}, status=status.HTTP_400_BAD_REQUEST)
+#     def get(self, request):
+#         params = request.query_params
+#         start_date = params.get('start', None)
+#         end_date = params.get('end', None) 
+#         if not start_date or not end_date:
+#             return Response({"error": "start and end dates are required"}, status=status.HTTP_400_BAD_REQUEST)
+#         if len(start_date) != 7 or len(end_date) != 7:   
+#             return Response({"error": "start and end dates must be in the format YYYY-MM"}, status=status.HTTP_400_BAD_REQUEST)
       
-        start_date_epoch = datetime.strptime(start_date, "%Y-%m").timestamp() 
-        end_date_epoch = (datetime.strptime(end_date, "%Y-%m") + relativedelta(months=1)).timestamp() 
+#         start_date_epoch = datetime.strptime(start_date, "%Y-%m").timestamp() 
+#         end_date_epoch = (datetime.strptime(end_date, "%Y-%m") + relativedelta(months=1)).timestamp() 
      
-        pirogues = filter_by_start_end_date(Pirogue.objects.def_queryset(), start_date_epoch, end_date_epoch)
-        immigrants_report = get_immigrant_report(start_date_epoch, end_date_epoch)
-        # sss = Pirogue.objects.annotate(created_at_epoch =  ExpressionWrapper((F('created_at') - datetime(1970,1,1)).total_seconds(), output_field=IntegerField()))[:1]
-        ret = {
-            "pirogues" : PirogueRaportSerializer(pirogues, many=True).data,
-            "immigrants" : immigrants_report,
-            "start_date_epoch"  : start_date_epoch,
-            "end_data_epoch" : end_date_epoch,
-        }
+#         pirogues = filter_by_start_end_date(Pirogue.objects.def_queryset(), start_date_epoch, end_date_epoch)
+#         immigrants_report = get_immigrant_report(start_date_epoch, end_date_epoch)
+#         # sss = Pirogue.objects.annotate(created_at_epoch =  ExpressionWrapper((F('created_at') - datetime(1970,1,1)).total_seconds(), output_field=IntegerField()))[:1]
+#         ret = {
+#             "pirogues" : PirogueRaportSerializer(pirogues, many=True).data,
+#             "immigrants" : immigrants_report,
+#             "start_date_epoch"  : start_date_epoch,
+#             "end_data_epoch" : end_date_epoch,
+#         }
 
-        return Response(ret)
+#         return Response(ret)
 
 
 
@@ -127,7 +128,7 @@ class GeneralReport (APIView):
         if len(year) != 4:
             return Response({"error": "year must be in the format YYYY"}, status=status.HTTP_400_BAD_REQUEST)
         
-        users = User.objects.all()
+        users = User.objects.all() 
         for user in users:
             immigrant_report_by_month[user.city_name] = {}
             month = 1

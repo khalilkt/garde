@@ -9,7 +9,7 @@ import {
   Title,
 } from "../../components/comps";
 import axios from "axios";
-import { PaginatedData, rootUrl } from "../../models/constants";
+import { MATERIAL_NAME, PaginatedData, rootUrl } from "../../models/constants";
 import { useParams, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../../App";
 import { ImmigrantInterface } from "./agent&admin_immigrants_page";
@@ -488,6 +488,113 @@ export default function PirogueDetailPage({
         total={immigrantsData?.total_pages ?? 1}
       />
       <div ref={printRef} className="hidden px-10 pt-10 print:block">
+        {data && allImmigrantsData && (
+          <>
+            <table>
+              <thead>
+                <tr>
+                  <th className="border px-2 py-1">N°PA</th>
+                  <th className="border px-2 py-1">Nature</th>
+                  <th className="border px-2 py-1">Date</th>
+                  <th className="border px-2 py-1">Essence</th>
+                  <th className="border px-2 py-1">N°Moteurs</th>
+                  <th className="border px-2 py-1">GPS</th>
+                  <th className="border px-2 py-1">Equipage</th>
+                  <th className="border px-2 py-1">Effets personnels</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td className="border px-2 py-1">{data.number}</td>
+                  <td className="border px-2 py-1">
+                    {data.material ? MATERIAL_NAME[data.material] : "-"}
+                  </td>
+                  <td className="border px-2 py-1">
+                    {new Date(data.created_at).toISOString().split("T")[0]}
+                  </td>
+                  <td className="border px-2 py-1">{data.fuel}</td>
+                  <td className="   border px-2 py-1">
+                    <ul className="list-disc gap-y-1">
+                      {Object.keys(data.motor_numbers).join().length === 0
+                        ? "-"
+                        : Object.keys(data.motor_numbers)
+                            .filter((e) => e.length > 0)
+                            .map((number) => (
+                              <li className="max-w-52 overflow-x-hidden whitespace-pre-wrap break-words">
+                                {number.length > 0 ? number : "-"}
+                              </li>
+                            ))}
+                    </ul>
+                  </td>
+                  <td className="   border px-2 py-1">
+                    <ul className="list-disc gap-y-1">
+                      {data.gps.join().length === 0
+                        ? "-"
+                        : data.gps
+                            .filter((e) => e.length > 0)
+                            .map((gps) => (
+                              <li className="max-w-52 overflow-x-hidden whitespace-pre-wrap break-words">
+                                {gps.length > 0 ? gps : "-"}
+                              </li>
+                            ))}
+                    </ul>
+                  </td>
+                  <td className="border px-2 py-1">{data.immigrants_count}</td>
+                  <td className="border px-2 py-1">{data.extra}</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <table>
+              <tbody>
+                <tr className="border px-2 py-1">
+                  <th className="border px-2 py-1">Total Hommes Majeur</th>
+                  <td className="border px-2 py-1">
+                    {
+                      allImmigrantsData.filter(
+                        (imm) => imm.is_male && (!imm.age || imm.age >= 18),
+                      ).length
+                    }
+                  </td>
+                </tr>
+                <tr className="border px-2 py-1">
+                  <th className="border px-2 py-1">Total Femmes Majeur</th>
+                  <td className="border px-2 py-1">
+                    {
+                      allImmigrantsData.filter(
+                        (imm) => !imm.is_male && (!imm.age || imm.age >= 18),
+                      ).length
+                    }
+                  </td>
+                </tr>
+                <tr className="border px-2 py-1">
+                  <th className="border px-2 py-1">Total Hommes Mineur</th>
+                  <td className="border px-2 py-1">
+                    {
+                      allImmigrantsData.filter(
+                        (imm) => imm.is_male && imm.age && imm.age < 18,
+                      ).length
+                    }
+                  </td>
+                </tr>
+                <tr className="border px-2 py-1">
+                  <th className="border px-2 py-1">Total Femmes Mineur</th>
+                  <td className="border px-2 py-1">
+                    {
+                      allImmigrantsData.filter(
+                        (imm) => !imm.is_male && imm.age && imm.age < 18,
+                      ).length
+                    }
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <br />
+          </>
+        )}
+
         <table className="w-full text-center text-xs">
           <thead className="">
             <tr className="font-bold text-gray">

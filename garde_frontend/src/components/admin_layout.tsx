@@ -7,9 +7,14 @@ import {
   LeftArrow,
   MigrationIrregulierIcon,
   PiroguesIcon,
+  PlusIcon,
   StatsIcon,
 } from "./icons";
-import { DisconnectButton } from "./buttons";
+import { DisconnectButton, FilledButton, OutlinedButton } from "./buttons";
+import { MDialog } from "./dialog";
+import { Input, Textarea } from "./comps";
+import { PrintPage } from "./print_page";
+import { useReactToPrint } from "react-to-print";
 
 function NavItem({
   to,
@@ -40,15 +45,102 @@ function NavItem({
   );
 }
 
+function LetterDialog() {
+  const [leftSignature, setLeftSignature] = React.useState("");
+  const [rightSignature, setRightSignature] = React.useState("");
+  const [contenu, setContenu] = React.useState("");
+  const [title, setTitle] = React.useState("");
+
+  const printRef = React.useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    onBeforeGetContent() {},
+    content: () => {
+      return printRef.current;
+    },
+    onAfterPrint: () => {},
+  });
+
+  return (
+    <>
+      <div className="flex w-[600px] flex-col gap-y-6">
+        <Input
+          placeholder="Titre"
+          className="font-semibold"
+          value={title}
+          onChange={(e) => {
+            setTitle(e.target.value);
+          }}
+        />
+        <Textarea
+          placeholder="Contenu"
+          className="h-[200px]"
+          value={contenu}
+          onChange={(e) => {
+            setContenu(e.target.value);
+          }}
+        />
+        <div className="flex w-full items-center">
+          <Textarea
+            placeholder="Sign gauche"
+            value={leftSignature}
+            onChange={(e) => {
+              setLeftSignature(e.target.value);
+            }}
+          />
+          <span className="mx-auto h-[3px] w-8 rounded-full bg-gray" />
+          <Textarea
+            placeholder="Sign droit"
+            value={rightSignature}
+            onChange={(e) => {
+              setRightSignature(e.target.value);
+            }}
+          />
+        </div>
+        <FilledButton
+          onClick={() => {
+            handlePrint();
+          }}
+          className="self-end"
+        >
+          Imprimer
+        </FilledButton>
+      </div>
+      <div ref={printRef} className="absolute opacity-0 print:opacity-100">
+        <PrintPage
+          signatureLeft={leftSignature}
+          signatureRight={rightSignature}
+          text={""}
+          isOnePage
+          objectText={null}
+          topTitle={title}
+        >
+          {contenu}
+        </PrintPage>
+      </div>
+    </>
+  );
+}
+
 export function AdminProtectedLayout() {
   const authContext = React.useContext(AuthContext);
   const [isOpen, setIsOpen] = React.useState(true);
+  const [isLetterDialogOpen, setIsLetterDialogOpen] = React.useState(false);
 
   if (!authContext.authData || !authContext.authData.user.is_admin) {
     return <Navigate to="/" />;
   }
   return (
     <div className="flex h-screen flex-row">
+      <MDialog
+        isOpen={isLetterDialogOpen}
+        title={"Créer une lettre"}
+        onClose={() => {
+          setIsLetterDialogOpen(false);
+        }}
+      >
+        <LetterDialog />
+      </MDialog>
       <ul
         className={
           "relative flex flex-col gap-y-2 border-r-2 border-r-primaryBorder bg-white px-6 pt-20 transition-all duration-150 " +
@@ -61,17 +153,25 @@ export function AdminProtectedLayout() {
           }}
           className={`absolute right-0 flex h-10 w-10 translate-x-1/2 items-center justify-center rounded-full bg-primaryBorder p-3 transition-all ${isOpen ? "" : "rotate-180"}`}
         >
-          {/* arrow icon */}
           <LeftArrow className="h-3 w-3 fill-black" />
         </button>
         <h3
           onClick={() => {
             // authContext.logOut();
           }}
-          className="mb-10 font-semibold text-gray"
+          className="mb-2 font-semibold text-gray"
         >
           Menu
         </h3>
+        <OutlinedButton
+          onClick={() => {
+            setIsLetterDialogOpen(true);
+          }}
+          className="mb-10 flex items-center gap-x-2 "
+        >
+          <PlusIcon className="" />
+          <span>Lettre</span>
+        </OutlinedButton>
         <NavItem isOpen={isOpen} to="/admin" icon={<StatsIcon />}>
           Statistiques
         </NavItem>
@@ -142,14 +242,16 @@ export function AdminProtectedLayout() {
         >
           Criminels
         </NavItem>
-        <DisconnectButton
-          className="text-semibold mb-20 mt-auto self-center"
-          onClick={() => {
-            // open this link http://127.0.0.1:8000/immigrants/pdf?created_by=1 in a new tab
-            // window.open("http://127.0.0.1:8000/immigrants/pdf?created_by=1");
-            authContext.logOut();
-          }}
-        />
+        <div className="text-medium  font- mb-20 mt-auto flex flex-col gap-y-6 self-center text-gray">
+          <DisconnectButton
+            className="text-semibold "
+            onClick={() => {
+              // open this link http://127.0.0.1:8000/immigrants/pdf?created_by=1 in a new tab
+              // window.open("http://127.0.0.1:8000/immigrants/pdf?created_by=1");
+              authContext.logOut();
+            }}
+          />
+        </div>
       </ul>
       <section className="h-screen flex-1 overflow-y-auto px-10  pt-10">
         <Outlet />
