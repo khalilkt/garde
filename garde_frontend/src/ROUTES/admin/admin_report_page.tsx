@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../App";
-import { Title } from "../../components/comps";
+import { Select, Title } from "../../components/comps";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { MONTHS, rootUrl } from "../../models/constants";
@@ -203,6 +203,8 @@ export default function AdminReportPage() {
   const token = useContext(AuthContext).authData?.token;
   const [searchParams, setSearchParams] = useSearchParams();
   // const [report, setReport] = useState<ReportInterface | null>(null);
+  const [cities, setCities] = useState<string[] | null>(null);
+
   const [dd, setDd] = useState<
     | [
         { [city: string]: { [nat_id: string]: NationalityDetails } }[],
@@ -228,6 +230,28 @@ export default function AdminReportPage() {
   });
 
   useEffect(() => {
+    async function fetchCities() {
+      try {
+        const res = await axios.get(rootUrl + "users/", {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+        let ret = [];
+        for (const user of res.data.data) {
+          if (user.city_name) {
+            ret.push(user.city_name);
+          }
+        }
+        setCities(ret);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    fetchCities();
+  }, []);
+
+  useEffect(() => {
     // setReport(null);
     fetch();
   }, [searchParams.get("year")]);
@@ -251,7 +275,7 @@ export default function AdminReportPage() {
       });
       console.log(res.data);
       const ret = getReportFromData(res.data);
-      console.log(ret);
+      // console.log(ret);
       setDd(ret as any);
 
       // setReport(res.data);
@@ -321,7 +345,29 @@ export default function AdminReportPage() {
       >
         Imprimer
       </FilledButton>
-
+      <div className="flow-row flex">
+        <Select
+          className="mt-10 w-max self-start"
+          value={searchParams.get("city") ?? "all"}
+          onChange={(e) => {
+            setSearchParams((prev) => {
+              if (e.target.value === "all") {
+                prev.delete("city");
+                return prev;
+              }
+              prev.set("city", e.target.value);
+              return prev;
+            });
+          }}
+        >
+          <option value="all">Tous</option>
+          {cities?.map((city) => (
+            <option key={city} value={city}>
+              {city.toUpperCase()}
+            </option>
+          ))}
+        </Select>
+      </div>
       {dd &&
         selectedTab === "immigrants" &&
         dd[0].map(

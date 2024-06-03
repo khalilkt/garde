@@ -115,7 +115,60 @@ def get_immigrant_report(start_date_epoch, end_date_epoch, user = None):
 #         return Response(ret)
 
 
+class GeneralReportV2 (APIView):
+    permission_classes = [IsAdminUser]
 
+    def get(self, request) : 
+        if not  "year" in request.query_params: 
+            return Response({"error": "year is required"}, status=status.HTTP_400_BAD_REQUEST)
+        year = request.query_params["year"] 
+
+        user = None
+        if "user" in request.query_params:
+            user = User.objects.get(id=request.query_params["user"])
+        
+        immigrant_report_by_month = {}
+        month = 1
+        while month <= 12: 
+            start_date = f"{year}-{month:02}" 
+            end_date = f"{year}-{month+1:02}" if month < 12 else f"{int(year)+1:04}-01"
+            start_date_epoch = datetime.strptime(start_date, "%Y-%m").timestamp()
+            end_date_epoch = datetime.strptime(end_date, "%Y-%m").timestamp()
+            month_report = get_immigrant_report(start_date_epoch, end_date_epoch, user = user )
+            immigrant_report_by_month[month] = month_report
+            month += 1
+
+        pirogue_report_by_month = {}
+
+        pirogues = Pirogue.objects.def_queryset()
+
+        month = 1
+        while month <= 12:
+            start_date = f"{year}-{month:02}" 
+            end_date = f"{year}-{month+1:02}" if month < 12 else f"{int(year)+1:04}-01"
+            start_date_epoch = datetime.strptime(start_date, "%Y-%m").timestamp()
+            end_date_epoch = datetime.strptime(end_date, "%Y-%m").timestamp()
+
+            pirogues_report = filter_by_start_end_date(pirogues, start_date_epoch, end_date_epoch)
+            if user:
+                pirogues_report = pirogues_report.filter(created_by=user)
+
+            saisie = pirogues_report.filter(etat='saisie').count()
+            casse = pirogues_report.filter(etat='casse').count()
+            abandonnee = pirogues_report.filter(etat='abandonnee').count()
+            pirogue_report_by_month[month] = {
+                "saisie" : saisie,
+                "casse" : casse,
+                "abandonnee" : abandonnee,
+            }
+            month += 1
+
+        return Response({
+            "immigrants_report" : immigrant_report_by_month,
+            "pirogue_report" : pirogue_report_by_month,
+        })
+
+    
 class GeneralReport (APIView):
     permission_classes = [IsAdminUser]
 
