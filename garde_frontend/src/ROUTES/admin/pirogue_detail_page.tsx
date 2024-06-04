@@ -17,7 +17,7 @@ import { Pagination, TableBodySquelette, Td, Tr } from "../../components/table";
 import { FilledButton } from "../../components/buttons";
 import { MDialog } from "../../components/dialog";
 import Webcam, { WebcamProps } from "react-webcam";
-import { LoadingIcon, PlusIcon } from "../../components/icons";
+import { EditIcon, LoadingIcon, PlusIcon } from "../../components/icons";
 import { useReactToPrint } from "react-to-print";
 import { getImmigrantGenre, getImmigrantSejour } from "../../models/utils";
 
@@ -147,6 +147,130 @@ export function MobileImmigrantView({
   );
 }
 
+function ImmigrantEditDialog({
+  initialImmigrant,
+  onSubmit,
+}: {
+  initialImmigrant: ImmigrantInterface;
+  onSubmit: () => void;
+}) {
+  const [name, setName] = React.useState("");
+  const [nationality, setNationality] = React.useState<number>(0);
+  const [birthDay, setBirthDay] = React.useState<DateInterface>({
+    day: null,
+    month: null,
+    year: null,
+  });
+
+  const token = useContext(AuthContext).authData?.token;
+
+  const [countries, setCountries] = React.useState<CountryInterface[] | null>(
+    null,
+  );
+
+  useEffect(() => {
+    axios
+      .get(rootUrl + "countries/", {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      })
+      .then((response) => {
+        setCountries(response.data);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }, []);
+
+  useEffect(() => {
+    setName(initialImmigrant.name);
+    setNationality(initialImmigrant.nationality);
+    setBirthDay({
+      day: parseInt(initialImmigrant.date_of_birth.split("-")[2]),
+      month: parseInt(initialImmigrant.date_of_birth.split("-")[1]),
+      year: parseInt(initialImmigrant.date_of_birth.split("-")[0]),
+    });
+  }, [initialImmigrant]);
+
+  function updateImmigrant() {
+    axios
+      .patch(
+        rootUrl + "immigrants/" + initialImmigrant.id + "/",
+        {
+          name: name,
+          nationality: nationality,
+          date_of_birth:
+            birthDay.year + "-" + birthDay.month + "-" + birthDay.day,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      )
+      .then((response) => {
+        onSubmit();
+        console.log(response);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+
+  return (
+    <div className="flex w-[400px] flex-col gap-y-4">
+      <Input
+        placeholder="Nom et Prénom"
+        value={name}
+        onChange={(e) => {
+          setName(e.target.value);
+        }}
+      />
+      <div className="flex gap-x-2">
+        <Input
+          className="w-[100px]"
+          placeholder="0000"
+          value={birthDay.year ?? ""}
+          onChange={(e) => {
+            setBirthDay({ ...birthDay, year: parseInt(e.target.value) });
+          }}
+        />
+        <Input
+          className="w-[50px]"
+          placeholder="00"
+          value={birthDay.month ?? ""}
+          onChange={(e) => {
+            setBirthDay({ ...birthDay, month: parseInt(e.target.value) });
+          }}
+        />
+        <Input
+          className="w-[50px]"
+          placeholder="00"
+          value={birthDay.day ?? ""}
+          onChange={(e) => {
+            setBirthDay({ ...birthDay, day: parseInt(e.target.value) });
+          }}
+        />
+      </div>
+      <SearchSelect<CountryInterface>
+        value={nationality.toString()}
+        onSelected={function (value): void {
+          setNationality(value.id);
+        }}
+        placeHolder={"Nationalité"}
+        search={true}
+        url={"countries"}
+        lookupColumn="name_fr"
+      />
+
+      <FilledButton className="self-end" onClick={updateImmigrant}>
+        Enregistrer
+      </FilledButton>
+    </div>
+  );
+}
+
 export default function PirogueDetailPage({
   pirogueId,
   onCloseClick,
@@ -182,6 +306,9 @@ export default function PirogueDetailPage({
   const [allImmigrantsData, setAllImmigrantsData] = React.useState<
     ImmigrantInterface[] | null
   >(null);
+
+  const [editingImmigrant, setEditingImmigrant] =
+    React.useState<ImmigrantInterface | null>(null);
 
   async function createImmigrant() {
     const elem = document.getElementById("ajdajdasdad");
@@ -303,6 +430,7 @@ export default function PirogueDetailPage({
     setIsFetchingAllMigrants(false);
   }
 
+  const superAdmin = true;
   return (
     <div
       {...divProps}
@@ -320,6 +448,23 @@ export default function PirogueDetailPage({
               dialogState.payload?.image?.replace("http://", "https://") ?? ""
             }
           ></img>
+        ) : (
+          <div></div>
+        )}
+      </MDialog>
+      <MDialog
+        onClose={() => setEditingImmigrant(null)}
+        isOpen={editingImmigrant !== null}
+        title="Modification"
+      >
+        {editingImmigrant ? (
+          <ImmigrantEditDialog
+            onSubmit={() => {
+              setEditingImmigrant(null);
+              loadImmigrants();
+            }}
+            initialImmigrant={editingImmigrant}
+          />
         ) : (
           <div></div>
         )}
@@ -428,6 +573,7 @@ export default function PirogueDetailPage({
             <th className="text-medium py-3 text-base">Nationalité</th>
             <th className="text-medium py-3 text-base">Pays de naissance</th>
             <th className="text-medium py-3 text-base">Date de naissance</th>
+            {superAdmin && <th className="text-medium py-3 text-base"></th>}
           </tr>
         </thead>
         {!immigrantsData ? (
@@ -466,6 +612,18 @@ export default function PirogueDetailPage({
                   <Border>{immigrant.birth_country_name}</Border>
                 </Td>
                 <Td isSmall={true}>{immigrant.date_of_birth}</Td>
+                {superAdmin && (
+                  <Td isSmall={true}>
+                    {" "}
+                    <button
+                      onClick={() => {
+                        setEditingImmigrant(immigrant);
+                      }}
+                    >
+                      <EditIcon />
+                    </button>{" "}
+                  </Td>
+                )}
               </Tr>
             ))}
           </tbody>
