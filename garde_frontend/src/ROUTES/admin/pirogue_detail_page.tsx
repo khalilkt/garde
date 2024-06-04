@@ -186,11 +186,13 @@ function ImmigrantEditDialog({
   useEffect(() => {
     setName(initialImmigrant.name);
     setNationality(initialImmigrant.nationality);
-    setBirthDay({
-      day: parseInt(initialImmigrant.date_of_birth.split("-")[2]),
-      month: parseInt(initialImmigrant.date_of_birth.split("-")[1]),
-      year: parseInt(initialImmigrant.date_of_birth.split("-")[0]),
-    });
+    if (initialImmigrant.date_of_birth) {
+      setBirthDay({
+        day: parseInt(initialImmigrant.date_of_birth.split("-")[2]),
+        month: parseInt(initialImmigrant.date_of_birth.split("-")[1]),
+        year: parseInt(initialImmigrant.date_of_birth.split("-")[0]),
+      });
+    }
   }, [initialImmigrant]);
 
   function updateImmigrant() {
@@ -233,7 +235,13 @@ function ImmigrantEditDialog({
           placeholder="0000"
           value={birthDay.year ?? ""}
           onChange={(e) => {
-            setBirthDay({ ...birthDay, year: parseInt(e.target.value) });
+            const value = parseInt(e.target.value);
+            if (isNaN(value)) {
+              setBirthDay({ ...birthDay, year: null });
+              return;
+            }
+
+            setBirthDay({ ...birthDay, year: value });
           }}
         />
         <Input
@@ -241,7 +249,12 @@ function ImmigrantEditDialog({
           placeholder="00"
           value={birthDay.month ?? ""}
           onChange={(e) => {
-            setBirthDay({ ...birthDay, month: parseInt(e.target.value) });
+            let value = parseInt(e.target.value);
+            if (isNaN(value)) {
+              setBirthDay({ ...birthDay, month: null });
+              return;
+            }
+            setBirthDay({ ...birthDay, month: value });
           }}
         />
         <Input
@@ -249,7 +262,12 @@ function ImmigrantEditDialog({
           placeholder="00"
           value={birthDay.day ?? ""}
           onChange={(e) => {
-            setBirthDay({ ...birthDay, day: parseInt(e.target.value) });
+            let value = parseInt(e.target.value);
+            if (isNaN(value)) {
+              setBirthDay({ ...birthDay, day: null });
+              return;
+            }
+            setBirthDay({ ...birthDay, day: value });
           }}
         />
       </div>
