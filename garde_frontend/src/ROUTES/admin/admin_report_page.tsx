@@ -126,6 +126,15 @@ function getPirogueGenre(repot: PirogueReport) {
   return ret;
 }
 
+interface PirogueStats {
+  saisie: number;
+  casse: number;
+  abandonnee: number;
+  total_gps: number;
+  total_fuel: number;
+  total_motor: number;
+}
+
 function getReportFromData(data: any) {
   const immgrantReport = data["immigrant_report"];
   let immigrantReportByMonth = [];
@@ -148,11 +157,7 @@ function getReportFromData(data: any) {
 
     let pirogueReport: {
       [city: string]: {
-        [nat_id: string]: {
-          saisie: number;
-          casse: number;
-          abandonnee: number;
-        };
+        [nat_id: string]: PirogueStats;
       };
     } = {};
     for (const [key, value] of Object.entries(data["pirogue_report"])) {
@@ -207,11 +212,7 @@ export default function AdminReportPage() {
   } | null>(null);
 
   const [piroguesReport, setPiroguesReport] = useState<{
-    [month: string]: {
-      saisie: number;
-      casse: number;
-      abandonnee: number;
-    };
+    [month: string]: PirogueStats;
   } | null>(null);
 
   const [dd, setDd] = useState<
@@ -332,16 +333,22 @@ export default function AdminReportPage() {
     }
   }
 
-  let totalPirogueReport: {
-    saisie: number;
-    casse: number;
-    abandonnee: number;
-  } = { saisie: 0, casse: 0, abandonnee: 0 };
+  let totalPirogueReport: PirogueStats = {
+    saisie: 0,
+    casse: 0,
+    abandonnee: 0,
+    total_fuel: 0,
+    total_gps: 0,
+    total_motor: 0,
+  };
   if (piroguesReport) {
     for (const monthReport of Object.values(piroguesReport)) {
       totalPirogueReport.saisie += monthReport.saisie;
       totalPirogueReport.casse += monthReport.casse;
       totalPirogueReport.abandonnee += monthReport.abandonnee;
+      totalPirogueReport.total_fuel += monthReport.total_fuel;
+      totalPirogueReport.total_gps += monthReport.total_gps;
+      totalPirogueReport.total_motor += monthReport.total_motor;
     }
   }
 
@@ -570,6 +577,28 @@ export default function AdminReportPage() {
                     </Td>
                     <Td className="text-medium py-3 text-base font-bold">
                       {monthReport.abandonnee}
+                    </Td>
+                  </Tr>
+                  <Tr>
+                    <Td className="text-medium  py-3 text-base">
+                      Total Moteurs
+                    </Td>
+                    <Td className="text-medium py-3 text-base font-bold">
+                      {monthReport.total_motor}
+                    </Td>
+                  </Tr>
+                  <Tr>
+                    <Td className="text-medium  py-3 text-base">Total GPS</Td>
+                    <Td className="text-medium py-3 text-base font-bold">
+                      {monthReport.total_gps}
+                    </Td>
+                  </Tr>
+                  <Tr>
+                    <Td className="text-medium  py-3 text-base">
+                      Total Essence
+                    </Td>
+                    <Td className="text-medium py-3 text-base font-bold">
+                      {monthReport.total_fuel}
                     </Td>
                   </Tr>
                 </tbody>
