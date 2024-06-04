@@ -7,6 +7,7 @@ from pirogue.models import Pirogue, Immigrant
 from django.db.models import F, ExpressionWrapper, IntegerField
 from dateutil.relativedelta import relativedelta
 from datetime import date
+from django.db.models import Sum, Count
 
 from pirogue.models.country import Country
 
@@ -153,19 +154,32 @@ class GeneralReportV2 (APIView):
             if user:
                 pirogues_report = pirogues_report.filter(created_by=user)
 
+            total_fuel = 0
+            total_gps = 0
+            total_motor = 0
+            for p in pirogues_report:
+                total_fuel += p.fuel
+                total_gps += len(p.gps)
+                total_motor += len(p.motor_numbers)
+
             saisie = pirogues_report.filter(etat='saisie').count()
             casse = pirogues_report.filter(etat='casse').count()
             abandonnee = pirogues_report.filter(etat='abandonnee').count()
+
             pirogue_report_by_month[month] = {
                 "saisie" : saisie,
                 "casse" : casse,
                 "abandonnee" : abandonnee,
+                "total_fuel" : total_fuel,
+                "total_gps" : total_gps,
+                "total_motor" : total_motor,
             }
             month += 1
 
         return Response({
             "immigrants_report" : immigrant_report_by_month,
             "pirogue_report" : pirogue_report_by_month,
+
         })
 
     

@@ -126,11 +126,6 @@ function getPirogueGenre(repot: PirogueReport) {
   return ret;
 }
 
-interface ReportInterface2 {
-  [month: string]: { [city: string]: NationalityDetails };
-  // pirogue_report: { [key: string]: {[key:string] : {}} };
-}
-
 function getReportFromData(data: any) {
   const immgrantReport = data["immigrant_report"];
   let immigrantReportByMonth = [];
@@ -278,6 +273,8 @@ export default function AdminReportPage() {
       year: selectedYear.toString(),
       user: searchParams.get("city") ?? undefined,
     };
+    setImmigrantsReport(null);
+    setPiroguesReport(null);
     try {
       const res = await axios.get(rootUrl + "general_report_v2/", {
         headers: {
@@ -319,6 +316,34 @@ export default function AdminReportPage() {
 
   const selectedTab: "pirogues" | "immigrants" =
     (searchParams.get("tab") as any) ?? "pirogues";
+
+  let totalImmigrantReport: { [nat: string]: NationalityDetails } = {};
+  if (immigrantsReport) {
+    for (const monthReport of Object.values(immigrantsReport)) {
+      for (const [nat, det] of Object.entries(monthReport)) {
+        if (totalImmigrantReport[nat] === undefined) {
+          totalImmigrantReport[nat] = { ...det };
+        } else {
+          totalImmigrantReport[nat].males += det.males;
+          totalImmigrantReport[nat].females += det.females;
+          totalImmigrantReport[nat].minors += det.minors;
+        }
+      }
+    }
+  }
+
+  let totalPirogueReport: {
+    saisie: number;
+    casse: number;
+    abandonnee: number;
+  } = { saisie: 0, casse: 0, abandonnee: 0 };
+  if (piroguesReport) {
+    for (const monthReport of Object.values(piroguesReport)) {
+      totalPirogueReport.saisie += monthReport.saisie;
+      totalPirogueReport.casse += monthReport.casse;
+      totalPirogueReport.abandonnee += monthReport.abandonnee;
+    }
+  }
 
   return (
     <div className="flex flex-col">
@@ -403,45 +428,59 @@ export default function AdminReportPage() {
       </div>
       {immigrantsReport &&
         selectedTab === "immigrants" &&
-        Object.values(immigrantsReport).map((monthReport, i: number) => (
-          <div className="items-centesr flex flex-col">
-            <span className="mt-10 text-lg font-semibold text-primary">
-              {MONTHS[i]}
-            </span>
-            <table className="mt-10">
-              <thead>
-                <Tr>
-                  <Td className="text-medium  py-3 text-base font-semibold">
-                    Nationalités
-                  </Td>
-                  <Td className="text-medium  py-3 text-base font-semibold">
-                    Effectif global
-                  </Td>
-                  <Td className="text-medium py-3 text-base font-semibold">
-                    Hommes
-                  </Td>
-                  <Td className="text-medium py-3 text-base font-semibold">
-                    Femmes
-                  </Td>
-                  <Td className="text-medium py-3 text-base font-semibold">
-                    Mineurs
-                  </Td>
-                </Tr>
-              </thead>
-              <tbody>
-                {Object.entries(monthReport).map(([nat, det], index) => (
+        [...Object.values(immigrantsReport), totalImmigrantReport!].map(
+          (monthReport, i: number) => (
+            <div className="items-centesr flex flex-col">
+              <span className="mt-10 text-lg font-semibold text-primary">
+                {i > 11 ? "TOTAL" : MONTHS[i]}
+              </span>
+              <table className="mt-10">
+                <thead>
                   <Tr>
-                    <Td>{det.name ?? "-"}</Td>
-                    <Td>{det.males + det.females + det.minors}</Td>
-                    <Td>{det.males}</Td>
-                    <Td>{det.females}</Td>
-                    <Td>{det.minors}</Td>
+                    <Td className="text-medium  py-3 text-base font-semibold">
+                      Nationalités
+                    </Td>
+                    <Td className="text-medium  py-3 text-base font-semibold">
+                      Effectif global
+                    </Td>
+                    <Td className="text-medium py-3 text-base font-semibold">
+                      Hommes
+                    </Td>
+                    <Td className="text-medium py-3 text-base font-semibold">
+                      Femmes
+                    </Td>
+                    <Td className="text-medium py-3 text-base font-semibold">
+                      Mineurs
+                    </Td>
                   </Tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ))}
+                </thead>
+
+                <tbody>
+                  {Object.entries(monthReport).map(([nat, det], index) => (
+                    <Tr>
+                      <Td>{det.name ?? "-"}</Td>
+                      <Td>{det.males + det.females + det.minors}</Td>
+                      <Td>{det.males}</Td>
+                      <Td>{det.females}</Td>
+                      <Td>{det.minors}</Td>
+                    </Tr>
+                  ))}
+                  {Object.entries(monthReport).length === 0 && (
+                    <Tr>
+                      <Td colSpan={1} className="text-center">
+                        -
+                      </Td>
+                      <Td>0</Td>
+                      <Td>0</Td>
+                      <Td>0</Td>
+                      <Td>0</Td>
+                    </Tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ),
+        )}
       {dd &&
         selectedTab === "immigrants" &&
         dd[0].map(
@@ -501,41 +540,43 @@ export default function AdminReportPage() {
         )}
       {piroguesReport &&
         selectedTab === "pirogues" &&
-        Object.values(piroguesReport).map((monthReport, i: number) => (
-          <div className="flex flex-col items-center">
-            <span className="mt-10 text-lg font-semibold text-gray">
-              {MONTHS[i]}
-            </span>
-            <table>
-              <tbody>
-                <Tr>
-                  <Td className="text-medium  py-3 text-base">
-                    Pirogue Saisie
-                  </Td>
-                  <Td className="text-medium py-3 text-base font-bold ">
-                    {monthReport.saisie}
-                  </Td>
-                </Tr>
-                <Tr>
-                  <Td className="text-medium  py-3 text-base">
-                    Pirogue Cassée
-                  </Td>
-                  <Td className="text-medium py-3 text-base font-bold">
-                    {monthReport.casse}
-                  </Td>
-                </Tr>
-                <Tr>
-                  <Td className="text-medium  py-3 text-base">
-                    Pirogue Abandonnée
-                  </Td>
-                  <Td className="text-medium py-3 text-base font-bold">
-                    {monthReport.abandonnee}
-                  </Td>
-                </Tr>
-              </tbody>
-            </table>
-          </div>
-        ))}
+        [...Object.values(piroguesReport), totalPirogueReport].map(
+          (monthReport, i: number) => (
+            <div className="flex flex-col items-center">
+              <span className="mt-10 text-lg font-semibold text-gray">
+                {i > 11 ? "TOTAL" : MONTHS[i]}
+              </span>
+              <table>
+                <tbody>
+                  <Tr>
+                    <Td className="text-medium  py-3 text-base">
+                      Pirogue Saisie
+                    </Td>
+                    <Td className="text-medium py-3 text-base font-bold ">
+                      {monthReport.saisie}
+                    </Td>
+                  </Tr>
+                  <Tr>
+                    <Td className="text-medium  py-3 text-base">
+                      Pirogue Cassée
+                    </Td>
+                    <Td className="text-medium py-3 text-base font-bold">
+                      {monthReport.casse}
+                    </Td>
+                  </Tr>
+                  <Tr>
+                    <Td className="text-medium  py-3 text-base">
+                      Pirogue Abandonnée
+                    </Td>
+                    <Td className="text-medium py-3 text-base font-bold">
+                      {monthReport.abandonnee}
+                    </Td>
+                  </Tr>
+                </tbody>
+              </table>
+            </div>
+          ),
+        )}
       {dd &&
         selectedTab === "pirogues" &&
         dd[1].map(
@@ -606,88 +647,108 @@ export default function AdminReportPage() {
         )}
         {immigrantsReport &&
           selectedTab === "immigrants" &&
-          Object.values(immigrantsReport).map((monthReport, i: number) => (
-            <div className="items-centesr flex flex-col">
-              <span className="mt-10 text-lg font-semibold text-primary">
-                {MONTHS[i]}
-              </span>
-
-              <table className="mt-10">
-                <thead>
-                  <tr>
-                    <td className="border px-2 py-1 font-semibold">
-                      Nationalités
-                    </td>
-                    <td className="border px-2 py-1 font-semibold">
-                      Effectif global
-                    </td>
-                    <td className="border px-2 py-1 font-semibold">Hommes</td>
-                    <td className="border px-2 py-1 font-semibold">Femmes</td>
-                    <td className="border px-2 py-1 font-semibold">Mineurs</td>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(monthReport).map(([nat, det], index) => (
+          [...Object.values(immigrantsReport), totalImmigrantReport].map(
+            (monthReport, i: number) => (
+              <div className="items-centesr flex flex-col">
+                <span className="mt-10 text-lg font-semibold text-primary">
+                  {i > 11 ? "TOTAL" : MONTHS[i]}
+                </span>
+                e
+                <table className="mt-10">
+                  <thead>
                     <tr>
                       <td className="border px-2 py-1 font-semibold">
-                        {det.name ?? "-"}
+                        Nationalités
                       </td>
                       <td className="border px-2 py-1 font-semibold">
-                        {det.males + det.females + det.minors}
+                        Effectif global
                       </td>
+                      <td className="border px-2 py-1 font-semibold">Hommes</td>
+                      <td className="border px-2 py-1 font-semibold">Femmes</td>
                       <td className="border px-2 py-1 font-semibold">
-                        {det.males}
-                      </td>
-                      <td className="border px-2 py-1 font-semibold">
-                        {det.females}
-                      </td>
-                      <td className="border px-2 py-1 font-semibold">
-                        {det.minors}
+                        Mineurs
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))}
+                  </thead>
+                  <tbody>
+                    {Object.entries(monthReport).map(([nat, det], index) => (
+                      <tr>
+                        <td className="border px-2 py-1 font-semibold">
+                          {det.name ?? "-"}
+                        </td>
+                        <td className="border px-2 py-1 font-semibold">
+                          {det.males + det.females + det.minors}
+                        </td>
+                        <td className="border px-2 py-1 font-semibold">
+                          {det.males}
+                        </td>
+                        <td className="border px-2 py-1 font-semibold">
+                          {det.females}
+                        </td>
+                        <td className="border px-2 py-1 font-semibold">
+                          {det.minors}
+                        </td>
+                      </tr>
+                    ))}
+                    {Object.entries(monthReport).length === 0 && (
+                      <Tr>
+                        <td
+                          className="border px-2 py-1 text-center font-semibold"
+                          colSpan={1}
+                        >
+                          -
+                        </td>
+                        <td className="border px-2 py-1 font-semibold">0</td>
+                        <td className="border px-2 py-1 font-semibold">0</td>
+                        <td className="border px-2 py-1 font-semibold">0</td>
+                        <td className="border px-2 py-1 font-semibold">0</td>
+                      </Tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ),
+          )}
 
         {piroguesReport &&
           selectedTab === "pirogues" &&
-          Object.values(piroguesReport).map((monthReport, i: number) => (
-            <div className="flex flex-col items-center">
-              <span className="mt-10 text-lg font-semibold text-gray">
-                {MONTHS[i]}
-              </span>
-              <table className="mt-2">
-                <tbody>
-                  <tr>
-                    <td className="border px-2 py-1 font-semibold">
-                      Pirogue Saisie
-                    </td>
-                    <td className="border px-2 py-1 font-bold ">
-                      {monthReport.saisie}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-2 py-1 font-semibold">
-                      Pirogue Cassée
-                    </td>
-                    <td className="border px-2 py-1 font-bold">
-                      {monthReport.casse}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-2 py-1 font-semibold">
-                      Pirogue Abandonnée
-                    </td>
-                    <td className="border px-2 py-1 font-bold">
-                      {monthReport.abandonnee}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          ))}
+          [...Object.values(piroguesReport), totalPirogueReport].map(
+            (monthReport, i: number) => (
+              <div className="flex flex-col items-center">
+                <span className="mt-10 text-lg font-semibold text-gray">
+                  {i > 11 ? "TOTAL" : MONTHS[i]}
+                </span>
+                <table className="mt-2">
+                  <tbody>
+                    <tr>
+                      <td className="border px-2 py-1 font-semibold">
+                        Pirogue Saisie
+                      </td>
+                      <td className="border px-2 py-1 font-bold ">
+                        {monthReport.saisie}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border px-2 py-1 font-semibold">
+                        Pirogue Cassée
+                      </td>
+                      <td className="border px-2 py-1 font-bold">
+                        {monthReport.casse}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border px-2 py-1 font-semibold">
+                        Pirogue Abandonnée
+                      </td>
+                      <td className="border px-2 py-1 font-bold">
+                        {monthReport.abandonnee}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ),
+          )}
 
         {dd &&
           selectedTab === "immigrants" &&
