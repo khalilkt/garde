@@ -773,6 +773,30 @@ export default function AdminReportPage() {
                         {monthReport.abandonnee}
                       </td>
                     </tr>
+                    <tr>
+                      <td className="border px-2 py-1 font-semibold">
+                        Total Moteurs
+                      </td>
+                      <td className="border px-2 py-1 font-bold">
+                        {monthReport.total_motor}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border px-2 py-1 font-semibold">
+                        Total GPS
+                      </td>
+                      <td className="border px-2 py-1 font-bold">
+                        {monthReport.total_gps}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border px-2 py-1 font-semibold">
+                        Total Essence
+                      </td>
+                      <td className="border px-2 py-1 font-bold">
+                        {monthReport.total_fuel}
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
