@@ -203,7 +203,21 @@ export default function AdminReportPage() {
   const token = useContext(AuthContext).authData?.token;
   const [searchParams, setSearchParams] = useSearchParams();
   // const [report, setReport] = useState<ReportInterface | null>(null);
-  const [cities, setCities] = useState<string[] | null>(null);
+  const [users, setUsers] = useState<
+    { id: number; city_name: string }[] | null
+  >(null);
+
+  const [immigrantsReport, setImmigrantsReport] = useState<{
+    [month: string]: { [nat_id: string]: NationalityDetails };
+  } | null>(null);
+
+  const [piroguesReport, setPiroguesReport] = useState<{
+    [month: string]: {
+      saisie: number;
+      casse: number;
+      abandonnee: number;
+    };
+  } | null>(null);
 
   const [dd, setDd] = useState<
     | [
@@ -240,10 +254,10 @@ export default function AdminReportPage() {
         let ret = [];
         for (const user of res.data.data) {
           if (user.city_name) {
-            ret.push(user.city_name);
+            ret.push({ id: user.id, city_name: user.city_name });
           }
         }
-        setCities(ret);
+        setUsers(ret);
       } catch (e) {
         console.log(e);
       }
@@ -252,13 +266,32 @@ export default function AdminReportPage() {
   }, []);
 
   useEffect(() => {
-    // setReport(null);
-    fetch();
-  }, [searchParams.get("year")]);
+    // fetch();
+    fetchV2();
+  }, [searchParams.get("year"), searchParams.get("city")]);
 
   const selectedYear =
     searchParams.get("year") ?? new Date().getFullYear().toString();
 
+  async function fetchV2() {
+    const params = {
+      year: selectedYear.toString(),
+      user: searchParams.get("city") ?? undefined,
+    };
+    try {
+      const res = await axios.get(rootUrl + "general_report_v2/", {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+        params: params,
+      });
+      console.log(res.data);
+      setImmigrantsReport(res.data["immigrants_report"]);
+      setPiroguesReport(res.data["pirogue_report"]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
   async function fetch() {
     const parms = {
       // start: selectedYear + "-" + "01",
@@ -361,13 +394,54 @@ export default function AdminReportPage() {
           }}
         >
           <option value="all">Tous</option>
-          {cities?.map((city) => (
-            <option key={city} value={city}>
-              {city.toUpperCase()}
+          {users?.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.city_name.toUpperCase()}
             </option>
           ))}
         </Select>
       </div>
+      {immigrantsReport &&
+        selectedTab === "immigrants" &&
+        Object.values(immigrantsReport).map((monthReport, i: number) => (
+          <div className="items-centesr flex flex-col">
+            <span className="mt-10 text-lg font-semibold text-primary">
+              {MONTHS[i]}
+            </span>
+            <table className="mt-10">
+              <thead>
+                <Tr>
+                  <Td className="text-medium  py-3 text-base font-semibold">
+                    Nationalités
+                  </Td>
+                  <Td className="text-medium  py-3 text-base font-semibold">
+                    Effectif global
+                  </Td>
+                  <Td className="text-medium py-3 text-base font-semibold">
+                    Hommes
+                  </Td>
+                  <Td className="text-medium py-3 text-base font-semibold">
+                    Femmes
+                  </Td>
+                  <Td className="text-medium py-3 text-base font-semibold">
+                    Mineurs
+                  </Td>
+                </Tr>
+              </thead>
+              <tbody>
+                {Object.entries(monthReport).map(([nat, det], index) => (
+                  <Tr>
+                    <Td>{det.name ?? "-"}</Td>
+                    <Td>{det.males + det.females + det.minors}</Td>
+                    <Td>{det.males}</Td>
+                    <Td>{det.females}</Td>
+                    <Td>{det.minors}</Td>
+                  </Tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
       {dd &&
         selectedTab === "immigrants" &&
         dd[0].map(
@@ -425,6 +499,43 @@ export default function AdminReportPage() {
               </div>
             ),
         )}
+      {piroguesReport &&
+        selectedTab === "pirogues" &&
+        Object.values(piroguesReport).map((monthReport, i: number) => (
+          <div className="flex flex-col items-center">
+            <span className="mt-10 text-lg font-semibold text-gray">
+              {MONTHS[i]}
+            </span>
+            <table>
+              <tbody>
+                <Tr>
+                  <Td className="text-medium  py-3 text-base">
+                    Pirogue Saisie
+                  </Td>
+                  <Td className="text-medium py-3 text-base font-bold ">
+                    {monthReport.saisie}
+                  </Td>
+                </Tr>
+                <Tr>
+                  <Td className="text-medium  py-3 text-base">
+                    Pirogue Cassée
+                  </Td>
+                  <Td className="text-medium py-3 text-base font-bold">
+                    {monthReport.casse}
+                  </Td>
+                </Tr>
+                <Tr>
+                  <Td className="text-medium  py-3 text-base">
+                    Pirogue Abandonnée
+                  </Td>
+                  <Td className="text-medium py-3 text-base font-bold">
+                    {monthReport.abandonnee}
+                  </Td>
+                </Tr>
+              </tbody>
+            </table>
+          </div>
+        ))}
       {dd &&
         selectedTab === "pirogues" &&
         dd[1].map(
@@ -486,6 +597,98 @@ export default function AdminReportPage() {
           LA LUTTE CONTRE LA MIGRATION IRREGULIERE PAR VOIE MARITIME{" "}
           {selectedYear}
         </h2>
+        {searchParams.get("city") && (
+          <h3 className="mt-10 text-center text-xl font-semibold">
+            {users
+              ?.find((user) => user.id === parseInt(searchParams.get("city")!))
+              ?.city_name?.toUpperCase()}
+          </h3>
+        )}
+        {immigrantsReport &&
+          selectedTab === "immigrants" &&
+          Object.values(immigrantsReport).map((monthReport, i: number) => (
+            <div className="items-centesr flex flex-col">
+              <span className="mt-10 text-lg font-semibold text-primary">
+                {MONTHS[i]}
+              </span>
+
+              <table className="mt-10">
+                <thead>
+                  <tr>
+                    <td className="border px-2 py-1 font-semibold">
+                      Nationalités
+                    </td>
+                    <td className="border px-2 py-1 font-semibold">
+                      Effectif global
+                    </td>
+                    <td className="border px-2 py-1 font-semibold">Hommes</td>
+                    <td className="border px-2 py-1 font-semibold">Femmes</td>
+                    <td className="border px-2 py-1 font-semibold">Mineurs</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(monthReport).map(([nat, det], index) => (
+                    <tr>
+                      <td className="border px-2 py-1 font-semibold">
+                        {det.name ?? "-"}
+                      </td>
+                      <td className="border px-2 py-1 font-semibold">
+                        {det.males + det.females + det.minors}
+                      </td>
+                      <td className="border px-2 py-1 font-semibold">
+                        {det.males}
+                      </td>
+                      <td className="border px-2 py-1 font-semibold">
+                        {det.females}
+                      </td>
+                      <td className="border px-2 py-1 font-semibold">
+                        {det.minors}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+
+        {piroguesReport &&
+          selectedTab === "pirogues" &&
+          Object.values(piroguesReport).map((monthReport, i: number) => (
+            <div className="flex flex-col items-center">
+              <span className="mt-10 text-lg font-semibold text-gray">
+                {MONTHS[i]}
+              </span>
+              <table className="mt-2">
+                <tbody>
+                  <tr>
+                    <td className="border px-2 py-1 font-semibold">
+                      Pirogue Saisie
+                    </td>
+                    <td className="border px-2 py-1 font-bold ">
+                      {monthReport.saisie}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border px-2 py-1 font-semibold">
+                      Pirogue Cassée
+                    </td>
+                    <td className="border px-2 py-1 font-bold">
+                      {monthReport.casse}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border px-2 py-1 font-semibold">
+                      Pirogue Abandonnée
+                    </td>
+                    <td className="border px-2 py-1 font-bold">
+                      {monthReport.abandonnee}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ))}
+
         {dd &&
           selectedTab === "immigrants" &&
           dd[0].map(
