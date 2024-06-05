@@ -5,6 +5,7 @@ import {
   AgentsIcon,
   ImmigrantIcon,
   LeftArrow,
+  LoadingIcon,
   MigrationIrregulierIcon,
   PiroguesIcon,
   PlusIcon,
@@ -16,6 +17,8 @@ import { Input, Textarea } from "./comps";
 import { PrintPage } from "./print_page";
 import { useReactToPrint } from "react-to-print";
 import { ImmigrantInterface } from "../ROUTES/admin/agent&admin_immigrants_page";
+import { rootUrl } from "../models/constants";
+import axios from "axios";
 
 function NavItem({
   to,
@@ -49,6 +52,7 @@ function NavItem({
 interface BulkImmigrnatInterface {
   name: string;
   date_of_birth: string;
+  birth_place: string;
   nationality: string;
   is_male: boolean;
 }
@@ -63,8 +67,6 @@ function formatNationalities(data: string) {
       nats.push({ id: id, name: nat });
     }
   }
-
-  return nats;
 
   return nats;
 }
@@ -82,6 +84,7 @@ function formartData(data: string) {
       if (sexe === "H" || sexe === "F") {
         immigrantList.push({
           name: name,
+          birth_place: placeOfBirth,
           date_of_birth: dateOfBirth,
           nationality: nationality,
           is_male: sexe === "H",
@@ -94,6 +97,8 @@ function formartData(data: string) {
 }
 
 function SuperAdminBulkDialog() {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
   const [date, setDate] = React.useState<{
     year: number | null;
     month: number | null;
@@ -108,6 +113,111 @@ function SuperAdminBulkDialog() {
 
   const immigrantList = formartData(data);
   const nationalities = formatNationalities(nats);
+
+  const token = React.useContext(AuthContext).authData?.token;
+
+  async function createPirogue() {
+    const res = await axios.post(
+      rootUrl + "me/pirogues/",
+      {},
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    const id = res.data.id;
+    console.log("created pirogue", id);
+    await axios.patch(
+      rootUrl + `pirogues/${id}/`,
+      {
+        created_at: date.year! + "-" + date.month! + "-" + date.day!,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log("update the pirogue created_at", id);
+    return id;
+  }
+  async function createImmigrant(
+    immigrant: BulkImmigrnatInterface,
+    pirogue_id: number,
+  ) {
+    let nat = nationalities.find((v) => v.name === immigrant.nationality)?.id;
+    if (!nat) {
+      alert("nationality not found : " + immigrant.nationality);
+      return;
+    }
+    const res = await axios.post(
+      rootUrl + "me/immigrants/",
+      {
+        name: immigrant.name,
+        date_of_birth: immigrant.date_of_birth,
+        birth_place: immigrant.birth_place,
+        nationality: nat,
+        pirogue: pirogue_id,
+        is_male: immigrant.is_male,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    const id = res.data.id;
+    console.log("created immigrant", id);
+    await axios.patch(
+      rootUrl + `immigrants/${id}/`,
+      {
+        created_at: date.year! + "-" + date.month! + "-" + date.day!,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log("update the immigrnat created_at", id);
+  }
+
+  async function submit() {
+    alert(await createPirogue());
+    return;
+    if (date.year === null || date.month === null || date.day === null) {
+      alert("please enter the date");
+      return;
+    }
+    if (immigrantList.length === 0) {
+      alert("no data");
+      return;
+    }
+    if (nationalities.length === 0) {
+      alert("no nationalities");
+      return;
+    }
+    for (const imm of immigrantList) {
+      if (nationalities.find((v) => v.name === imm.nationality) === undefined) {
+        alert("nationality not found : " + imm.nationality);
+        return;
+      }
+    }
+    setIsSubmitting(true);
+    const pirogueId = await createPirogue();
+    let promises = immigrantList.map((imm) => {
+      return createImmigrant(imm, pirogueId);
+    });
+    try {
+      await Promise.all(promises);
+    } catch (e) {
+      alert("error");
+      console.log(e);
+    }
+
+    setIsSubmitting(false);
+  }
 
   return (
     <div className="flex w-[600px] flex-col gap-y-4">
@@ -161,7 +271,7 @@ function SuperAdminBulkDialog() {
           }}
         />
       </div>
-      <div className="bg-blue-50">
+      <div className="h-[400px] overflow-y-scroll bg-blue-50">
         {immigrantList.map((immigrant) => {
           return (
             <div className="flex gap-x-2">
@@ -210,8 +320,13 @@ function SuperAdminBulkDialog() {
           setNats(e.target.value);
         }}
       />
-      <FilledButton className="self-end" onClick={() => {}}>
-        Confirmer
+      <FilledButton
+        className="self-end"
+        onClick={() => {
+          submit();
+        }}
+      >
+        {isSubmitting ? <LoadingIcon /> : "Submit"}
       </FilledButton>
     </div>
   );
@@ -224,6 +339,7 @@ function LetterDialog() {
   const [title, setTitle] = React.useState("");
 
   const printRef = React.useRef<HTMLDivElement>(null);
+  const token = React.useContext(AuthContext).authData?.token;
 
   const handlePrint = useReactToPrint({
     onBeforeGetContent() {},
@@ -302,6 +418,8 @@ export function AdminProtectedLayout() {
   if (!authContext.authData || !authContext.authData.user.is_admin) {
     return <Navigate to="/" />;
   }
+  const token = authContext.authData.token;
+
   return (
     <div className="flex h-screen flex-row">
       <MDialog

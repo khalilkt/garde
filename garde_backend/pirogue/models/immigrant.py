@@ -45,6 +45,7 @@ class Immigrant(models.Model):
     created_by = models.ForeignKey('authentication.User', on_delete=models.PROTECT, related_name='immigrants')
     free_at = models.DateField( null = True, blank = True)
     deleted_at = models.DateTimeField( null = True, blank = True)
+    birth_place = models.CharField(max_length=100, default="")
     criminal_record = models.CharField(max_length=100, null = True, choices=[
         ('theft', 'theft'),
         ('homocide', 'homocide'),
