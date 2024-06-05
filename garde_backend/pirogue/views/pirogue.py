@@ -100,6 +100,17 @@ class PirogueDetail(RetrieveUpdateDestroyAPIView):
     queryset = Pirogue.objects.def_queryset()
     serializer_class = PirogueSerializer
 
+    def patch(self, request, *args, **kwargs):
+        # if created_at in the body update created_at in the object
+        data = request.data
+        if "created_at" in data:
+            created_at = data["created_at"]
+            instance = self.get_object()
+            instance.created_at = created_at 
+            instance.save()
+        
+        return super().patch(request, *args, **kwargs)
+
 class MyPirogueList(ListCreateAPIView):
     serializer_class = PirogueSerializer
     filterset_fields = get_pirogue_filterset_fields()
@@ -124,4 +135,3 @@ class MigrationIrregularList(ListAPIView):
         if created_at: 
             q = q.filter(created_at__date = created_at)
         return q
-    

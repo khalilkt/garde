@@ -219,6 +219,17 @@ class ImmigrantDetail(RetrieveUpdateDestroyAPIView):
         instance.deleted_at = datetime.now()
         instance.save()
         return Response("ok")
+    
+    def patch(self, request, *args, **kwargs):
+        # if created_at in the body update created_at in the object
+        data = request.data
+        if "created_at" in data:
+            created_at = data["created_at"]
+            instance = self.get_object()
+            instance.created_at = created_at 
+            instance.save()
+        
+        return super().patch(request, *args, **kwargs)
 
 class PirogueImmigrantsList(ListCreateAPIView):
     serializer_class = ImmigrantSerializer
@@ -271,7 +282,6 @@ class ImmigrantBulkAdd(APIView):
         departure = data.get("departure", None)
         destination = data.get("destination", None)
         etat = data.get("etat", "alive")
-
 
         if date is None or  country is None or   departure is None or  destination is None :
             return Response("Missing data" , status=400)

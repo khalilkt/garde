@@ -613,15 +613,17 @@ export default function AdminAgentImmigrantsPage() {
                     className="h-5 w-5"
                   />
                 </Td>
-                <Td className="flex items-center justify-start gap-x-2">
-                  {immigrant.image && (
-                    <img
-                      onClick={() => {}}
-                      className="h-8 w-8 rounded-full"
-                      src={immigrant.image.replace("http://", "https://")}
-                    />
-                  )}
-                  <span>{immigrant.name}</span>
+                <Td>
+                  <div className="flex items-center justify-start gap-x-2">
+                    {immigrant.image && (
+                      <img
+                        onClick={() => {}}
+                        className="h-8 w-8 rounded-full"
+                        src={immigrant.image.replace("http://", "https://")}
+                      />
+                    )}
+                    <span>{immigrant.name}</span>
+                  </div>
                 </Td>
                 <Td>{immigrant.is_male ? "Homme" : "Femme"}</Td>
                 <Td>

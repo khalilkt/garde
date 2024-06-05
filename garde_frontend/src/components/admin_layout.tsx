@@ -15,6 +15,7 @@ import { MDialog } from "./dialog";
 import { Input, Textarea } from "./comps";
 import { PrintPage } from "./print_page";
 import { useReactToPrint } from "react-to-print";
+import { ImmigrantInterface } from "../ROUTES/admin/agent&admin_immigrants_page";
 
 function NavItem({
   to,
@@ -42,6 +43,177 @@ function NavItem({
         {isOpen && children}
       </Link>
     </li>
+  );
+}
+
+interface BulkImmigrnatInterface {
+  name: string;
+  date_of_birth: string;
+  nationality: string;
+  is_male: boolean;
+}
+
+function formatNationalities(data: string) {
+  const lines = data.split("\n");
+  let nats: { id: number; name: string }[] = [];
+  for (const line of lines) {
+    if (line.split(" ").length === 2) {
+      const id = parseInt(line.split(" ")[0]);
+      const nat = line.split(" ")[1];
+      nats.push({ id: id, name: nat });
+    }
+  }
+
+  return nats;
+
+  return nats;
+}
+function formartData(data: string) {
+  const lines = data.split("\n");
+  let immigrantList: BulkImmigrnatInterface[] = [];
+  for (const line of lines) {
+    if (line.split("\t").length === 5) {
+      let [name, dateOfBirth, placeOfBirth, nationality, sexe] =
+        line.split("\t");
+      if (dateOfBirth.length === 4) {
+        dateOfBirth = dateOfBirth + "-01-01";
+      }
+      sexe = sexe.toUpperCase();
+      if (sexe === "H" || sexe === "F") {
+        immigrantList.push({
+          name: name,
+          date_of_birth: dateOfBirth,
+          nationality: nationality,
+          is_male: sexe === "H",
+        });
+      }
+    }
+  }
+
+  return immigrantList;
+}
+
+function SuperAdminBulkDialog() {
+  const [date, setDate] = React.useState<{
+    year: number | null;
+    month: number | null;
+    day: number | null;
+  }>({
+    year: null,
+    month: null,
+    day: null,
+  });
+  const [data, setData] = React.useState("");
+  const [nats, setNats] = React.useState("");
+
+  const immigrantList = formartData(data);
+  const nationalities = formatNationalities(nats);
+
+  return (
+    <div className="flex w-[600px] flex-col gap-y-4">
+      <Textarea
+        value={data}
+        placeholder="data"
+        onChange={(e) => {
+          setData(e.target.value);
+        }}
+      />
+
+      <div className="flex gap-x-2">
+        <Input
+          className="w-[100px]"
+          placeholder="0000"
+          value={date.year ?? ""}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            if (isNaN(value)) {
+              setDate({ ...date, year: null });
+              return;
+            }
+
+            setDate({ ...date, year: value });
+          }}
+        />
+        <Input
+          className="w-[50px]"
+          placeholder="00"
+          value={date.month ?? ""}
+          onChange={(e) => {
+            let value = parseInt(e.target.value);
+            if (isNaN(value)) {
+              setDate({ ...date, month: null });
+              return;
+            }
+            setDate({ ...date, month: value });
+          }}
+        />
+        <Input
+          className="w-[50px]"
+          placeholder="00"
+          value={date.day ?? ""}
+          onChange={(e) => {
+            let value = parseInt(e.target.value);
+            if (isNaN(value)) {
+              setDate({ ...date, day: null });
+              return;
+            }
+            setDate({ ...date, day: value });
+          }}
+        />
+      </div>
+      <div className="bg-blue-50">
+        {immigrantList.map((immigrant) => {
+          return (
+            <div className="flex gap-x-2">
+              {immigrant.name} - {immigrant.date_of_birth} -
+              <span
+                className={
+                  nationalities.find((v) => v.name === immigrant.nationality)
+                    ? ""
+                    : "text-red-500"
+                }
+              >
+                {immigrant.nationality}
+              </span>
+              -
+              <span
+                className={
+                  immigrant.is_male ? "text-blue-500" : " text-purple-400"
+                }
+              >
+                {immigrant.is_male ? "H" : "F"}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-x-6">
+        <span className="font-bold">{immigrantList.length}</span>
+        <span className="font-bold text-red-600">
+          {data.split("\n").length - immigrantList.length}
+        </span>
+      </div>
+
+      {/* <div className="bg-red-50 ">
+        {nationalities.map((nat) => {
+          return (
+            <div className="flex gap-x-2">
+              {nat.id} : {nat.name}
+            </div>
+          );
+        })}
+      </div> */}
+      <Textarea
+        value={nats}
+        placeholder="1 Senegal"
+        onChange={(e) => {
+          setNats(e.target.value);
+        }}
+      />
+      <FilledButton className="self-end" onClick={() => {}}>
+        Confirmer
+      </FilledButton>
+    </div>
   );
 }
 
@@ -135,11 +307,13 @@ export function AdminProtectedLayout() {
       <MDialog
         isOpen={isLetterDialogOpen}
         title={"Créer une lettre"}
+        // title="Créer une pirogue"
         onClose={() => {
           setIsLetterDialogOpen(false);
         }}
       >
         <LetterDialog />
+        {/* <SuperAdminBulkDialog /> */}
       </MDialog>
       <ul
         className={
