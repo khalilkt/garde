@@ -308,6 +308,9 @@ export default function PirogueDetailPage({
   const [immigrantsData, setImmigrantsData] =
     React.useState<PaginatedData<ImmigrantInterface> | null>(null);
 
+  const [immigrant_nationalityFitler, setImmigrantNationalityFilter] =
+    React.useState<{ name: string; id: number } | null>(null);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const token = useContext(AuthContext).authData?.token;
@@ -351,7 +354,7 @@ export default function PirogueDetailPage({
 
   useEffect(() => {
     loadImmigrants();
-  }, [searchParams]);
+  }, [searchParams, immigrant_nationalityFitler]);
 
   async function load() {
     try {
@@ -370,18 +373,20 @@ export default function PirogueDetailPage({
     }
   }
   async function loadImmigrants() {
+    let params = new URLSearchParams();
+    params.set("page", searchParams.get("selected_pirogue_imm_page") ?? "1");
+    if (immigrant_nationalityFitler !== null) {
+      params.set("nationality", immigrant_nationalityFitler.id.toString());
+    }
+
     try {
       const response = await axios.get(
-        rootUrl +
-          "pirogues/" +
-          pirogueId +
-          "/immigrants" +
-          "?page=" +
-          (searchParams.get("selected_pirogue_imm_page") ?? "1"),
+        rootUrl + "pirogues/" + pirogueId + "/immigrants",
         {
           headers: {
             Authorization: `Token ${token}`,
           },
+          params: params,
         },
       );
       setImmigrantsData(response.data);
@@ -528,6 +533,7 @@ export default function PirogueDetailPage({
               />
               <label>Liste des immigrants</label>
             </div>
+
             <FilledButton
               onClick={() => {
                 printAllMigrants();
@@ -621,23 +627,40 @@ export default function PirogueDetailPage({
       {/* <hr className="mt-6 border-[#888888]" /> */}
       <div className="flex items-center justify-between">
         <Title className="mb-4 mt-6">Migrant</Title>
-        {
-          <FilledButton
-            disabled={isFetchingAllMigrants}
-            onClick={() => {
-              setDialogState({ state: "printing" });
-            }}
-          >
-            <span
-              className={`text-white ${isFetchingAllMigrants ? "opacity-0" : ""}`}
+        <div className="flex gap-x-4">
+          <div className="w-[180px]">
+            <SearchSelect<CountryInterface>
+              value={immigrant_nationalityFitler?.name ?? null}
+              onSelected={function (value): void {
+                setImmigrantNationalityFilter({
+                  name: value.name_fr,
+                  id: value.id,
+                });
+              }}
+              placeHolder={"Nationalité"}
+              search={true}
+              url={"countries"}
+              lookupColumn="name_fr"
+            />
+          </div>
+          {
+            <FilledButton
+              disabled={isFetchingAllMigrants}
+              onClick={() => {
+                setDialogState({ state: "printing" });
+              }}
             >
-              Imprimer
-            </span>
-            {isFetchingAllMigrants && (
-              <LoadingIcon className={`absolute h-6 w-6`} />
-            )}
-          </FilledButton>
-        }
+              <span
+                className={`text-white ${isFetchingAllMigrants ? "opacity-0" : ""}`}
+              >
+                Imprimer
+              </span>
+              {isFetchingAllMigrants && (
+                <LoadingIcon className={`absolute h-6 w-6`} />
+              )}
+            </FilledButton>
+          }
+        </div>
       </div>
       <div className="flex flex-col gap-y-4 lg:hidden">
         {immigrantsData?.data.map((immigrant, i) => (
@@ -847,6 +870,19 @@ export default function PirogueDetailPage({
                     }
                   </td>
                 </tr>
+                {(immigrantsData?.data.filter((imm) => {
+                  return imm.etat === "dead";
+                })?.length ?? 0) > 0 && (
+                  <tr className="border px-2 py-1">
+                    <th className="border px-2 py-1">Total Morts</th>
+                    <td className="border px-2 py-1">
+                      {
+                        allImmigrantsData.filter((imm) => imm.etat === "dead")
+                          .length
+                      }
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
             <br

@@ -282,7 +282,7 @@ export function Tag({
       {...buttonProps}
       className={`flex h-max w-max items-center gap-x-2 rounded-lg  border-2 border-primaryBorder px-2 py-2 text-sm  ${buttonProps.className}`}
     >
-      <span>{title}</span>
+      {title.length > 0 && <span>{title}</span>}
       <span className="text-primary">{tag}</span>
     </button>
   );

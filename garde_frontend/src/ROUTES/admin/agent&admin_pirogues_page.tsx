@@ -480,35 +480,72 @@ function MobilePriogueView({ pirogue }: { pirogue: PirogueInterface }) {
   );
 }
 
-function SuperAdminEditPirogue({ pirogueId }: { pirogueId: number }) {
+function SuperAdminEditPirogue({
+  pirogueId,
+  pirogue,
+  onSubmit,
+}: {
+  pirogueId: number;
+  pirogue: PirogueInterface;
+  onSubmit: () => void;
+}) {
   const [motorsText, setMotorsText] = React.useState("");
   const [gpsText, setGpsText] = React.useState("");
   const [fuel, setFuel] = React.useState(0);
   const [situation, setSituation] = React.useState("");
+  const [lat, setLat] = React.useState("");
+  const [long, setLong] = React.useState("");
+  const [number, setNumber] = React.useState("");
 
   const token = useContext(AuthContext).authData?.token;
 
+  useEffect(() => {
+    setMotorsText(
+      Object.entries(pirogue.motor_numbers)
+        .map(([key, value]) => key + " " + value)
+        .join("\n"),
+    );
+    setGpsText(pirogue.gps.join("\n"));
+    setFuel(pirogue.fuel);
+    setSituation(pirogue.situation);
+    setLat(pirogue.lat);
+    setLong(pirogue.long);
+    setNumber(pirogue.number);
+  }, [pirogue]);
+
   function submit() {
-    axios.patch(
-      rootUrl + "pirogues/" + pirogueId + "/",
-      {
-        motor_numbers: data.motor_numbers,
-        gps: data.gps,
-        fuel: data.fuel,
-        situation: data.situation,
-      },
-      {
+    axios
+      .patch(
+        rootUrl + "pirogues/" + pirogueId + "/",
+        {
+          motor_numbers: data.motor_numbers,
+          gps: data.gps,
+          fuel: data.fuel,
+          situation: data.situation,
+          lat: data.lat,
+          long: data.long,
+          number: data.number,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      )
+      .then((res) => {
+        onSubmit();
+      });
+  }
+  function onDelete() {
+    axios
+      .delete(rootUrl + "pirogues/" + pirogueId + "/", {
         headers: {
           Authorization: `Token ${token}`,
         },
-      },
-    );
-  }
-  function clear() {
-    setMotorsText("");
-    setGpsText("");
-    setFuel(0);
-    setSituation("");
+      })
+      .then((res) => {
+        onSubmit();
+      });
   }
 
   let data: {
@@ -516,11 +553,17 @@ function SuperAdminEditPirogue({ pirogueId }: { pirogueId: number }) {
     gps: string[];
     fuel: number;
     situation: string;
+    lat: string;
+    long: string;
+    number: string;
   } = {
     motor_numbers: {},
     gps: [],
     fuel: 0,
     situation: "",
+    lat: "",
+    long: "",
+    number: "",
   };
 
   for (const line of motorsText.split("\n")) {
@@ -538,9 +581,17 @@ function SuperAdminEditPirogue({ pirogueId }: { pirogueId: number }) {
   data.gps = gpsText.split("\n").filter((g) => g.length > 0);
   data.fuel = fuel;
   data.situation = situation;
+  data.lat = lat;
+  data.long = long;
+  data.number = number;
 
   return (
     <div className="flex w-[600px] flex-col gap-y-4">
+      <Input
+        placeholder="number"
+        value={number}
+        onChange={(e) => setNumber(e.target.value)}
+      />
       <Textarea
         placeholder="N 123123213 15"
         value={motorsText}
@@ -564,6 +615,18 @@ function SuperAdminEditPirogue({ pirogueId }: { pirogueId: number }) {
           setFuel(parseInt(e.target.value));
         }}
       />
+      <div className="flex gap-x-4">
+        <Input
+          placeholder="lat"
+          value={lat}
+          onChange={(e) => setLat(e.target.value)}
+        />
+        <Input
+          placeholder="long"
+          value={long}
+          onChange={(e) => setLong(e.target.value)}
+        />
+      </div>
       <Textarea
         placeholder="situation"
         value={situation}
@@ -588,7 +651,12 @@ function SuperAdminEditPirogue({ pirogueId }: { pirogueId: number }) {
       </div>
 
       <div className="flex justify-between">
-        <OutlinedButton onClick={clear}>Clear</OutlinedButton>
+        <OutlinedButton
+          className="border-red-500 text-red-500"
+          onClick={onDelete}
+        >
+          Supprimer
+        </OutlinedButton>
         <FilledButton onClick={submit}>Enregistrer</FilledButton>
       </div>
     </div>
@@ -846,7 +914,12 @@ export default function AdminAgentPiroguesPage() {
             {dialogState.state === "sejour_edit" &&
               (false ? (
                 <SuperAdminEditPirogue
+                  onSubmit={() => {
+                    load();
+                    setDialogState({ state: "none" });
+                  }}
                   pirogueId={dialogState.payload!.pirogue_id}
+                  pirogue={dialogState.payload!.pirogue}
                 />
               ) : (
                 <div className="flex flex-col gap-y-3">
@@ -1128,7 +1201,10 @@ export default function AdminAgentPiroguesPage() {
                           onClick={() => {
                             setDialogState({
                               state: "sejour_edit",
-                              payload: { pirogue_id: pirogue.id },
+                              payload: {
+                                pirogue_id: pirogue.id,
+                                pirogue: pirogue,
+                              },
                             });
                           }}
                           className=" transition-all duration-100 active:scale-90"
@@ -1450,6 +1526,8 @@ export default function AdminAgentPiroguesPage() {
               if (!open) {
                 setSearchParams((params) => {
                   params.delete("selected_pirogue");
+                  params.delete("selected_pirogue_imm_page");
+
                   return params;
                 });
               }

@@ -56,6 +56,7 @@ export interface ImmigrantInterface {
   created_by: number;
   pirogue_sejour: number | null;
   sejour: number | null;
+  etat: string;
   criminal_record:
     | "killer"
     | "thief"
@@ -228,6 +229,12 @@ export default function AdminAgentImmigrantsPage() {
         id: key,
         title: "Genre",
         value: value === "1" ? "Homme" : "Femme",
+      });
+    } else if (key === "is_mrt") {
+      tags.push({
+        id: key,
+        title: "",
+        value: value === "true" ? "Tentatif" : "Passeur",
       });
     } else if (key === "created_by") {
       tags.push({
@@ -982,6 +989,36 @@ export default function AdminAgentImmigrantsPage() {
                 </option>
                 <option className="" value={"female"}>
                   Femme
+                </option>
+              </Select>
+
+              <Select
+                value={
+                  searchParams.get("is_mrt") === null
+                    ? "none"
+                    : searchParams.get("is_mrt") === "true"
+                      ? "true"
+                      : "false"
+                }
+                onChange={(e) => {
+                  setSearchParams((params) => {
+                    const value = (e.target as any).value;
+                    if (value === "none") {
+                      params.delete("is_mrt");
+                    }
+                    params.set("is_mrt", value);
+                    return params;
+                  });
+                }}
+              >
+                <option value="none" className="text-gray" disabled>
+                  Tentatif/Passeur
+                </option>
+                <option className="" value={"true"}>
+                  Tentatif
+                </option>
+                <option className="" value={"false"}>
+                  Passeur
                 </option>
               </Select>
 
