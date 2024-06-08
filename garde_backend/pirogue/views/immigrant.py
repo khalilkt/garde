@@ -118,6 +118,12 @@ class ImmigrantList(ListAPIView):
                 ret = ret.filter(pirogue__isnull = False)
             elif has_pirogue == "false":
                 ret = ret.filter(pirogue__isnull = True)
+        is_mrt = params.get("is_mrt", None)
+        if is_mrt:
+            if is_mrt == "true":
+                ret = ret.filter(nationality = "137")
+            elif is_mrt == "false":
+                ret = ret.exclude(nationality = "137")
         return ret
     
 class MyImmigrantsWoutPirogueList(ListCreateAPIView):

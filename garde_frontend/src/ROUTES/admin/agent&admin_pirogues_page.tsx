@@ -479,6 +479,122 @@ function MobilePriogueView({ pirogue }: { pirogue: PirogueInterface }) {
     </div>
   );
 }
+
+function SuperAdminEditPirogue({ pirogueId }: { pirogueId: number }) {
+  const [motorsText, setMotorsText] = React.useState("");
+  const [gpsText, setGpsText] = React.useState("");
+  const [fuel, setFuel] = React.useState(0);
+  const [situation, setSituation] = React.useState("");
+
+  const token = useContext(AuthContext).authData?.token;
+
+  function submit() {
+    axios.patch(
+      rootUrl + "pirogues/" + pirogueId + "/",
+      {
+        motor_numbers: data.motor_numbers,
+        gps: data.gps,
+        fuel: data.fuel,
+        situation: data.situation,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+  }
+  function clear() {
+    setMotorsText("");
+    setGpsText("");
+    setFuel(0);
+    setSituation("");
+  }
+
+  let data: {
+    motor_numbers: { [key: string]: number };
+    gps: string[];
+    fuel: number;
+    situation: string;
+  } = {
+    motor_numbers: {},
+    gps: [],
+    fuel: 0,
+    situation: "",
+  };
+
+  for (const line of motorsText.split("\n")) {
+    let splited = line.split(" ");
+    if (splited.length > 1) {
+      const cv = parseInt(splited.pop()!);
+      const name = splited.join(" ");
+
+      if (!isNaN(cv)) {
+        data.motor_numbers[name] = cv;
+      }
+    }
+  }
+
+  data.gps = gpsText.split("\n").filter((g) => g.length > 0);
+  data.fuel = fuel;
+  data.situation = situation;
+
+  return (
+    <div className="flex w-[600px] flex-col gap-y-4">
+      <Textarea
+        placeholder="N 123123213 15"
+        value={motorsText}
+        onChange={(e) => {
+          setMotorsText(e.target.value);
+        }}
+      />
+      <Textarea
+        placeholder={`GPS 1 \nGPS 2`}
+        value={gpsText}
+        onChange={(e) => {
+          setGpsText(e.target.value);
+        }}
+      />
+      <Input
+        type="number"
+        placeholder="bidons d'essence"
+        className="w-min"
+        value={fuel}
+        onChange={(e) => {
+          setFuel(parseInt(e.target.value));
+        }}
+      />
+      <Textarea
+        placeholder="situation"
+        value={situation}
+        onChange={(e) => {
+          setSituation(e.target.value);
+        }}
+      />
+      <div className="bg-red-50">
+        {data.motor_numbers !== undefined &&
+          Object.entries(data.motor_numbers as { [key: string]: number }).map(
+            ([key, value]) => (
+              <div>
+                {key} : {value}
+              </div>
+            ),
+          )}
+      </div>
+      <div className="bg-green-50">
+        {data.gps.map((g: string) => (
+          <div>{g}</div>
+        ))}
+      </div>
+
+      <div className="flex justify-between">
+        <OutlinedButton onClick={clear}>Clear</OutlinedButton>
+        <FilledButton onClick={submit}>Enregistrer</FilledButton>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminAgentPiroguesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTimer = React.useRef<NodeJS.Timeout>();
@@ -727,35 +843,40 @@ export default function AdminAgentPiroguesPage() {
                 }}
               />
             )}
-            {dialogState.state === "sejour_edit" && (
-              <div className="flex flex-col gap-y-3">
-                <Input
-                  id="pirogue_sejour_input"
-                  placeholder="Nouveau séjour (jours)"
-                  type="number"
-                  className="w-[300px]"
+            {dialogState.state === "sejour_edit" &&
+              (false ? (
+                <SuperAdminEditPirogue
+                  pirogueId={dialogState.payload!.pirogue_id}
                 />
-                <FilledButton
-                  onClick={() => {
-                    onSejourEdit(
-                      dialogState.payload!.pirogue_id,
-                      parseInt(
-                        (
-                          document.getElementById(
-                            "pirogue_sejour_input",
-                          ) as HTMLInputElement
-                        ).value,
-                      ),
-                    ).then((_) => {
-                      load();
-                    });
-                    setDialogState({ state: "none" });
-                  }}
-                >
-                  Enregistrer
-                </FilledButton>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-col gap-y-3">
+                  <Input
+                    id="pirogue_sejour_input"
+                    placeholder="Nouveau séjour (jours)"
+                    type="number"
+                    className="w-[300px]"
+                  />
+                  <FilledButton
+                    onClick={() => {
+                      onSejourEdit(
+                        dialogState.payload!.pirogue_id,
+                        parseInt(
+                          (
+                            document.getElementById(
+                              "pirogue_sejour_input",
+                            ) as HTMLInputElement
+                          ).value,
+                        ),
+                      ).then((_) => {
+                        load();
+                      });
+                      setDialogState({ state: "none" });
+                    }}
+                  >
+                    Enregistrer
+                  </FilledButton>
+                </div>
+              ))}
           </>
         </MDialog>
         {!isAdmin && (
