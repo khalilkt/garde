@@ -85,7 +85,7 @@ function DateOfBirthInput({
 }
 
 interface DialogState {
-  state: "none" | "adding" | "editing" | "image_view";
+  state: "none" | "image_view" | "printing";
   payload?: {
     [key: string]: any;
   };
@@ -298,6 +298,13 @@ export default function PirogueDetailPage({
   onCloseClick: () => void;
 } & React.HTMLProps<HTMLDivElement>) {
   const [data, setData] = React.useState<PirogueInterface | null>(null);
+  const [printState, setPrintState] = React.useState<{
+    situation: string;
+    printAllImmigrants: boolean;
+  }>({
+    situation: "",
+    printAllImmigrants: true,
+  });
   const [immigrantsData, setImmigrantsData] =
     React.useState<PaginatedData<ImmigrantInterface> | null>(null);
 
@@ -381,12 +388,11 @@ export default function PirogueDetailPage({
 
   function dialogStateTitle(dialogState: DialogState) {
     switch (dialogState.state) {
-      case "editing":
-        return "Modifier Immigrant";
-      case "adding":
-        return "Ajouter Immigrant";
       case "image_view":
         return dialogState.payload?.immigrant_name ?? "";
+      case "printing":
+        return "Impression";
+
       default:
         return "";
     }
@@ -448,7 +454,20 @@ export default function PirogueDetailPage({
     setIsFetchingAllMigrants(false);
   }
 
-  const superAdmin = true;
+  const superAdmin = false;
+
+  let nats: { [key: string]: number } = {};
+  if (allImmigrantsData) {
+    allImmigrantsData.forEach((imm) => {
+      const nat_name = imm.nationality_name;
+
+      if (!nats[nat_name]) {
+        nats[nat_name] = 1;
+      } else {
+        nats[nat_name]++;
+      }
+    });
+  }
   return (
     <div
       {...divProps}
@@ -467,7 +486,45 @@ export default function PirogueDetailPage({
             }
           ></img>
         ) : (
-          <div></div>
+          <div className="flex w-[500px] flex-col gap-y-3">
+            <Textarea
+              value={printState.situation}
+              onChange={(e) => {
+                setPrintState({ ...printState, situation: e.target.value });
+              }}
+              placeholder="Situation"
+            />
+            <div className="flex items-center gap-x-3">
+              <input
+                type="checkbox"
+                id="piorgue_print_all_immigrants_checkbox"
+                className="h-4 w-4"
+                checked={printState.printAllImmigrants}
+                onChange={(e) => {
+                  setPrintState({
+                    ...printState,
+                    printAllImmigrants: e.target.checked,
+                  });
+                }}
+              />
+              <label>Liste des immigrants</label>
+            </div>
+            <FilledButton
+              onClick={() => {
+                printAllMigrants();
+              }}
+              className=" self-end"
+            >
+              <span
+                className={`text-white ${isFetchingAllMigrants ? "opacity-0" : ""}`}
+              >
+                Imprimer
+              </span>
+              {isFetchingAllMigrants && (
+                <LoadingIcon className={`absolute h-6 w-6`} />
+              )}
+            </FilledButton>
+          </div>
         )}
       </MDialog>
       <MDialog
@@ -535,24 +592,26 @@ export default function PirogueDetailPage({
         </video>
       )}
       {data && data.video && <hr className="mt-6 border-[#888888]" />}
-      <Title className="mb-4 mt-6">Description</Title>
+      {/* <Title className="mb-4 mt-6">Description</Title>
       {data ? (
         <p className="text-lg text-gray">{data?.description}</p>
       ) : (
         <div className="h-12 w-full animate-pulse rounded bg-[#D9D9D9]"></div>
-      )}
-      <hr className="mt-6 border-[#888888]" />
+      )} */}
+      {/* <hr className="mt-6 border-[#888888]" /> */}
       <div className="flex items-center justify-between">
         <Title className="mb-4 mt-6">Migrant</Title>
         {
           <FilledButton
             disabled={isFetchingAllMigrants}
-            onClick={printAllMigrants}
+            onClick={() => {
+              setDialogState({ state: "printing" });
+            }}
           >
             <span
               className={`text-white ${isFetchingAllMigrants ? "opacity-0" : ""}`}
             >
-              Imprimer tous les migrants
+              Imprimer
             </span>
             {isFetchingAllMigrants && (
               <LoadingIcon className={`absolute h-6 w-6`} />
@@ -573,7 +632,7 @@ export default function PirogueDetailPage({
           />
         ))}
       </div>
-      <FilledButton
+      {/* <FilledButton
         onClick={() => {
           setDialogState({ state: "adding" });
         }}
@@ -581,7 +640,7 @@ export default function PirogueDetailPage({
       >
         Nouveau Migrant
         <PlusIcon className=" fill-white" />
-      </FilledButton>
+      </FilledButton> */}
       <table className="text-md hidden w-full text-center font-medium lg:table">
         <thead className="w-full">
           <tr className="font-bold text-gray">
@@ -666,7 +725,7 @@ export default function PirogueDetailPage({
       <div ref={printRef} className="hidden px-10 pt-10 print:block">
         {data && allImmigrantsData && (
           <>
-            <table>
+            {/* <table className="hidden">
               <thead>
                 <tr>
                   <th className="border px-2 py-1">N°PA</th>
@@ -720,9 +779,13 @@ export default function PirogueDetailPage({
                   <td className="border px-2 py-1">{data.extra}</td>
                 </tr>
               </tbody>
-            </table>
-            <br />
-            <table>
+            </table> */}
+            <br
+              className={`${printState.printAllImmigrants ? "" : "hidden"}`}
+            />
+            <table
+              className={`${printState.printAllImmigrants ? "" : "hidden"}`}
+            >
               <tbody>
                 <tr className="border px-2 py-1">
                   <th className="border px-2 py-1">Total Hommes Majeur</th>
@@ -766,12 +829,18 @@ export default function PirogueDetailPage({
                 </tr>
               </tbody>
             </table>
-            <br />
-            <br />
+            <br
+              className={`${printState.printAllImmigrants ? "" : "hidden"}`}
+            />
+            <br
+              className={`${printState.printAllImmigrants ? "" : "hidden"}`}
+            />
           </>
         )}
 
-        <table className="w-full text-center text-xs">
+        <table
+          className={`w-full text-center text-xs ${!printState.printAllImmigrants ? "hidden" : ""}`}
+        >
           <thead className="">
             <tr className="font-bold text-gray">
               <th className="border-gray-300 border text-base">N°</th>
@@ -830,6 +899,46 @@ export default function PirogueDetailPage({
             </tbody>
           )}
         </table>
+        {data && (
+          <div
+            className={`${printState.printAllImmigrants ? "mt-10" : "mt-4"} flex flex-col`}
+          >
+            <h2 className="mb-2 text-xl font-bold">
+              Situation PA {data.number}
+            </h2>
+            <span className="font-semibold">
+              {Object.entries(nats).length + " nationalités"}
+            </span>
+            {Object.entries(nats).length > 0 && (
+              <div className="ml-4 flex flex-col">
+                {Object.entries(nats).map(([key, value]) => (
+                  <span>
+                    {key} - {value}
+                  </span>
+                ))}
+              </div>
+            )}
+            <span className="font-semibold">
+              {Object.entries(data.motor_numbers).length} moteurs
+            </span>
+            {Object.entries(data.motor_numbers).map((name, cv) => {
+              return (
+                <div className="ml-4">
+                  <span>
+                    {name} - {cv + " CV"}
+                  </span>
+                </div>
+              );
+            })}
+            <span className="font-semibold">{data.gps.length} GPS</span>
+            {Object.entries(data.gps).map((name) => {
+              return <span className="ml-4">{name}</span>;
+            })}
+            {data.fuel > 0 && <span>{data.fuel} Bidons d'essence</span>}
+            {data.extra && data.extra}
+            <span className="mt-4">{printState.situation}</span>
+          </div>
+        )}
       </div>
     </div>
   );

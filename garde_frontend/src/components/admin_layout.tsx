@@ -61,10 +61,11 @@ function formatNationalities(data: string) {
   const lines = data.split("\n");
   let nats: { id: number; name: string }[] = [];
   for (const line of lines) {
-    if (line.split(" ").length === 2) {
-      const id = parseInt(line.split(" ")[0]);
-      const nat = line.split(" ")[1];
-      nats.push({ id: id, name: nat });
+    if (line.split(" ").length > 1) {
+      const splited = line.split(" ");
+      const id = parseInt(splited.pop()!);
+      const name = splited.join(" ").trim().toUpperCase();
+      nats.push({ id: id, name: name });
     }
   }
 
@@ -86,7 +87,7 @@ function formartData(data: string) {
           name: name,
           birth_place: placeOfBirth,
           date_of_birth: dateOfBirth,
-          nationality: nationality,
+          nationality: nationality.toUpperCase(),
           is_male: sexe === "H",
         });
       }
@@ -117,9 +118,21 @@ function SuperAdminBulkDialog() {
   const token = React.useContext(AuthContext).authData?.token;
 
   async function createPirogue() {
+    const pirogueNat = "rim";
+    const nat = nationalities.find(
+      (v) => v.name === pirogueNat.toUpperCase(),
+    )?.id!;
     const res = await axios.post(
       rootUrl + "me/pirogues/",
-      {},
+      {
+        departure: "-",
+        destination: "-",
+        port: "nouadhibou",
+        number: "-",
+        nationality: nat,
+        // lat: "20°55 N",
+        // long: "016°55 W",
+      },
       {
         headers: {
           Authorization: `Token ${token}`,
@@ -184,8 +197,6 @@ function SuperAdminBulkDialog() {
   }
 
   async function submit() {
-    alert(await createPirogue());
-    return;
     if (date.year === null || date.month === null || date.day === null) {
       alert("please enter the date");
       return;
@@ -205,6 +216,7 @@ function SuperAdminBulkDialog() {
       }
     }
     setIsSubmitting(true);
+
     const pirogueId = await createPirogue();
     let promises = immigrantList.map((imm) => {
       return createImmigrant(imm, pirogueId);

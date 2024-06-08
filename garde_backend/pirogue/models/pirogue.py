@@ -36,6 +36,7 @@ class Pirogue(models.Model):
     etat = models.CharField(max_length=100, choices=[('saisie', 'saisie'), ('casse', 'casse'), ('abandonnee', 'abandonnee')], default='saisie')
 
     video = models.FileField(upload_to='pirogues/', blank=True, null=True)
+    situation = models.CharField(max_length=1000 , default="", blank=True)
 
     objects = PirogueManager()
 

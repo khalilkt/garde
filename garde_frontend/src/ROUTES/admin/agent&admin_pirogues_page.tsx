@@ -985,7 +985,10 @@ export default function AdminAgentPiroguesPage() {
                     {/* <Td>
                   <input type="checkbox" className="h-5 w-5" />
                 </Td> */}
-                    <Td className="">{pirogue.number}</Td>
+                    <Td className="">
+                      {/* {pirogue.number.toString() + ` (${pirogue.id})`} */}
+                      {pirogue.number}
+                    </Td>
                     <Td>
                       {Object.keys(pirogue.motor_numbers).join(", ") ?? "-"}
                     </Td>

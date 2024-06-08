@@ -268,6 +268,28 @@ COUTRIES = {
     "turc" : "220",
     "somali" : "200",
 }
+# mrt 137
+# rim 137
+# MAURITANIE 137
+# senegal 193
+# mali 134
+# mal 134
+# cameroun 36
+# gambie 82
+# ci 21
+# GUINEE CONAKRY 94
+# GUINEE CONKRY 94
+# GUINE CONAKRY 94
+# GUINEE KONAKRY 94
+# GUINEE BISSAU 176
+# guinee 94
+# COMORES 49
+# nigeria 158
+# SENEGALAIS 193
+# togo 214
+# ghana 85
+
+
 
 class ImmigrantBulkAdd(APIView):
     permission_classes = [AllowAny]
