@@ -66,7 +66,7 @@ export interface PirogueInterface {
   extra: string;
   fuel: number;
   etat: string;
-
+  situation: string;
   video: string | null;
 }
 

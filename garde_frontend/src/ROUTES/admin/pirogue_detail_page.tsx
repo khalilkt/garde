@@ -361,6 +361,10 @@ export default function PirogueDetailPage({
         },
       });
       setData(response.data);
+      setPrintState({
+        ...printState,
+        situation: response.data.situation ?? "",
+      });
     } catch (e) {
       console.log(e);
     }
@@ -468,6 +472,21 @@ export default function PirogueDetailPage({
       }
     });
   }
+
+  async function updatePirogueSituation() {
+    await axios.patch(
+      rootUrl + "pirogues/" + pirogueId + "/",
+      {
+        situation: printState.situation,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+  }
+
   return (
     <div
       {...divProps}
@@ -512,6 +531,7 @@ export default function PirogueDetailPage({
             <FilledButton
               onClick={() => {
                 printAllMigrants();
+                updatePirogueSituation();
               }}
               className=" self-end"
             >
