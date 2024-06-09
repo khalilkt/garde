@@ -58,7 +58,13 @@ class PirogueList(ListAPIView):
                 ret = ret.filter(created_at__year=year, created_at__month=month)
             else:
                 ret = ret.filter(created_at__year=year)
-            
+        
+        is_mrt = self.request.query_params.get("is_mrt", None)
+        if is_mrt:
+            if is_mrt == "true":
+                ret = ret.filter(nationality = "137")
+            elif is_mrt == "false":
+                ret = ret.exclude(nationality = "137")
         return ret
 
 class PirogueStatsView (PirogueList):

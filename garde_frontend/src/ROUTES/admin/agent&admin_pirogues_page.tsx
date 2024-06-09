@@ -499,6 +499,13 @@ function SuperAdminEditPirogue({
 
   const token = useContext(AuthContext).authData?.token;
 
+  const [selectedNationality, setSelectedNationality] = React.useState<{
+    name: string;
+    id: string;
+  } | null>(null);
+
+  const [submiting, setSubmiting] = React.useState(false);
+
   useEffect(() => {
     setMotorsText(
       Object.entries(pirogue.motor_numbers)
@@ -512,6 +519,63 @@ function SuperAdminEditPirogue({
     setLong(pirogue.long);
     setNumber(pirogue.number);
   }, [pirogue]);
+
+  async function change() {
+    async function changePirogue() {
+      await axios.patch(
+        rootUrl + "pirogues/" + pirogueId + "/",
+        {
+          nationality: selectedNationality?.id ?? null,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+    }
+    await changePirogue();
+    submit();
+    return;
+    const immigrantsData = (
+      await axios.get(rootUrl + "pirogues/" + pirogueId + "/immigrants/", {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+        params: {
+          all: true,
+        },
+      })
+    ).data;
+    const immigrantsIds = (immigrantsData as any[]).map((i) => i.id);
+
+    async function changeImmigrant(id: number) {
+      return;
+      await axios.patch(
+        rootUrl + "immigrants/" + id + "/",
+        {
+          pirogue: null,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+    }
+
+    setSubmiting(true);
+
+    let promises = immigrantsIds.map((id) => changeImmigrant(id));
+    promises.push(changePirogue());
+    try {
+      await Promise.all(promises);
+    } catch (e) {
+      alert("Erreur lors de la modification des immigrants");
+      console.log(e);
+    }
+    setSubmiting(false);
+  }
 
   function submit() {
     axios
@@ -649,7 +713,19 @@ function SuperAdminEditPirogue({
           <div>{g}</div>
         ))}
       </div>
-
+      <SearchSelect<CountryInterface>
+        value={selectedNationality?.name ?? null}
+        onSelected={function (value): void {
+          setSelectedNationality({
+            name: value.name_fr,
+            id: value.id.toString(),
+          });
+        }}
+        placeHolder={"Nationalité"}
+        search={true}
+        url={"countries"}
+        lookupColumn="name_fr"
+      />
       <div className="flex justify-between">
         <OutlinedButton
           className="border-red-500 text-red-500"
@@ -657,7 +733,13 @@ function SuperAdminEditPirogue({
         >
           Supprimer
         </OutlinedButton>
-        <FilledButton onClick={submit}>Enregistrer</FilledButton>
+        <OutlinedButton
+          onClick={change}
+          className="border-green-500 text-green-500"
+        >
+          {submiting ? "Loading..." : "Change"}
+        </OutlinedButton>
+        {/* <FilledButton onClick={submit}>Enregistrer</FilledButton> */}
       </div>
     </div>
   );
@@ -783,6 +865,12 @@ export default function AdminAgentPiroguesPage() {
         id: key,
         title: "Agent",
         value: agentNamesCache.current[value] ?? "",
+      });
+    } else if (key === "is_mrt") {
+      tags.push({
+        id: key,
+        title: "",
+        value: value === "true" ? "Tentatif" : "Passeur",
       });
     } else if (key === "nationality") {
       tags.push({
@@ -1073,6 +1161,7 @@ export default function AdminAgentPiroguesPage() {
               <option value={"months"}>Par Mois</option>
               <option value={"years"}>Par Année</option>
             </Select>
+
             {selectedDateRange === "days" && (
               <Input
                 value={searchParams.get("date") ?? ""}
@@ -1195,7 +1284,16 @@ export default function AdminAgentPiroguesPage() {
                     <Td className="font-medium text-primary">
                       {pirogue.created_by_name ?? "-"}
                     </Td>
-                    <Td>
+                    <Td
+                    // className={
+                    //   viewedPirogue.includes(pirogue.id)
+                    //     ? viewedPirogue[viewedPirogue.length - 1] ===
+                    //       pirogue.id
+                    //       ? "bg-red-200"
+                    //       : "bg-blue-200"
+                    //     : ""
+                    // }
+                    >
                       <div className="flex flex-row gap-x-4">
                         <button
                           onClick={() => {
@@ -1478,6 +1576,35 @@ export default function AdminAgentPiroguesPage() {
                   <option value="nouadhibou">Nouadhibou</option>
                   <option value="nouakchott">Nouakchott</option>
                   <option value="tanit">Tanit</option>
+                </Select>
+                <Select
+                  value={
+                    searchParams.get("is_mrt") === null
+                      ? "none"
+                      : searchParams.get("is_mrt") === "true"
+                        ? "true"
+                        : "false"
+                  }
+                  onChange={(e) => {
+                    setSearchParams((params) => {
+                      const value = (e.target as any).value;
+                      if (value === "none") {
+                        params.delete("is_mrt");
+                      }
+                      params.set("is_mrt", value);
+                      return params;
+                    });
+                  }}
+                >
+                  <option value="none" className="text-gray" disabled>
+                    Tentatif/Passeur
+                  </option>
+                  <option className="" value={"true"}>
+                    Tentatif
+                  </option>
+                  <option className="" value={"false"}>
+                    Passeur
+                  </option>
                 </Select>
                 <Select
                   // disabled={isSubmitting}

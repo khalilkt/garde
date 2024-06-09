@@ -120,7 +120,6 @@ export default function AdminAgentImmigrantsPage() {
     if (searchParams.size > 0) {
       url += "?" + searchParams.toString();
     }
-    // alert(url);
     try {
       const response = await axios.get(url, {
         headers: {
@@ -992,7 +991,7 @@ export default function AdminAgentImmigrantsPage() {
                 </option>
               </Select>
 
-              <Select
+              {/* <Select
                 value={
                   searchParams.get("is_mrt") === null
                     ? "none"
@@ -1020,7 +1019,7 @@ export default function AdminAgentImmigrantsPage() {
                 <option className="" value={"false"}>
                   Passeur
                 </option>
-              </Select>
+              </Select> */}
 
               <Select
                 value={searchParams.get("age") ?? "none"}
