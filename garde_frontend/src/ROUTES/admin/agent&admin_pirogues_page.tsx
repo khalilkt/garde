@@ -70,360 +70,8 @@ export interface PirogueInterface {
   video: string | null;
 }
 
-function AddEditPirogueDialog({
-  onDone,
-}: {
-  onDone: (created: boolean) => void;
-}) {
-  const [formState, setFormState] = React.useState<{
-    number: string;
-    lat: PositionInterface;
-    long: PositionInterface;
-    numbers: string[];
-    departure: string;
-    destination: string;
-    extra: string;
-    description: string;
-    port: string;
-    etat: string;
-    puissance: string;
-    fuel: number;
-    material: string;
-    nationality: string;
-    brand: string;
-    gps: string[];
-  }>({
-    number: "",
-    numbers: [""],
-    lat: { x: "", y: "", z: "", orientation: "N" },
-    long: { x: "", y: "", z: "", orientation: "N" },
-    departure: "",
-    destination: "",
-    extra: "",
-    description: "",
-    port: "",
-    etat: "saisie",
-    puissance: "",
-    fuel: 0,
-    material: "",
-    nationality: "",
-    brand: "",
-    gps: [""],
-  });
-  const token = useContext(AuthContext).authData?.token;
-  const couttriesNameCache = React.useRef<{ [key: string]: string }>({});
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  async function create() {
-    const lat =
-      formState.lat.x +
-      "-" +
-      formState.lat.y +
-      "-" +
-      formState.lat.z +
-      "-" +
-      formState.lat.orientation;
-    const long =
-      formState.long.x +
-      "-" +
-      formState.long.y +
-      "-" +
-      formState.long.z +
-      "-" +
-      formState.long.orientation;
-    try {
-      if (
-        formState.number.length === 0 ||
-        formState.port.length === 0 ||
-        formState.nationality === "" ||
-        formState.departure.length === 0 ||
-        formState.destination.length === 0
-      ) {
-        alert("Veuillez remplir les champs obligatoire");
-        return;
-      }
-      setIsSubmitting(true);
-
-      await axios.post(
-        rootUrl + "me/pirogues/",
-        {
-          number: formState.number,
-          lat: lat,
-          long: long,
-          motor_numbers: formState.numbers,
-          puissance:
-            formState.puissance.length === 0 ? null : formState.puissance,
-          port: formState.port,
-          etat: formState.etat,
-          material: formState.material,
-          brand: formState.brand,
-          gps: formState.gps,
-          departure: formState.departure,
-          destination: formState.destination,
-          extra: formState.extra,
-          fuel: formState.fuel,
-          description: formState.description,
-          nationality: formState.nationality,
-        },
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
-      onDone(true);
-    } catch (e) {
-      alert("Erreur lors de la création de la pirogue");
-    }
-    setIsSubmitting(false);
-  }
-
-  return (
-    <div className="grid  grid-cols-2 gap-x-4 gap-y-6 ">
-      <div className="col-span-2 flex flex-col gap-y-2">
-        <Input
-          disabled={isSubmitting}
-          value={formState.number}
-          onChange={(e) => {
-            setFormState((state) => ({ ...state, number: e.target.value }));
-          }}
-          placeholder="Numéro de la pirogue*"
-          type="text"
-        />
-        <hr className="my-2 w-20 self-center border-primary" />
-        {formState.numbers.map((number, i) => (
-          <Input
-            disabled={isSubmitting}
-            value={number}
-            onChange={(e) => {
-              const newNumbers = [...formState.numbers];
-              newNumbers[i] = e.target.value;
-              setFormState((state) => ({ ...state, numbers: newNumbers }));
-            }}
-            className="col-span-2"
-            placeholder={`Numéro du moteur ${i + 1}`}
-            type="text"
-          />
-        ))}
-        <OutlinedButton
-          disabled={isSubmitting}
-          onClick={() => {
-            setFormState((state) => ({
-              ...state,
-              numbers: [...state.numbers, ""],
-            }));
-          }}
-          className="col-span-2"
-        >
-          Ajouter numéro du moteur
-        </OutlinedButton>
-      </div>
-      <Select
-        disabled={isSubmitting}
-        value={formState.material}
-        className={formState.material.length === 0 ? "text-gray" : ""}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, material: e.target.value }));
-        }}
-      >
-        <option value="" className="text-gray " disabled>
-          Matériel
-        </option>
-        <option value="wood">Bois</option>
-        <option value="metal">Métal</option>
-        <option value="plastic">Plastique</option>
-        <option value="polyester">Polyester</option>
-      </Select>
-      <SearchSelect<CountryInterface>
-        value={couttriesNameCache.current[formState.nationality] ?? null}
-        onSelected={(value) => {
-          couttriesNameCache.current[value.id.toString()] = value.name_fr;
-          setFormState((formState) => ({
-            ...formState,
-            nationality: value.id.toString(),
-          }));
-        }}
-        placeHolder={"Nationalité*"}
-        search={true}
-        url={"countries"}
-        lookupColumn="name_fr"
-      />
-      <Input
-        disabled={isSubmitting}
-        value={formState.brand}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, brand: e.target.value }));
-        }}
-        placeholder="Marque"
-        type="text"
-      />
-      <Input
-        disabled={isSubmitting}
-        value={formState.puissance}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, puissance: e.target.value }));
-        }}
-        placeholder="Puissance"
-        type="number"
-      />
-
-      <PositionInput
-        disabled={isSubmitting}
-        onChange={function (value: PositionInterface): void {
-          setFormState((state) => ({ ...state, lat: value }));
-        }}
-        value={formState.lat as PositionInterface}
-        className={"w-52"}
-      />
-      <PositionInput
-        disabled={isSubmitting}
-        onChange={function (value: PositionInterface): void {
-          setFormState((state) => ({ ...state, long: value }));
-        }}
-        value={formState.long as PositionInterface}
-        className={"w-52"}
-      />
-
-      <Input
-        disabled={isSubmitting}
-        value={formState.departure}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, departure: e.target.value }));
-        }}
-        placeholder="Départ*"
-      />
-      <Input
-        disabled={isSubmitting}
-        value={formState.destination}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, destination: e.target.value }));
-        }}
-        placeholder="Déstination*"
-      />
-      <Input
-        disabled={isSubmitting}
-        value={formState.fuel == 0 ? "" : formState.fuel.toString()}
-        onChange={(e) => {
-          setFormState((state) => ({
-            ...state,
-            fuel: parseInt(e.target.value),
-          }));
-        }}
-        placeholder="Essence"
-      />
-      <Select
-        disabled={isSubmitting}
-        value={formState.port}
-        onChange={(e) => {
-          setFormState((state) => ({
-            ...state,
-            port: e.target.value,
-          }));
-        }}
-        className={formState.port === "" ? "text-gray" : ""}
-      >
-        <option value="" disabled>
-          Port*
-        </option>
-        <option value="ndagou">Ndagou</option>
-        <option value="nouadhibou">Nouadhibou</option>
-        <option value="nouakchott">Nouakchott</option>
-        <option value="tanit">Tanit</option>
-      </Select>
-      <Select
-        disabled={isSubmitting}
-        value={formState.etat}
-        onChange={(e) => {
-          setFormState((state) => ({
-            ...state,
-            etat: e.target.value,
-          }));
-        }}
-        className={formState.etat === "" ? "text-gray" : ""}
-      >
-        <option value="" disabled>
-          État
-        </option>
-        <option value="saisie">Saisie</option>
-        <option value="casse">Cassé</option>
-        <option value="abandonnee">Abandonnée</option>
-      </Select>
-      <div className="col-span-2 flex w-full items-center justify-center">
-        <hr className=" w-1/2 place-content-center self-center border-gray" />
-      </div>
-      <div className="col-span-2 flex flex-col gap-y-2">
-        {formState.gps.map((g, i) => (
-          <Input
-            disabled={isSubmitting}
-            value={g}
-            onChange={(e) => {
-              const newGps = [...formState.gps];
-              newGps[i] = e.target.value;
-              setFormState((state) => ({ ...state, gps: newGps }));
-            }}
-            className="col-span-2"
-            placeholder={` GPS ${i === 0 ? "" : i + 1}`}
-            type="text"
-          />
-        ))}
-        <OutlinedButton
-          disabled={isSubmitting}
-          onClick={() => {
-            setFormState((state) => ({
-              ...state,
-              gps: [...state.gps, ""],
-            }));
-          }}
-          className="col-span-2 "
-        >
-          Ajouter GPS
-        </OutlinedButton>
-      </div>
-      <Textarea
-        disabled={isSubmitting}
-        value={formState.extra}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, extra: e.target.value }));
-        }}
-        className=" col-span-2"
-        placeholder="Effets persnonels"
-      />
-      <Textarea
-        disabled={isSubmitting}
-        value={formState.description}
-        onChange={(e) => {
-          setFormState((state) => ({ ...state, description: e.target.value }));
-        }}
-        className=" col-span-2"
-        placeholder="Description"
-      />
-
-      <FilledButton
-        disabled={isSubmitting}
-        className="order-2 col-span-2 w-full lg:order-1 lg:col-span-1 "
-        onClick={() => {
-          onDone(false);
-        }}
-        isLight={true}
-      >
-        Annuler
-      </FilledButton>
-      <FilledButton
-        disabled={isSubmitting}
-        onClick={create}
-        className="relative col-span-2 w-full lg:order-2 lg:col-span-1"
-      >
-        {isSubmitting ? (
-          <LoadingIcon className="z-10" />
-        ) : (
-          <span>Créer Pirogue</span>
-        )}
-      </FilledButton>
-    </div>
-  );
-}
-
 export interface DialogState {
-  state: "none" | "adding" | "editing" | "sejour_edit";
+  state: "none" | "editing" | "sejour_edit";
   payload?: {
     [key: string]: any;
   };
@@ -745,6 +393,408 @@ function SuperAdminEditPirogue({
   );
 }
 
+function EditPirogueDialog({
+  initialPirogue,
+  onDone,
+}: {
+  initialPirogue: PirogueInterface;
+  onDone: (updated: boolean) => void;
+}) {
+  const [formState, setFormState] = React.useState<{
+    number: string;
+    motor_numbers: {
+      name: string;
+      cv: number;
+    }[];
+    departure: string;
+    destination: string;
+    extra: string;
+    port: string;
+    etat: string;
+    fuel: number;
+    material: string;
+    nationality: {
+      name: string;
+      id: string;
+    } | null;
+    brand: string;
+    gps: string[];
+    situation: string;
+  }>({
+    number: "",
+    motor_numbers: [
+      {
+        name: "",
+        cv: 0,
+      },
+    ],
+    departure: "",
+    destination: "",
+    extra: "",
+    port: "",
+    etat: "saisie",
+    fuel: 0,
+    material: "",
+    nationality: null,
+    brand: "",
+    gps: [""],
+    situation: "",
+  });
+  const token = useContext(AuthContext).authData?.token;
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  function init() {
+    let motors: { name: string; cv: number }[] = [];
+    for (const [key, value] of Object.entries(initialPirogue.motor_numbers)) {
+      motors.push({ name: key, cv: value ?? 0 });
+    }
+
+    setFormState({
+      number: initialPirogue.number,
+      motor_numbers: motors,
+      departure: initialPirogue.departure,
+      destination: initialPirogue.destination,
+      extra: initialPirogue.extra,
+      port: initialPirogue.port,
+      etat: initialPirogue.etat,
+      fuel: initialPirogue.fuel,
+      material: initialPirogue.material ? initialPirogue.material : "",
+      nationality: initialPirogue.nationality
+        ? {
+            name: initialPirogue.nationality_name,
+            id: initialPirogue.nationality,
+          }
+        : null,
+      brand: initialPirogue.brand,
+      gps: initialPirogue.gps,
+      situation: initialPirogue.situation,
+    });
+  }
+
+  useEffect(() => {
+    init();
+  }, [initialPirogue.id]);
+
+  async function update() {
+    try {
+      if (
+        formState.number.length === 0 ||
+        formState.departure.length === 0 ||
+        formState.destination.length === 0 ||
+        formState.port.length === 0 ||
+        formState.etat.length === 0 ||
+        formState.nationality === null
+      ) {
+        alert("Veuillez remplir les champs obligatoire");
+        return;
+      }
+      setIsSubmitting(true);
+
+      let motor_numbers: { [key: string]: number | null } = {};
+      for (const motor of formState.motor_numbers) {
+        motor_numbers[motor.name] = motor.cv;
+      }
+
+      await axios.patch(
+        rootUrl + "pirogues/" + initialPirogue.id + "/",
+        {
+          number: formState.number,
+          motor_numbers: motor_numbers,
+          departure: formState.departure,
+          destination: formState.destination,
+          extra: formState.extra,
+          port: formState.port,
+          etat: formState.etat,
+          fuel: formState.fuel,
+          material: formState.material,
+          nationality: formState.nationality?.id ?? null,
+          brand: formState.brand,
+          gps: formState.gps,
+          situation: formState.situation,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      onDone(true);
+    } catch (e) {
+      alert("Erreur lors de la modification");
+    }
+    setIsSubmitting(false);
+  }
+
+  return (
+    <div className="grid  grid-cols-2 gap-x-4 gap-y-6 ">
+      <div className="col-span-2 flex flex-col gap-y-2">
+        <Input
+          disabled={isSubmitting}
+          value={formState.number}
+          onChange={(e) => {
+            setFormState((state) => ({ ...state, number: e.target.value }));
+          }}
+          placeholder="Numéro de la pirogue*"
+          type="text"
+        />
+        <hr className="my-2 w-20 self-center border-primary" />
+        {formState.motor_numbers.map((motor_number, i) => (
+          <div className="flex gap-x-4">
+            <Input
+              disabled={isSubmitting}
+              value={motor_number.name}
+              onChange={(e) => {
+                const newMotors = [...formState.motor_numbers];
+                newMotors[i].name = e.target.value;
+                setFormState((state) => ({
+                  ...state,
+                  motor_numbers: newMotors,
+                }));
+              }}
+              className="col-span-2"
+              placeholder={`Numéro du moteur ${i + 1}`}
+              type="text"
+            />
+            <Input
+              disabled={isSubmitting}
+              value={motor_number.cv.toString()}
+              onChange={(e) => {
+                const newMotors = [...formState.motor_numbers];
+                let value = parseInt(e.target.value);
+                if (isNaN(value)) {
+                  value = 0;
+                }
+                newMotors[i].cv = value;
+                setFormState((state) => ({
+                  ...state,
+                  motor_numbers: newMotors,
+                }));
+              }}
+              className="col-span-2"
+              placeholder={`Numéro du moteur ${i + 1}`}
+              type="text"
+            />
+            <button
+              onClick={() => {
+                const newMotors = [...formState.motor_numbers];
+                newMotors.splice(i, 1);
+                setFormState((state) => ({
+                  ...state,
+                  motor_numbers: newMotors,
+                }));
+              }}
+            >
+              <DeleteIcon />
+            </button>
+          </div>
+        ))}
+        <OutlinedButton
+          disabled={isSubmitting}
+          onClick={() => {
+            setFormState((state) => ({
+              ...state,
+              motor_numbers: [
+                ...state.motor_numbers,
+                {
+                  name: "",
+                  cv: 0,
+                },
+              ],
+            }));
+          }}
+          className="col-span-2"
+        >
+          Ajouter un Moteur
+        </OutlinedButton>
+      </div>
+      <Select
+        disabled={isSubmitting}
+        value={formState.material}
+        className={formState.material.length === 0 ? "text-gray" : ""}
+        onChange={(e) => {
+          setFormState((state) => ({ ...state, material: e.target.value }));
+        }}
+      >
+        <option value="" className="text-gray " disabled>
+          Matériel
+        </option>
+        <option value="wood">Bois</option>
+        <option value="metal">Métal</option>
+        <option value="plastic">Plastique</option>
+        <option value="polyester">Polyester</option>
+      </Select>
+      <SearchSelect<CountryInterface>
+        value={formState.nationality?.name ?? null}
+        onSelected={(value) => {
+          setFormState((state) => ({
+            ...state,
+            nationality: { name: value.name_fr, id: value.id.toString() },
+          }));
+        }}
+        placeHolder={"Nationalité*"}
+        search={true}
+        url={"countries"}
+        lookupColumn="name_fr"
+      />
+      <Input
+        disabled={isSubmitting}
+        value={formState.brand}
+        onChange={(e) => {
+          setFormState((state) => ({ ...state, brand: e.target.value }));
+        }}
+        placeholder="Marque"
+        type="text"
+      />
+      <Input
+        disabled={isSubmitting}
+        value={formState.departure}
+        onChange={(e) => {
+          setFormState((state) => ({ ...state, departure: e.target.value }));
+        }}
+        placeholder="Départ*"
+      />
+      <Input
+        disabled={isSubmitting}
+        value={formState.destination}
+        onChange={(e) => {
+          setFormState((state) => ({ ...state, destination: e.target.value }));
+        }}
+        placeholder="Déstination*"
+      />
+      <Input
+        disabled={isSubmitting}
+        value={formState.fuel == 0 ? "" : formState.fuel.toString()}
+        onChange={(e) => {
+          setFormState((state) => ({
+            ...state,
+            fuel: parseInt(e.target.value),
+          }));
+        }}
+        placeholder="Essence"
+      />
+      <Select
+        disabled={isSubmitting}
+        value={formState.port}
+        onChange={(e) => {
+          setFormState((state) => ({
+            ...state,
+            port: e.target.value,
+          }));
+        }}
+        className={formState.port === "" ? "text-gray" : ""}
+      >
+        <option value="" disabled>
+          Port*
+        </option>
+        <option value="ndagou">Ndagou</option>
+        <option value="nouadhibou">Nouadhibou</option>
+        <option value="nouakchott">Nouakchott</option>
+        <option value="tanit">Tanit</option>
+      </Select>
+      <Select
+        disabled={isSubmitting}
+        value={formState.etat}
+        onChange={(e) => {
+          setFormState((state) => ({
+            ...state,
+            etat: e.target.value,
+          }));
+        }}
+        className={formState.etat === "" ? "text-gray" : ""}
+      >
+        <option value="" disabled>
+          État
+        </option>
+        <option value="saisie">Saisie</option>
+        <option value="casse">Cassé</option>
+        <option value="abandonnee">Abandonnée</option>
+      </Select>
+      <div className="col-span-2 flex w-full items-center justify-center">
+        <hr className=" w-1/2 place-content-center self-center border-gray" />
+      </div>
+      <div className="col-span-2 flex flex-col gap-y-2">
+        {formState.gps.map((g, i) => (
+          <div className="flex gap-x-4">
+            <Input
+              disabled={isSubmitting}
+              value={g}
+              onChange={(e) => {
+                const newGps = [...formState.gps];
+                newGps[i] = e.target.value;
+                setFormState((state) => ({ ...state, gps: newGps }));
+              }}
+              className="col-span-2 flex-1"
+              placeholder={` GPS ${i === 0 ? "" : i + 1}`}
+              type="text"
+            />
+            <button
+              onClick={() => {
+                const newGps = [...formState.gps];
+                newGps.splice(i, 1);
+                setFormState((state) => ({ ...state, gps: newGps }));
+              }}
+            >
+              <DeleteIcon />
+            </button>
+          </div>
+        ))}
+        <OutlinedButton
+          disabled={isSubmitting}
+          onClick={() => {
+            setFormState((state) => ({
+              ...state,
+              gps: [...state.gps, ""],
+            }));
+          }}
+          className="col-span-2 "
+        >
+          Ajouter GPS
+        </OutlinedButton>
+      </div>
+      <Textarea
+        disabled={isSubmitting}
+        value={formState.extra}
+        onChange={(e) => {
+          setFormState((state) => ({ ...state, extra: e.target.value }));
+        }}
+        className=" col-span-2"
+        placeholder="Effets persnonels"
+      />
+      <Textarea
+        disabled={isSubmitting}
+        value={formState.situation}
+        onChange={(e) => {
+          setFormState((state) => ({ ...state, situation: e.target.value }));
+        }}
+        className="col-span-2"
+        placeholder="situation"
+      />
+
+      <FilledButton
+        disabled={isSubmitting}
+        className="order-2 col-span-2 w-full lg:order-1 lg:col-span-1 "
+        onClick={() => {
+          onDone(false);
+        }}
+        isLight={true}
+      >
+        Annuler
+      </FilledButton>
+      <FilledButton
+        disabled={isSubmitting}
+        onClick={update}
+        className="relative col-span-2 w-full lg:order-2 lg:col-span-1"
+      >
+        {isSubmitting ? (
+          <LoadingIcon className="z-10" />
+        ) : (
+          <span>Modifier</span>
+        )}
+      </FilledButton>
+    </div>
+  );
+}
+
 export default function AdminAgentPiroguesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTimer = React.useRef<NodeJS.Timeout>();
@@ -956,8 +1006,6 @@ export default function AdminAgentPiroguesPage() {
     switch (dialogState.state) {
       case "editing":
         return "Modifier Pirogue";
-      case "adding":
-        return "Ajouter Pirogue";
       case "sejour_edit":
         return "Modifier Séjour";
       default:
@@ -978,7 +1026,12 @@ export default function AdminAgentPiroguesPage() {
       )
       .then((res) => {});
   }
+  function formatDateTime(date: string) {
+    const d = new Date(date);
 
+    // do  not forget to pad the month and day and hours and minutes
+    return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+  }
   return (
     <div className="flex">
       {/* pb is for the floting button */}
@@ -989,11 +1042,12 @@ export default function AdminAgentPiroguesPage() {
           title={getDialogTitle()}
         >
           <>
-            {dialogState.state === "adding" && (
-              <AddEditPirogueDialog
-                onDone={(added) => {
+            {dialogState.state === "editing" && (
+              <EditPirogueDialog
+                initialPirogue={dialogState.payload!.pirogue}
+                onDone={(updated) => {
                   setDialogState({ state: "none" });
-                  if (added) {
+                  if (updated) {
                     load();
                   }
                 }}
@@ -1097,17 +1151,6 @@ export default function AdminAgentPiroguesPage() {
                 <span>Imprimer</span>
               </OutlinedButton>
             )}
-            {false && (
-              <FilledButton
-                className="w-max"
-                onClick={() => {
-                  setDialogState({ state: "adding" });
-                }}
-                isLight={true}
-              >
-                <span>Nouvelle pirogue</span> <PlusIcon />
-              </FilledButton>
-            )}
             {isAdmin && (
               <FilledButton
                 onClick={() => {
@@ -1124,15 +1167,7 @@ export default function AdminAgentPiroguesPage() {
           <div className="hidden flex-col gap-y-4 lg:hidden">
             {list?.map((pirogue, i) => <MobilePriogueView pirogue={pirogue} />)}
           </div>
-          <FilledButton
-            onClick={() => {
-              setDialogState({ state: "adding" });
-            }}
-            className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
-          >
-            Nouveu pirogue
-            <PlusIcon className=" fill-white" />
-          </FilledButton>
+
           <div className="mb-2 mt-4 flex flex-row items-center gap-x-2">
             <Select
               onChange={(e) => {
@@ -1280,7 +1315,9 @@ export default function AdminAgentPiroguesPage() {
                     <Td>{pirogue.port ?? "-"}</Td>
                     <Td>{pirogue.nationality_name ?? "-"}</Td>
                     <Td>{pirogue.departure ?? "-"}</Td>
-                    <Td>{pirogue.created_at?.split("T")[0] ?? "-"}</Td>
+                    <Td className="font-medium">
+                      {formatDateTime(pirogue.created_at)}
+                    </Td>
                     <Td className="font-medium text-primary">
                       {pirogue.created_by_name ?? "-"}
                     </Td>
@@ -1298,12 +1335,18 @@ export default function AdminAgentPiroguesPage() {
                         <button
                           onClick={() => {
                             setDialogState({
-                              state: "sejour_edit",
+                              state: "editing",
                               payload: {
-                                pirogue_id: pirogue.id,
                                 pirogue: pirogue,
                               },
                             });
+                            // setDialogState({
+                            //   state: "sejour_edit",
+                            //   payload: {
+                            //     pirogue_id: pirogue.id,
+                            //     pirogue: pirogue,
+                            //   },
+                            // });
                           }}
                           className=" transition-all duration-100 active:scale-90"
                         >
@@ -1394,7 +1437,7 @@ export default function AdminAgentPiroguesPage() {
                         {pirogue.departure ?? "-"}
                       </td>
                       <td className="border-gray-300 border">
-                        {pirogue.created_at.split("T")[0]}
+                        {formatDateTime(pirogue.created_at)}
                       </td>
 
                       <td className="border-gray-300 border "></td>

@@ -37,14 +37,18 @@ export function PrintPage({
       const heightWithSingleHeader = numberOfPage * PAGE_HEIGHT;
       let requiredHeight = heightWithSingleHeader;
       if (numberOfPage > 1) {
-        const headerHeight =
+        let headerHeight =
           printElement.getElementsByTagName("thead")?.[0]?.clientHeight;
+        headerHeight = 0;
         const footerHeight =
           printElement.getElementsByTagName("tfoot")?.[0]?.clientHeight;
         requiredHeight -= (numberOfPage - 1) * (headerHeight + footerHeight);
+        // requiredHeight = PAGE_HEIGHT * 2 - (headerHeight + footerHeight);
       }
-
-      // printElement.style.height = `${numberOfPage * PAGE_HEIGHT}px`;
+      const headerHeight =
+        printElement.getElementsByTagName("thead")?.[0]?.clientHeight;
+      const footerHeight =
+        printElement.getElementsByTagName("tfoot")?.[0]?.clientHeight;
       printElement.style.height = `${requiredHeight}px`;
     }
   };
@@ -74,59 +78,55 @@ export function PrintPage({
                 className="absolute inset-y-0 right-4 h-24 w-24 -translate-y-12 "
               />
             </div>
-            <div className="mb-6 flex w-full flex-row justify-between pl-4 pr-36 text-xs">
+            <div className="mb-6 flex w-full flex-row justify-between pl-4 text-xs">
               <div className="flex w-fit flex-col items-center  font-semibold leading-4">
                 <h1>وزارة الصيد والبحري الإقتصاد</h1>
                 <h1>Ministère des Pêche et de l'Economie Maritime</h1>
 
                 <h1> خفر السواحل الموريتاني</h1>
                 <h1>Garde-côtes Mauritaniennnes</h1>
-                <img
-                  src={logo}
-                  className="mt-3 h-[60px] w-fit self-center bg-red-400"
-                />
+                <img src={logo} className="mt-3 h-[60px] w-fit self-center " />
               </div>
-
-              <div className="ml-2 mt-1 flex w-fit flex-col  items-center text-sm font-medium leading-4">
-                <h1 className=" font-semibold">
-                  RÉPUBLIQUE ISLAMIQUE DE MAURITANIE
-                </h1>
-                <h1 className=" text-xs">Honeur - Fraternité - Justice</h1>
+              <div className="flex flex-col">
+                <div className="ml-2 mt-1 flex w-fit flex-col  items-center pr-36 text-sm font-medium leading-4">
+                  <h1 className=" font-semibold">
+                    RÉPUBLIQUE ISLAMIQUE DE MAURITANIE
+                  </h1>
+                  <h1 className=" text-xs">Honeur - Fraternité - Justice</h1>
+                </div>
+                <div className="2 mt-10 flex flex-col self-end text-xs">
+                  {/* after en arbae */}
+                  <span>
+                    {" "}
+                    Nouadhibou le :
+                    ............................................. نواذيبو في{" "}
+                  </span>
+                  <span>
+                    {" "}
+                    Numéro :
+                    ...........................................................الرقم
+                  </span>
+                </div>
+                {topTitle === null && (
+                  <div
+                    dir="ltr"
+                    className="self- mt-10 self-end text-center font-medium rtl:self-start"
+                  >
+                    <div className="relative mb-10 ml-auto flex items-center justify-end gap-x-24  ">
+                      <h1 className=" text-base font-semibold text-green-800">
+                        Le Commandant
+                      </h1>
+                      <h1 className="text-base font-semibold text-green-800">
+                        القائد
+                      </h1>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-
-            <div className="2 flex flex-col self-end text-xs">
-              {/* after en arbae */}
-              <span>
-                {" "}
-                Nouadhibou le : .............................................
-                نواذيبو في{" "}
-              </span>
-              <span>
-                {" "}
-                Numéro :
-                ...........................................................الرقم
-              </span>
             </div>
           </div>
 
-          {topTitle === null && (
-            <div
-              dir="ltr"
-              className="self- mr-20 mt-10 self-end text-center font-medium rtl:self-start"
-            >
-              <div className="relative mb-10 ml-auto flex items-center justify-end gap-x-32  ">
-                {!isArabic && <h1 className="text-xl font-semibold">A</h1>}
-                <h1 className="text-xl font-semibold text-green-800">
-                  Le Commandant
-                </h1>
-                <h1 className="text-xl font-semibold text-green-800">القائد</h1>
-              </div>
-            </div>
-          )}
-          <div
-            className={`font-medium ${topTitle !== null ? "self-center text-center" : "self-start"}`}
-          >
+          <div className={`self-center  text-center font-medium`}>
             {topTitle === null &&
               (isArabic
                 ? "السيد المدير الجهوي لأمن داخلة نواذيبو"
@@ -134,8 +134,8 @@ export function PrintPage({
           </div>
         </div>
       </thead>
-      <tbody>
-        <tr>
+      <tbody className="">
+        <tr className="">
           <td className={`${topTitle !== null ? "pt-10 align-top" : ""}`}>
             <div className=" px-6">
               {(objectText || topTitle) && (
@@ -148,7 +148,7 @@ export function PrintPage({
                   <span className="inline">{topTitle || objectText}</span>
                 </div>
               )}
-              <span className="t mb-3 mt-3">{text}</span>
+              <span className="mb-3 mt-3">{text}</span>
               <div className="">{children}</div>
             </div>
           </td>

@@ -21,7 +21,7 @@ import { ImmigrantIcon } from "../../components/icons";
 import { MDialog } from "../../components/dialog";
 import { PrintPage } from "../../components/print_page";
 
-const CRIMINAL_RECORD_NAMES = {
+export const CRIMINAL_RECORD_NAMES = {
   theft: "Vol",
   homocide: "Homicide",
   torture: "Torture",

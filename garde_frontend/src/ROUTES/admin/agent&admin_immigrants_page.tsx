@@ -68,13 +68,227 @@ export interface ImmigrantInterface {
     | "human_trafficking"
     | "other"
     | null;
+  criminal_note: string;
 }
 
-const ll = [
-  5929, 5928, 5927, 5926, 5925, 5924, 5923, 5922, 5921, 5920, 5919, 5918, 5917,
-  5916, 5915, 5914, 5913, 5912, 5911, 5910, 5909, 5908, 5907, 5906, 5905, 5904,
-  5903, 5902, 5728, 5639, 5609, 5600, 5433,
-];
+function EditImmigrantDialog({
+  initialImmigrant,
+  onDone,
+}: {
+  initialImmigrant: ImmigrantInterface;
+  onDone: (updated: boolean) => void;
+}) {
+  const [formState, setFormState] = React.useState<{
+    name: string;
+    etat: string;
+    date_of_birth: string | null;
+    is_male: boolean;
+    criminal_record: string | null;
+    criminal_note: string;
+    birth_country: { name: string; id: number } | null;
+    nationality: { name: string; id: number } | null;
+  }>({
+    name: initialImmigrant.name,
+    etat: initialImmigrant.etat,
+    date_of_birth: initialImmigrant.date_of_birth ?? null,
+    is_male: initialImmigrant.is_male,
+    criminal_record: initialImmigrant.criminal_record,
+    criminal_note: initialImmigrant.criminal_note,
+    birth_country: initialImmigrant.birth_country
+      ? {
+          name: initialImmigrant.birth_country_name,
+          id: initialImmigrant.birth_country,
+        }
+      : null,
+    nationality: initialImmigrant.nationality
+      ? {
+          name: initialImmigrant.nationality_name,
+          id: initialImmigrant.nationality,
+        }
+      : null,
+  });
+  const token = useContext(AuthContext).authData?.token;
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  async function update() {
+    try {
+      if (formState.name.length === 0) {
+        alert("Veuillez remplir le nom");
+        return;
+      }
+      setIsSubmitting(true);
+
+      await axios.patch(
+        rootUrl + "immigrants/" + initialImmigrant.id + "/",
+        {
+          name: formState.name,
+          etat: formState.etat,
+          date_of_birth: formState.date_of_birth ?? null,
+          is_male: formState.is_male,
+          criminal_record: formState.criminal_record,
+          criminal_note: formState.criminal_note,
+          birth_country: formState.birth_country?.id ?? null,
+          nationality: formState.nationality?.id ?? null,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },
+      );
+      onDone(true);
+    } catch (e) {
+      alert("Erreur lors de la modification");
+    }
+    setIsSubmitting(false);
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 ">
+      <Input
+        disabled={isSubmitting}
+        value={formState.name}
+        onChange={(e) => {
+          setFormState((state) => ({ ...state, name: e.target.value }));
+        }}
+        className="col-span-2"
+        placeholder="Nom*"
+        type="text"
+      />
+      <Select
+        value={formState.etat}
+        onChange={(e) => {
+          const value = e.target.value;
+          setFormState((state) => ({
+            ...state,
+            etat: value,
+          }));
+        }}
+        className={`${formState.etat.length === 0}) ? "text-gray" : "text-black"}`}
+      >
+        <option value={""} disabled>
+          {" "}
+          Etat
+        </option>
+        <option value={"alive"}>Vivant</option>
+        <option value={"dead"}>Décédé</option>
+        <option value={"sick_evacuation"}>Evacuation Sanitaire</option>
+        <option value={"pregnant"}>Enceinte</option>
+      </Select>
+      <Input
+        disabled={isSubmitting}
+        value={formState.date_of_birth ?? ""}
+        onChange={(e) => {
+          setFormState((state) => ({
+            ...state,
+            date_of_birth: e.target.value,
+          }));
+        }}
+        placeholder="Date de naissance"
+        type="date"
+      />
+
+      <Select
+        value={formState.is_male ? "1" : "0"}
+        onChange={(e) => {
+          const value = e.target.value;
+          setFormState((state) => ({
+            ...state,
+            is_male: value === "1" ? true : false,
+          }));
+        }}
+      >
+        <option value={""} disabled>
+          {" "}
+          Genre
+        </option>
+        <option value={"1"}>Homme</option>
+        <option value={"0"}>Femme</option>
+      </Select>
+      <Select
+        value={formState.criminal_record ?? ""}
+        onChange={(e) => {
+          const value = e.target.value;
+
+          setFormState((state) => ({
+            ...state,
+            criminal_record: value.length === 0 ? null : value,
+          }));
+        }}
+      >
+        <option value="">Aucun Record criminel</option>
+        <option value="theft">Vol</option>
+        <option value="homocide">Homicide</option>
+        <option value="torture">Torture</option>
+        <option value="human_trafficking">Traite des êtres humains</option>
+        <option value="other">Autre</option>
+      </Select>
+      {formState.criminal_record && (
+        <Textarea
+          value={formState.criminal_note}
+          onChange={(e) => {
+            setFormState((state) => ({
+              ...state,
+              criminal_note: e.target.value,
+            }));
+          }}
+          className="col-span-2"
+          placeholder="Note sur le record criminel"
+        />
+      )}
+      <SearchSelect<CountryInterface>
+        value={formState.nationality?.name ?? null}
+        onSelected={(value) => {
+          setFormState((state) => ({
+            ...state,
+            nationality: { name: value.name_fr, id: value.id },
+          }));
+        }}
+        placeHolder={"Nationalité*"}
+        search={true}
+        url={"countries"}
+        lookupColumn="name_fr"
+      />
+      <SearchSelect<CountryInterface>
+        value={formState.birth_country?.name ?? null}
+        onSelected={(value) => {
+          setFormState((state) => ({
+            ...state,
+            birth_country: { name: value.name_fr, id: value.id },
+          }));
+        }}
+        placeHolder={"Pays de naissance*"}
+        search={true}
+        url={"countries"}
+        lookupColumn="name_fr"
+      />
+
+      <div className="col-span-2 flex gap-x-4">
+        <FilledButton
+          disabled={isSubmitting}
+          className="order-2 col-span-2 w-full lg:order-1 lg:col-span-1 "
+          onClick={() => {
+            onDone(false);
+          }}
+          isLight={true}
+        >
+          Annuler
+        </FilledButton>
+        <FilledButton
+          disabled={isSubmitting}
+          onClick={update}
+          className="relative col-span-2 w-full lg:order-2 lg:col-span-1"
+        >
+          {isSubmitting ? (
+            <LoadingIcon className="z-10" />
+          ) : (
+            <span>Modifier</span>
+          )}
+        </FilledButton>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminAgentImmigrantsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -90,7 +304,6 @@ export default function AdminAgentImmigrantsPage() {
 
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
 
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const token = useContext(AuthContext).authData?.token;
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const printRef = React.useRef<HTMLTableElement>(null);
@@ -99,6 +312,9 @@ export default function AdminAgentImmigrantsPage() {
 
   const [editingSejourImmigrantIds, setEditingSejourImmigrantIds] =
     React.useState<number[]>([]);
+
+  const [editingImmigrant, setEditingImmigrant] =
+    React.useState<ImmigrantInterface | null>(null);
 
   const [isSubmitingSejour, setIsSubmitingSejour] = React.useState(false);
 
@@ -298,6 +514,23 @@ export default function AdminAgentImmigrantsPage() {
     <div className="mb-10 flex flex-col">
       <MDialog
         onClose={() => {
+          setEditingImmigrant(null);
+        }}
+        isOpen={editingImmigrant !== null}
+        title={"Modifier migrant"}
+      >
+        <EditImmigrantDialog
+          initialImmigrant={editingImmigrant!}
+          onDone={(updated) => {
+            if (updated) {
+              load();
+            }
+            setEditingImmigrant(null);
+          }}
+        />
+      </MDialog>
+      <MDialog
+        onClose={() => {
           setEditingSejourImmigrantIds([]);
         }}
         isOpen={editingSejourImmigrantIds.length !== 0}
@@ -446,15 +679,7 @@ export default function AdminAgentImmigrantsPage() {
             />
           ))}
         </div>
-        <FilledButton
-          onClick={() => {
-            setIsDialogOpen(true);
-          }}
-          className=" fixed inset-x-0 bottom-10 z-10 mx-8 lg:hidden"
-        >
-          Nouveau Migrant
-          <PlusIcon className=" fill-white" />
-        </FilledButton>
+
         <div className="mb-2 mt-4 flex flex-row items-center gap-x-2">
           <Select
             onChange={(e) => {
@@ -682,12 +907,23 @@ export default function AdminAgentImmigrantsPage() {
                         >
                           <button
                             onClick={() => {
+                              setEditingImmigrant(
+                                list!.find((imm) => imm.id === immigrant.id)!,
+                              );
+                            }}
+                            className=" transition-all duration-100 active:scale-90"
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            onClick={() => {
                               setDeletingId(immigrant.id);
                             }}
                             className=" transition-all duration-100 active:scale-90"
                           >
                             <DeleteIcon />
                           </button>
+
                           <Dialog.Overlay className="fixed inset-0 z-20 bg-black opacity-10" />
                           <Dialog.Content className="fixed left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded bg-white px-4 py-4">
                             <Dialog.Title>

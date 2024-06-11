@@ -467,7 +467,7 @@ export function AdminProtectedLayout() {
         >
           Menu
         </h3>
-        <OutlinedButton
+        {/* <OutlinedButton
           onClick={() => {
             setIsLetterDialogOpen(true);
           }}
@@ -475,7 +475,7 @@ export function AdminProtectedLayout() {
         >
           <PlusIcon className="" />
           <span>Lettre</span>
-        </OutlinedButton>
+        </OutlinedButton> */}
         <NavItem isOpen={isOpen} to="/admin" icon={<StatsIcon />}>
           Statistiques
         </NavItem>

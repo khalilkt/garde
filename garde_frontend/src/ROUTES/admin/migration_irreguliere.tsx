@@ -437,24 +437,7 @@ export default function MigrationIrregulierePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                    // ...data,
-                  ]
+                  {[...data]
                     .filter((_, i) => selected.includes(i))
                     .map((pirogue, i) => (
                       <tr key={i}>
