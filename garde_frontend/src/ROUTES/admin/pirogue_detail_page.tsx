@@ -438,21 +438,21 @@ export default function PirogueDetailPage({
   async function printAllMigrants() {
     setIsFetchingAllMigrants(true);
     try {
-      if (!allImmigrantsData) {
-        const url = rootUrl + "pirogues/" + pirogueId + "/immigrants/";
-        const data = (
-          await axios.get(url, {
-            params: {
-              all: "true",
-            },
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-          })
-        ).data;
+      const url = rootUrl + "pirogues/" + pirogueId + "/immigrants/";
+      const data = (
+        await axios.get(url, {
+          params: {
+            all: "true",
+            nationality:
+              immigrant_nationalityFitler?.id.toString() ?? undefined,
+          },
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        })
+      ).data;
 
-        setAllImmigrantsData(data as ImmigrantInterface[]);
-      }
+      setAllImmigrantsData(data as ImmigrantInterface[]);
       setTimeout(() => {
         handlePrint();
       }, 100);
@@ -962,17 +962,21 @@ export default function PirogueDetailPage({
             <h2 className="mb-2 text-xl font-bold">
               Situation PA {data.number}
             </h2>
-            <span className="font-semibold">
-              {Object.entries(nats).length + " nationalités"}
-            </span>
-            {Object.entries(nats).length > 0 && (
-              <div className="ml-4 flex flex-col">
-                {Object.entries(nats).map(([key, value]) => (
-                  <span>
-                    {key} - {value}
-                  </span>
-                ))}
-              </div>
+            {immigrant_nationalityFitler === null && (
+              <>
+                <span className="font-semibold">
+                  {Object.entries(nats).length + " nationalités"}
+                </span>
+                {Object.entries(nats).length > 0 && (
+                  <div className="ml-4 flex flex-col">
+                    {Object.entries(nats).map(([key, value]) => (
+                      <span>
+                        {key} - {value}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
             <span className="font-semibold">
               {Object.entries(data.motor_numbers).length} moteurs

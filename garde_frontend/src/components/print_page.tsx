@@ -128,9 +128,17 @@ export function PrintPage({
 
           <div className={`self-center  text-center font-medium`}>
             {topTitle === null &&
-              (isArabic
-                ? "السيد المدير الجهوي لأمن داخلة نواذيبو"
-                : "Monsieur le Directeur Régional de la Sureté de Dakhlet Nouadhibou")}
+              (isArabic ? (
+                "السيد المدير الجهوي لأمن داخلة نواذيبو"
+              ) : (
+                <div className="flex flex-col items-center gap-y-2">
+                  <span className="text-xl font-semibold">A</span>
+                  <span>
+                    Monsieur le Directeur Régional de la Sureté de Dakhlet
+                    Nouadhibou
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
       </thead>

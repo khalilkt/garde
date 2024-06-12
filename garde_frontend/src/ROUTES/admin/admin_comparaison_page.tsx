@@ -88,7 +88,7 @@ export default function AdminComparaisonPage() {
             <th></th>
             <Td className="w-1/4 text-lg font-semibold">2023</Td>
             <Td className="w-1/4 text-lg font-semibold">2024</Td>
-            <th></th>
+            <Td className="w-1/4 text-lg font-semibold">Marge</Td>
           </Tr>
           <Tr>
             <Td className="border-t border-t-primaryBorder">Total Pirogue</Td>
