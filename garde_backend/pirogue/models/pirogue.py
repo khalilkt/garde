@@ -26,6 +26,7 @@ class Pirogue(models.Model):
     extra  = models.CharField(max_length=4000, default="", blank=True, null=True)
     days_at_sea = models.IntegerField(null=True, blank=True)
 
+
     sejour = models.IntegerField( null = True, blank = True)
 
     departure = models.CharField(max_length=100)
@@ -40,6 +41,7 @@ class Pirogue(models.Model):
     video3 = models.FileField(upload_to='pirogues/', blank=True, null=True)
     situation = models.CharField(max_length=1000 , default="", blank=True)
 
+    landing_point = models.CharField(max_length=100, default="", blank=True)
     objects = PirogueManager()
 
 class PirogueSerializer(serializers.ModelSerializer):

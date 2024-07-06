@@ -22,6 +22,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
     
+    
 class User(AbstractBaseUser): 
     username = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
@@ -36,6 +37,8 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin or self.is_superuser
+
+
 
 class UserSerializer(serializers.ModelSerializer): 
     total_pirogues = serializers.IntegerField(read_only = True)
