@@ -57,6 +57,7 @@ export interface PirogueInterface {
   motor_numbers: { [key: string]: number | null };
   puissance: number;
   port: string;
+  landing_point: string;
 
   material: string;
   brand: string;
@@ -420,6 +421,7 @@ function EditPirogueDialog({
     brand: string;
     gps: string[];
     situation: string;
+    landing_point: string;
   }>({
     number: "",
     motor_numbers: [
@@ -439,6 +441,7 @@ function EditPirogueDialog({
     brand: "",
     gps: [""],
     situation: "",
+    landing_point: "",
   });
   const token = useContext(AuthContext).authData?.token;
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -453,6 +456,8 @@ function EditPirogueDialog({
       number: initialPirogue.number,
       motor_numbers: motors,
       departure: initialPirogue.departure,
+      landing_point: initialPirogue.landing_point,
+
       destination: initialPirogue.destination,
       extra: initialPirogue.extra,
       port: initialPirogue.port,
@@ -502,6 +507,7 @@ function EditPirogueDialog({
           motor_numbers: motor_numbers,
           departure: formState.departure,
           destination: formState.destination,
+          landing_point: formState.landing_point,
           extra: formState.extra,
           port: formState.port,
           etat: formState.etat,
@@ -709,6 +715,19 @@ function EditPirogueDialog({
         <option value="casse">Cassé</option>
         <option value="abandonnee">Abandonnée</option>
       </Select>
+
+      <Input
+        disabled={isSubmitting}
+        className="col-span-2"
+        value={formState.landing_point}
+        onChange={(e) => {
+          setFormState((state) => ({
+            ...state,
+            landing_point: e.target.value,
+          }));
+        }}
+        placeholder="Point de débarquement"
+      />
       <div className="col-span-2 flex w-full items-center justify-center">
         <hr className=" w-1/2 place-content-center self-center border-gray" />
       </div>

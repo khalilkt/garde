@@ -10,7 +10,7 @@ export function FilledButton({
   isLight?: boolean;
 } & React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
-  HTMLButtonElement
+      HTMLButtonElement
 >) {
   return (
     <button

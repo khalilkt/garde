@@ -432,6 +432,7 @@ export default function PirogueDetailPage({
       Matériel: data.material,
       Nationalité: data.nationality_name,
       Carburant: data.fuel?.toString(),
+      "Point de débarquement": data.landing_point,
     };
   }
 
