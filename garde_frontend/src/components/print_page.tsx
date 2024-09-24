@@ -80,8 +80,11 @@ export function PrintPage({
             </div>
             <div className="mb-6 flex w-full flex-row justify-between pl-4 text-xs">
               <div className="flex w-fit flex-col items-center  font-semibold leading-4">
-                <h1>وزارة الصيد والبحري الإقتصاد</h1>
-                <h1>Ministère des Pêche et de l'Economie Maritime</h1>
+                <h1>وزارة الصيد والبنى التحتية البحرية والمينانية</h1>
+                <h1>
+                  Ministère de la pêche des infrastructures Maritimes et
+                  portuaires
+                </h1>
 
                 <h1> خفر السواحل الموريتاني</h1>
                 <h1>Garde-côtes Mauritaniennnes</h1>
