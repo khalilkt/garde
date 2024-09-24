@@ -78,58 +78,48 @@ export function PrintPage({
                 className="absolute inset-y-0 right-4 h-24 w-24 -translate-y-12 "
               />
             </div>
-            <div className="mb-6 flex w-full flex-row justify-between pl-4 text-xs">
-              <div className="flex w-fit flex-col items-center  font-semibold leading-4">
+            <div className="mt-1 flex flex-col  items-center text-sm font-medium leading-4">
+              <h1 className=" font-semibold">
+                RÉPUBLIQUE ISLAMIQUE DE MAURITANIE
+              </h1>
+              <h1 className=" text-xs">Honeur - Fraternité - Justice</h1>
+            </div>
+            <div className="mt-2 flex w-full items-start gap-x-4 text-xs">
+              <div className="flex w-fit flex-1 flex-col items-center font-semibold leading-4">
                 <h1>وزارة الصيد والبنى التحتية البحرية والمينانية</h1>
-                <h1>
+                <h1 className="text-center">
                   Ministère de la pêche des infrastructures Maritimes et
                   portuaires
                 </h1>
 
                 <h1> خفر السواحل الموريتاني</h1>
                 <h1>Garde-côtes Mauritaniennnes</h1>
-                <img src={logo} className="mt-3 h-[60px] w-fit self-center " />
               </div>
-              <div className="flex flex-col">
-                <div className="ml-2 mt-1 flex w-fit flex-col  items-center pr-36 text-sm font-medium leading-4">
-                  <h1 className=" font-semibold">
-                    RÉPUBLIQUE ISLAMIQUE DE MAURITANIE
-                  </h1>
-                  <h1 className=" text-xs">Honeur - Fraternité - Justice</h1>
-                </div>
-                <div className="2 mt-10 flex flex-col self-end text-xs">
-                  {/* after en arbae */}
-                  <span>
-                    {" "}
-                    Nouadhibou le :
-                    ............................................. نواذيبو في{" "}
-                  </span>
-                  <span>
-                    {" "}
-                    Numéro :
-                    ...........................................................الرقم
-                  </span>
-                </div>
+              <img src={logo} className="mt-3 h-[60px] w-fit  " />
+              <div className="flex h-full flex-1 flex-col text-xs">
+                <span>
+                  Nouadhibou le : .............................................
+                  نواذيبو في
+                </span>
+                <span>
+                  Numéro :
+                  ...........................................................الرقم
+                </span>
                 {topTitle === null && (
-                  <div
-                    dir="ltr"
-                    className="self- mt-10 self-end text-center font-medium rtl:self-start"
-                  >
-                    <div className="relative mb-10 ml-auto flex items-center justify-end gap-x-24  ">
-                      <h1 className=" text-base font-semibold text-green-800">
-                        Le Commandant
-                      </h1>
-                      <h1 className="text-base font-semibold text-green-800">
-                        القائد
-                      </h1>
-                    </div>
+                  <div className="relative mb-auto mr-16 mt-8 flex items-center justify-between ">
+                    <h1 className=" text-base font-semibold text-green-800">
+                      Le Commandant
+                    </h1>
+                    <h1 className="text-base font-semibold text-green-800">
+                      القائد
+                    </h1>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className={`self-center  text-center font-medium`}>
+          <div className={`mt-20 self-center text-center font-medium`}>
             {topTitle === null &&
               (isArabic ? (
                 "السيد المدير الجهوي لأمن داخلة نواذيبو"

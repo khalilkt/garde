@@ -1041,7 +1041,7 @@ export default function AdminAgentImmigrantsPage() {
               </tr>
             </thead>
             <tbody>
-              {list.map((immigrant, index) => {
+              {[...list].map((immigrant, index) => {
                 return (
                   <tr>
                     {/* border */}

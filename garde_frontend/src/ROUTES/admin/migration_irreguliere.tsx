@@ -317,7 +317,7 @@ export default function MigrationIrregulierePage() {
           <TableBodySquelette columnCount={9} />
         ) : (
           <tbody>
-            {data.map((pirogue, i) => (
+            {[...data].map((pirogue, i) => (
               <Tr>
                 <Td>
                   <input
@@ -437,7 +437,7 @@ export default function MigrationIrregulierePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[...data]
+                  {data
                     .filter((_, i) => selected.includes(i))
                     .map((pirogue, i) => (
                       <tr key={i}>
