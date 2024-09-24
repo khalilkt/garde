@@ -66,7 +66,7 @@ export function PrintPage({
       <thead className="">
         <div className="px-6 pt-10">
           <div dir="ltr" className="flex flex-col">
-            <img src={joumhouria} className="w-96 self-end pr-36" />
+            <img src={joumhouria} className="w-[220px] self-center" />
 
             <div className="relative my-2 flex w-full flex-col self-center">
               <hr className="-mx-6 w-full self-center border-[1.5px]  border-[#006400]" />
@@ -78,7 +78,7 @@ export function PrintPage({
                 className="absolute inset-y-0 right-4 h-24 w-24 -translate-y-12 "
               />
             </div>
-            <div className="mt-1 flex flex-col  items-center text-sm font-medium leading-4">
+            <div className="mt-1 flex flex-col items-center text-sm font-medium leading-4">
               <h1 className=" font-semibold">
                 RÉPUBLIQUE ISLAMIQUE DE MAURITANIE
               </h1>
