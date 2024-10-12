@@ -14,12 +14,16 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../../App";
 import { ImmigrantInterface } from "./agent&admin_immigrants_page";
 import { Pagination, TableBodySquelette, Td, Tr } from "../../components/table";
-import { FilledButton } from "../../components/buttons";
+import { FilledButton, OutlinedButton } from "../../components/buttons";
 import { MDialog } from "../../components/dialog";
 import Webcam, { WebcamProps } from "react-webcam";
 import { EditIcon, LoadingIcon, PlusIcon } from "../../components/icons";
 import { useReactToPrint } from "react-to-print";
 import { getImmigrantGenre, getImmigrantSejour } from "../../models/utils";
+import {
+  ExcelExportButton,
+  exportToExcel,
+} from "../../components/excel_button";
 
 function Squelette({ width }: { width: string }) {
   return (
@@ -436,7 +440,7 @@ export default function PirogueDetailPage({
     };
   }
 
-  async function printAllMigrants() {
+  async function updateAllMigrants() {
     setIsFetchingAllMigrants(true);
     try {
       const url = rootUrl + "pirogues/" + pirogueId + "/immigrants/";
@@ -454,9 +458,8 @@ export default function PirogueDetailPage({
       ).data;
 
       setAllImmigrantsData(data as ImmigrantInterface[]);
-      setTimeout(() => {
-        handlePrint();
-      }, 100);
+      setIsFetchingAllMigrants(false);
+      return data;
     } catch (e) {
       console.log(e);
       alert("Erreur lors de l'impression");
@@ -537,7 +540,11 @@ export default function PirogueDetailPage({
 
             <FilledButton
               onClick={() => {
-                printAllMigrants();
+                updateAllMigrants().then(() => {
+                  setTimeout(() => {
+                    handlePrint();
+                  }, 100);
+                });
                 updatePirogueSituation();
               }}
               className=" self-end"
@@ -645,21 +652,56 @@ export default function PirogueDetailPage({
             />
           </div>
           {
-            <FilledButton
-              disabled={isFetchingAllMigrants}
-              onClick={() => {
-                setDialogState({ state: "printing" });
-              }}
-            >
-              <span
-                className={`text-white ${isFetchingAllMigrants ? "opacity-0" : ""}`}
+            <>
+              <OutlinedButton
+                onClick={async () => {
+                  const ret = await updateAllMigrants();
+                  if (ret) {
+                    let fileName =
+                      "Migrants de la pirogue " + (data?.number ?? "");
+                    if (immigrant_nationalityFitler) {
+                      fileName += "(";
+                      fileName += immigrant_nationalityFitler.name;
+                      fileName += ")";
+                    }
+
+                    exportToExcel({
+                      data:
+                        ret.map((imm: ImmigrantInterface) => {
+                          return {
+                            Nom: imm.name,
+                            Genre: getImmigrantGenre(imm),
+                            Nationalité: imm.nationality_name,
+                            "Pays de naissance": imm.birth_country_name,
+                            "Date de naissance": imm.date_of_birth,
+                            Date: imm.created_at.split("T")[0],
+                            Séjour: getImmigrantSejour(imm),
+                          };
+                        }) ?? [],
+                      fileName: fileName,
+                    });
+                  }
+                }}
               >
-                Imprimer
-              </span>
-              {isFetchingAllMigrants && (
-                <LoadingIcon className={`absolute h-6 w-6`} />
-              )}
-            </FilledButton>
+                <span>Excel</span>
+              </OutlinedButton>
+
+              <FilledButton
+                disabled={isFetchingAllMigrants}
+                onClick={() => {
+                  setDialogState({ state: "printing" });
+                }}
+              >
+                <span
+                  className={`text-white ${isFetchingAllMigrants ? "opacity-0" : ""}`}
+                >
+                  Imprimer
+                </span>
+                {isFetchingAllMigrants && (
+                  <LoadingIcon className={`absolute h-6 w-6`} />
+                )}
+              </FilledButton>
+            </>
           }
         </div>
       </div>

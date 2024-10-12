@@ -344,88 +344,9 @@ function SuperAdminBulkDialog() {
   );
 }
 
-function LetterDialog() {
-  const [leftSignature, setLeftSignature] = React.useState("");
-  const [rightSignature, setRightSignature] = React.useState("");
-  const [contenu, setContenu] = React.useState("");
-  const [title, setTitle] = React.useState("");
-
-  const printRef = React.useRef<HTMLDivElement>(null);
-  const token = React.useContext(AuthContext).authData?.token;
-
-  const handlePrint = useReactToPrint({
-    onBeforeGetContent() {},
-    content: () => {
-      return printRef.current;
-    },
-    onAfterPrint: () => {},
-  });
-
-  return (
-    <>
-      <div className="flex w-[600px] flex-col gap-y-6">
-        <Input
-          placeholder="Titre"
-          className="font-semibold"
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-          }}
-        />
-        <Textarea
-          placeholder="Contenu"
-          className="h-[200px]"
-          value={contenu}
-          onChange={(e) => {
-            setContenu(e.target.value);
-          }}
-        />
-        <div className="flex w-full items-center">
-          <Textarea
-            placeholder="Sign gauche"
-            value={leftSignature}
-            onChange={(e) => {
-              setLeftSignature(e.target.value);
-            }}
-          />
-          <span className="mx-auto h-[3px] w-8 rounded-full bg-gray" />
-          <Textarea
-            placeholder="Sign droit"
-            value={rightSignature}
-            onChange={(e) => {
-              setRightSignature(e.target.value);
-            }}
-          />
-        </div>
-        <FilledButton
-          onClick={() => {
-            handlePrint();
-          }}
-          className="self-end"
-        >
-          Imprimer
-        </FilledButton>
-      </div>
-      <div ref={printRef} className="absolute opacity-0 print:opacity-100">
-        <PrintPage
-          signatureLeft={leftSignature}
-          signatureRight={rightSignature}
-          text={""}
-          isOnePage
-          objectText={null}
-          topTitle={title}
-        >
-          {contenu}
-        </PrintPage>
-      </div>
-    </>
-  );
-}
-
 export function AdminProtectedLayout() {
   const authContext = React.useContext(AuthContext);
   const [isOpen, setIsOpen] = React.useState(true);
-  const [isLetterDialogOpen, setIsLetterDialogOpen] = React.useState(false);
 
   if (!authContext.authData || !authContext.authData.user.is_admin) {
     return <Navigate to="/" />;
@@ -434,17 +355,6 @@ export function AdminProtectedLayout() {
 
   return (
     <div className="flex h-screen flex-row">
-      <MDialog
-        isOpen={isLetterDialogOpen}
-        title={"Créer une lettre"}
-        // title="Créer une pirogue"
-        onClose={() => {
-          setIsLetterDialogOpen(false);
-        }}
-      >
-        <LetterDialog />
-        {/* <SuperAdminBulkDialog /> */}
-      </MDialog>
       <ul
         className={
           "relative flex flex-col gap-y-2 border-r-2 border-r-primaryBorder bg-white px-6 pt-20 transition-all duration-150 " +
@@ -467,15 +377,6 @@ export function AdminProtectedLayout() {
         >
           Menu
         </h3>
-        {/* <OutlinedButton
-          onClick={() => {
-            setIsLetterDialogOpen(true);
-          }}
-          className="mb-10 flex items-center gap-x-2 "
-        >
-          <PlusIcon className="" />
-          <span>Lettre</span>
-        </OutlinedButton> */}
         <NavItem isOpen={isOpen} to="/admin" icon={<StatsIcon />}>
           Statistiques
         </NavItem>

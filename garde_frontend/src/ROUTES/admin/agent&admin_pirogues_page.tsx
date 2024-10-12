@@ -40,6 +40,7 @@ import {
 } from "../../components/position_input";
 import { useReactToPrint } from "react-to-print";
 import { AnimatePresence, motion } from "framer-motion";
+import { ExcelExportButton } from "../../components/excel_button";
 
 export interface PirogueInterface {
   id: number;
@@ -1161,24 +1162,53 @@ export default function AdminAgentPiroguesPage() {
           </div>
           <div className="hidden flex-row items-center gap-x-4 lg:flex">
             {isAdmin && (
-              <OutlinedButton
-                className="border-green-600 text-green-600"
-                onClick={() => {
-                  handlePrint();
-                }}
-              >
-                <span>Imprimer</span>
-              </OutlinedButton>
-            )}
-            {isAdmin && (
-              <FilledButton
-                onClick={() => {
-                  setIsFilterOpen(true);
-                }}
-              >
-                <span>Filtrer</span>
-                <FilterIcon />
-              </FilledButton>
+              <>
+                <ExcelExportButton
+                  data={
+                    list?.map((pirogue) => {
+                      return {
+                        Numéro: pirogue.number,
+                        "Numéro des moteurs": Object.entries(
+                          pirogue.motor_numbers,
+                        )
+                          .map(([key, value]) => `${key} : ${value}`)
+                          .join(", "),
+                        Equipage: pirogue.immigrants_count,
+                        Port: pirogue.port,
+                        Nationalité: pirogue.nationality_name,
+                        Marque: pirogue.brand,
+                        GPS: pirogue.gps.join(", "),
+                        Situation: pirogue.situation,
+                        "Point de débarquement": pirogue.landing_point,
+                        Matériel: MATERIAL_NAME[pirogue.material],
+                        Etat: pirogue.etat,
+                        Essence: pirogue.fuel,
+                        Date: formatDateTime(pirogue.created_at),
+                      };
+                    }) ?? []
+                  }
+                  fileName={
+                    "Pirogues " +
+                    (searchParams.get("date")?.replaceAll("-", "/") ?? "")
+                  }
+                />
+                <OutlinedButton
+                  className="border-green-600 text-green-600"
+                  onClick={() => {
+                    handlePrint();
+                  }}
+                >
+                  <span>Imprimer</span>
+                </OutlinedButton>
+                <FilledButton
+                  onClick={() => {
+                    setIsFilterOpen(true);
+                  }}
+                >
+                  <span>Filtrer</span>
+                  <FilterIcon />
+                </FilledButton>
+              </>
             )}
           </div>
         </div>

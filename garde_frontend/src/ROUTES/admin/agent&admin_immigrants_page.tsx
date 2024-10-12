@@ -37,6 +37,8 @@ import { useReactToPrint } from "react-to-print";
 import * as Dialog from "@radix-ui/react-dialog";
 import { getImmigrantGenre, getImmigrantSejour } from "../../models/utils";
 import { MDialog } from "../../components/dialog";
+import { ExcelExportButton } from "../../components/excel_button";
+import PrintImmigrantButton from "../../components/print_immigrant_button";
 
 export interface ImmigrantInterface {
   id: number;
@@ -474,6 +476,10 @@ export default function AdminAgentImmigrantsPage() {
     }
   }
 
+  let selectedList = [...(list ?? [])].filter(
+    (imm) => selectedIds.length === 0 || selectedIds.includes(imm.id),
+  );
+
   let selectedDateRange: "days" | "months" | "years" | null = null;
   if (searchParams.has("date")) {
     const selectedDate = searchParams.get("date");
@@ -490,6 +496,10 @@ export default function AdminAgentImmigrantsPage() {
   let totalFemales = 0;
   let totalMinors = 0;
 
+  let totalSelectedMales = 0;
+  let totalSelectedFemales = 0;
+  let totalSelectedMinors = 0;
+
   let showChangeSelectedSejour = selectedIds.length > 0;
 
   for (const imm of list ?? []) {
@@ -505,7 +515,18 @@ export default function AdminAgentImmigrantsPage() {
 
     if (selectedIds.includes(imm.id) && imm.pirogue !== null) {
       showChangeSelectedSejour = false;
-      break;
+    }
+  }
+
+  for (const imm of selectedList ?? []) {
+    if (imm.age && imm.age < 18) {
+      totalSelectedMinors++;
+    }
+    if (imm.is_male) {
+      totalSelectedMales++;
+    }
+    if (!imm.is_male) {
+      totalSelectedFemales++;
     }
   }
 
@@ -638,6 +659,27 @@ export default function AdminAgentImmigrantsPage() {
         </div>
         <div className="hidden flex-row gap-x-4 lg:flex ">
           {isAdmin && (
+            <ExcelExportButton
+              data={
+                selectedList?.map((imm) => {
+                  return {
+                    Nom: imm.name,
+                    Genre: getImmigrantGenre(imm),
+                    Nationalité: imm.nationality_name,
+                    "Pays de naissance": imm.birth_country_name,
+                    "Date de naissance": imm.date_of_birth,
+                    Date: imm.created_at.split("T")[0],
+                    Séjour: getImmigrantSejour(imm),
+                  };
+                }) ?? []
+              }
+              fileName={
+                "LA MIGRATION ILLEGALE PAR VOIE MARITIME " +
+                (searchParams.get("date")?.replaceAll("-", "/") ?? "")
+              }
+            />
+          )}
+          {isAdmin && (
             <OutlinedButton
               className="border-green-600 text-green-600"
               onClick={() => {
@@ -670,14 +712,14 @@ export default function AdminAgentImmigrantsPage() {
         </div>
       </div>
       <div className="mt-10 w-full">
-        <div className="hidden flex-col gap-y-4 lg:hidden">
+        {/* <div className="hidden flex-col gap-y-4 lg:hidden">
           {list?.map((immigrant, i) => (
             <MobileImmigrantView
               onImageClick={(payload) => {}}
               immigrant={immigrant}
             />
           ))}
-        </div>
+        </div> */}
 
         <div className="mb-2 mt-4 flex flex-row items-center gap-x-2">
           <Select
@@ -923,6 +965,7 @@ export default function AdminAgentImmigrantsPage() {
                                 }
                           }
                         >
+                          <PrintImmigrantButton immigrant={immigrant} />
                           <button
                             onClick={() => {
                               setEditingImmigrant(
@@ -1001,7 +1044,7 @@ export default function AdminAgentImmigrantsPage() {
           </tbody>
         </table>
       </div>
-      {list && (
+      {selectedList && (
         <div ref={printRef} className="hidden flex-col px-10 print:flex">
           <div className="my-12 flex flex-col items-end self-center">
             <h1 className="text-2xl font-bold">
@@ -1041,7 +1084,7 @@ export default function AdminAgentImmigrantsPage() {
               </tr>
             </thead>
             <tbody>
-              {[...list].map((immigrant, index) => {
+              {[...selectedList].map((immigrant, index) => {
                 return (
                   <tr>
                     {/* border */}
@@ -1080,7 +1123,7 @@ export default function AdminAgentImmigrantsPage() {
           </table>
           <br />
           <br />
-          {selectedDateRange !== null && list !== null && (
+          {selectedDateRange !== null && selectedList !== null && (
             <table className="w-max">
               <tr>
                 <td className="border-gray-300 border">Hommes </td>
@@ -1089,10 +1132,16 @@ export default function AdminAgentImmigrantsPage() {
                 <td className="border-gray-300 border">Total </td>
               </tr>
               <tr>
-                <td className="border-gray-300 border">{totalMales}</td>
-                <td className="border-gray-300 border">{totalFemales}</td>
-                <td className="border-gray-300 border">{totalMinors}</td>
-                <td className="border-gray-300 border">{list!.length}</td>
+                <td className="border-gray-300 border">{totalSelectedMales}</td>
+                <td className="border-gray-300 border">
+                  {totalSelectedFemales}
+                </td>
+                <td className="border-gray-300 border">
+                  {totalSelectedMinors}
+                </td>
+                <td className="border-gray-300 border">
+                  {selectedList!.length}
+                </td>
               </tr>
             </table>
           )}
