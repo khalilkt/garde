@@ -2,9 +2,20 @@ import React, { useContext } from "react";
 import { Select, Title } from "../../components/comps";
 import { Td, Tr } from "../../components/table";
 import { LeftArrow } from "../../components/icons";
-import { rootUrl } from "../../models/constants";
+import { rootUrl, START_YEAR } from "../../models/constants";
 import axios from "axios";
 import { AuthContext } from "../../App";
+
+function getYears(start : number, end : number )  {
+  if (start == end){
+    return [start]
+  }
+  let years = []
+  for (let i = start; i <= end; i++){
+    years.push(i)
+  }
+  return years
+}
 
 interface DataInterface {
   data: {
@@ -53,6 +64,10 @@ export default function AdminComparaisonPage() {
     //   }
   );
 
+  const [startYear , setStartYear] = React.useState(new Date().getFullYear() - 1)
+  const [endYear , setEndYear] = React.useState(new Date().getFullYear())
+  const currentYear = new Date().getFullYear()  
+
   async function load() {
     const res = await axios.get(rootUrl + "year_comparaison", {
       headers: {
@@ -69,16 +84,35 @@ export default function AdminComparaisonPage() {
     return b[1].total - a[1].total;
   });
   top_nats = top_nats;
+
+  const startData = data?.data[startYear.toString()]
+  const endData = data?.data[endYear.toString()]
+
   return (
     <div>
       <Title>Comparaison</Title>
       <div className="mt-12 flex w-max flex-row items-center gap-x-4">
-        <Select value="2023">
-          <option value="2023">2023</option>
+        <Select value={startYear}
+        onChange={(e) => {
+          setStartYear(parseInt(e.target.value))
+          setEndYear(parseInt(e.target.value) + 1)
+        }}
+        >
+          {
+            getYears(START_YEAR, currentYear - 1).map((year) => (
+              <option value={year.toString()}>{year}</option>
+            ))
+          }
         </Select>
         <LeftArrow className="h-8 w-8 rotate-180 fill-black" />
-        <Select value="2024">
-          <option value="2024">2024</option>
+        <Select value={endYear}
+        onChange={(e) => setEndYear(parseInt(e.target.value))}
+        >
+          {
+            getYears(startYear + 1, currentYear).map((year) => (
+              <option value={year.toString()}>{year}</option>
+            ))
+          }
         </Select>
       </div>
       {/* horizontal table */}
@@ -86,56 +120,56 @@ export default function AdminComparaisonPage() {
         <table className="mt-10 w-full">
           <Tr>
             <th></th>
-            <Td className="w-1/4 text-lg font-semibold">2023</Td>
-            <Td className="w-1/4 text-lg font-semibold">2024</Td>
+            <Td className="w-1/4 text-lg font-semibold">{startYear}</Td>
+            <Td className="w-1/4 text-lg font-semibold">{endYear}</Td>
             <Td className="w-1/4 text-lg font-semibold">Marge</Td>
           </Tr>
           <Tr>
             <Td className="border-t border-t-primaryBorder">Total Pirogue</Td>
-            <Td className="w-1/4">{data.data["2023"].total_pirogues}</Td>
-            <Td className="w-1/4">{data.data["2024"].total_pirogues}</Td>
+            <Td className="w-1/4">{startData!.total_pirogues}</Td>
+            <Td className="w-1/4">{endData?.total_pirogues}</Td>
             <Td className="w-1/4 font-semibold">
-              {data.data["2024"].total_pirogues -
-                data.data["2023"].total_pirogues}
+              {endData!.total_pirogues -
+                startData!.total_pirogues}
             </Td>
           </Tr>
           <Tr>
             <Td>Total Immigrants</Td>
-            <Td>{data.data["2023"].total_immigrants}</Td>
-            <Td>{data.data["2024"].total_immigrants}</Td>
+            <Td>{startData!.total_immigrants}</Td>
+            <Td>{endData?.total_immigrants}</Td>
             <Td className="w-1/4 font-semibold">
-              {data.data["2024"].total_immigrants -
-                data.data["2023"].total_immigrants}
+              {endData!.total_immigrants -
+                startData!.total_immigrants}
             </Td>
           </Tr>
           <Tr>
             <Td>Total Hommes</Td>
-            <Td>{data.data["2023"].total_males}</Td>
-            <Td>{data.data["2024"].total_males}</Td>
+            <Td>{startData!.total_males}</Td>
+            <Td>{endData?.total_males}</Td>
             <Td className="w-1/4 font-semibold">
-              {data.data["2024"].total_males - data.data["2023"].total_males}
+              {endData!.total_males - startData!.total_males}
             </Td>
           </Tr>
           <Tr>
             <Td>Total Femmes</Td>
-            <Td>{data.data["2023"].total_females}</Td>
-            <Td>{data.data["2024"].total_females}</Td>
+            <Td>{startData!.total_females}</Td>
+            <Td>{endData?.total_females}</Td>
             <Td className="w-1/4 font-semibold">
-              {data.data["2024"].total_females -
-                data.data["2023"].total_females}
+              {endData!.total_females -
+                startData!.total_females}
             </Td>
           </Tr>
           <Tr>
             <Td>Total Mineurs</Td>
-            <Td>{data.data["2023"].total_minors}</Td>
-            <Td>{data.data["2024"].total_minors}</Td>
+            <Td>{startData!.total_minors}</Td>
+            <Td>{endData?.total_minors}</Td>
             <Td className="w-1/4 font-semibold">
-              {data.data["2024"].total_minors - data.data["2023"].total_minors}
+              {endData!.total_minors - startData!.total_minors}
             </Td>
           </Tr>
           {top_nats.map(([id, value]) => {
-            const start = data.data["2023"].nationalities[id]?.total ?? 0;
-            const end = data.data["2024"].nationalities[id]?.total ?? 0;
+            const start = startData!.nationalities[id]?.total ?? 0;
+            const end = endData?.nationalities[id]?.total ?? 0;
 
             return (
               <Tr>
@@ -151,6 +185,7 @@ export default function AdminComparaisonPage() {
           })}
         </table>
       )}
+
     </div>
   );
 }

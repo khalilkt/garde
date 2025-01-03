@@ -69,8 +69,12 @@ class ComparisonView(APIView):
     def get(self, request):
         # get real current year
         current_year = date.today().year
-        s_stats = get_year_stats(current_year - 1)
-        f_stats = get_year_stats(current_year)
+        s_year = self.request.query_params.get('start_year', current_year - 1)
+        f_year = self.request.query_params.get('end_year', current_year)
+
+        s_stats = get_year_stats(s_year)
+        f_stats = get_year_stats(f_year)
+        
         nats = {}
         for nat in s_stats['nationalities']:
             if not nat in nats:
@@ -89,8 +93,8 @@ class ComparisonView(APIView):
      
         return Response({
             "data":{
-                str(current_year - 1): s_stats,
-                str(current_year ): f_stats
+                s_year: s_stats,
+                f_year: f_stats
             },
             "nationalities": nats
         })

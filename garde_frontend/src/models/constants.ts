@@ -1,3 +1,5 @@
+export const START_YEAR = 2023;
+
 export const rootUrl = "https://gcm-ci.org:81/";
 // export const rootUrl = "http://localhost:8000/";
 
