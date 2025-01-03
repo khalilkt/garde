@@ -30,7 +30,12 @@ import { useContext, useEffect, useId } from "react";
 import React from "react";
 import { MDialog } from "../../components/dialog";
 import axios from "axios";
-import { MATERIAL_NAME, PaginatedData, rootUrl } from "../../models/constants";
+import {
+  MATERIAL_NAME,
+  PaginatedData,
+  rootUrl,
+  START_YEAR,
+} from "../../models/constants";
 import { AuthContext } from "../../App";
 import PirogueDetailPage, { CountryInterface } from "./pirogue_detail_page";
 import * as RDialog from "@radix-ui/react-dialog";
@@ -41,6 +46,7 @@ import {
 import { useReactToPrint } from "react-to-print";
 import { AnimatePresence, motion } from "framer-motion";
 import { ExcelExportButton } from "../../components/excel_button";
+import { getYears } from "./admin_comparaison_page";
 
 export interface PirogueInterface {
   id: number;
@@ -1305,8 +1311,9 @@ export default function AdminAgentPiroguesPage() {
                 <option value="" disabled>
                   Annee
                 </option>
-                <option value="2023">2023</option>
-                <option value="2024">2024</option>
+                {getYears(START_YEAR, new Date().getFullYear()).map((year) => (
+                  <option value={year.toString()}>{year}</option>
+                ))}
               </Select>
             )}
             {selectedDateRange !== null && list !== null && (

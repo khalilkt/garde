@@ -30,7 +30,7 @@ import { Pagination, Td, Tr } from "../../components/table";
 import { useContext, useEffect, useId } from "react";
 import React from "react";
 import axios from "axios";
-import { PaginatedData, rootUrl } from "../../models/constants";
+import { PaginatedData, rootUrl, START_YEAR } from "../../models/constants";
 import { AuthContext } from "../../App";
 import { CountryInterface, MobileImmigrantView } from "./pirogue_detail_page";
 import { useReactToPrint } from "react-to-print";
@@ -39,6 +39,7 @@ import { getImmigrantGenre, getImmigrantSejour } from "../../models/utils";
 import { MDialog } from "../../components/dialog";
 import { ExcelExportButton } from "../../components/excel_button";
 import PrintImmigrantButton from "../../components/print_immigrant_button";
+import { getYears } from "./admin_comparaison_page";
 
 export interface ImmigrantInterface {
   id: number;
@@ -808,8 +809,11 @@ export default function AdminAgentImmigrantsPage() {
               <option value="" disabled>
                 Annee
               </option>
-              <option value="2023">2023</option>
-              <option value="2024">2024</option>
+              {
+            getYears(START_YEAR, new Date().getFullYear()).map((year) => (
+              <option value={year.toString()}>{year}</option>
+            ))
+          }
             </Select>
           )}
           {selectedDateRange !== null && list !== null && (

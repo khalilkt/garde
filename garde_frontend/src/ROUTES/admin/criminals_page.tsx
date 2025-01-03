@@ -13,13 +13,14 @@ import { Pagination, Td, Tr } from "../../components/table";
 import { useContext, useEffect, useState } from "react";
 import React from "react";
 import axios from "axios";
-import { PaginatedData, rootUrl } from "../../models/constants";
+import { PaginatedData, rootUrl, START_YEAR } from "../../models/constants";
 import { AuthContext } from "../../App";
 import { useReactToPrint } from "react-to-print";
 import { ImmigrantInterface } from "./agent&admin_immigrants_page";
 import { ImmigrantIcon } from "../../components/icons";
 import { MDialog } from "../../components/dialog";
 import { PrintPage } from "../../components/print_page";
+import { getYears } from "./admin_comparaison_page";
 
 export const CRIMINAL_RECORD_NAMES = {
   theft: "Vol",
@@ -382,8 +383,9 @@ export default function CriminalsPage() {
               <option value="" disabled>
                 Annee
               </option>
-              <option value="2023">2023</option>
-              <option value="2024">2024</option>
+              {getYears(START_YEAR, new Date().getFullYear()).map((year) => (
+                <option value={year.toString()}>{year}</option>
+              ))}
             </Select>
           )}
           {selectedDateRange !== null && list !== null && (

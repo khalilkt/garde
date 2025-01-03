@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { Select, Title } from "../../components/comps";
 import { Td, Tr } from "../../components/table";
 import { LeftArrow } from "../../components/icons";
@@ -6,7 +6,7 @@ import { rootUrl, START_YEAR } from "../../models/constants";
 import axios from "axios";
 import { AuthContext } from "../../App";
 
-function getYears(start : number, end : number )  {
+export function getYears(start : number, end : number )  {
   if (start == end){
     return [start]
   }
@@ -69,7 +69,13 @@ export default function AdminComparaisonPage() {
   const currentYear = new Date().getFullYear()  
 
   async function load() {
-    const res = await axios.get(rootUrl + "year_comparaison", {
+    const res = await axios.get(rootUrl + "year_comparaison?"
+      + new URLSearchParams({
+        start_year: startYear.toString(),
+        end_year: endYear.toString(),
+      })
+      
+      , {
       headers: {
         Authorization: `Token ${token}`,
       },
@@ -77,8 +83,9 @@ export default function AdminComparaisonPage() {
     setData(res.data);
   }
   React.useEffect(() => {
+    setData(null);
     load();
-  }, []);
+  }, [startYear, endYear]);
 
   let top_nats = Object.entries(data?.nationalities ?? {}).sort((a, b) => {
     return b[1].total - a[1].total;
@@ -116,7 +123,7 @@ export default function AdminComparaisonPage() {
         </Select>
       </div>
       {/* horizontal table */}
-      {data && (
+      {data && startData && endData &&  (
         <table className="mt-10 w-full">
           <Tr>
             <th></th>
@@ -126,37 +133,37 @@ export default function AdminComparaisonPage() {
           </Tr>
           <Tr>
             <Td className="border-t border-t-primaryBorder">Total Pirogue</Td>
-            <Td className="w-1/4">{startData!.total_pirogues}</Td>
+            <Td className="w-1/4">{startData?.total_pirogues}</Td>
             <Td className="w-1/4">{endData?.total_pirogues}</Td>
             <Td className="w-1/4 font-semibold">
-              {endData!.total_pirogues -
-                startData!.total_pirogues}
+              {(endData?.total_pirogues ?? 0) -
+                (startData?.total_pirogues ?? 0)}
             </Td>
           </Tr>
           <Tr>
             <Td>Total Immigrants</Td>
-            <Td>{startData!.total_immigrants}</Td>
+            <Td>{startData?.total_immigrants}</Td>
             <Td>{endData?.total_immigrants}</Td>
             <Td className="w-1/4 font-semibold">
-              {endData!.total_immigrants -
-                startData!.total_immigrants}
+              {(endData?.total_immigrants ?? 0) -
+                (startData?.total_immigrants ?? 0)}
             </Td>
           </Tr>
           <Tr>
             <Td>Total Hommes</Td>
-            <Td>{startData!.total_males}</Td>
+            <Td>{startData?.total_males}</Td>
             <Td>{endData?.total_males}</Td>
             <Td className="w-1/4 font-semibold">
-              {endData!.total_males - startData!.total_males}
+              {(endData?.total_males ?? 0) - (startData?.total_males ?? 0)}
             </Td>
           </Tr>
           <Tr>
             <Td>Total Femmes</Td>
-            <Td>{startData!.total_females}</Td>
+            <Td>{startData?.total_females}</Td>
             <Td>{endData?.total_females}</Td>
             <Td className="w-1/4 font-semibold">
-              {endData!.total_females -
-                startData!.total_females}
+              {(endData?.total_females ?? 0) -
+                (startData?.total_females ?? 0)}
             </Td>
           </Tr>
           <Tr>
@@ -185,7 +192,6 @@ export default function AdminComparaisonPage() {
           })}
         </table>
       )}
-
     </div>
   );
 }

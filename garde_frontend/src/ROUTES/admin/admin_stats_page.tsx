@@ -5,12 +5,13 @@ import React, { useContext } from "react";
 import { CountryInterface } from "./pirogue_detail_page";
 import { AuthContext } from "../../App";
 import axios from "axios";
-import { MATERIAL_NAME, rootUrl } from "../../models/constants";
+import { MATERIAL_NAME, rootUrl, START_YEAR } from "../../models/constants";
 import { useSearchParams } from "react-router-dom";
+import { getYears } from "./admin_comparaison_page";
 
 export default function AdminStatsPage() {
   const token = useContext(AuthContext).authData?.token;
-
+  const currentYear = new Date().getFullYear();
   const countriesNameCache = React.useRef<{ [key: string]: string }>({});
   const [pieOptions, setPieOptions] = React.useState<ApexOptions>({
     series: [40, 60],
@@ -169,7 +170,6 @@ export default function AdminStatsPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  async function init() {}
   async function loadPiroguesStats() {
     // is_male=1&etat=alive&age=major&nationality=2&birth_country=201
     const pirogueParamsName = ["pirogue_nationality", "port", "material"];
@@ -184,7 +184,7 @@ export default function AdminStatsPage() {
         params.set(name, searchParams.get(param_name)!);
       }
     }
-    params.set("year", searchParams.get("year") ?? "2024");
+    params.set("year", searchParams.get("year") ?? currentYear.toString());
     try {
       const response = await axios.get(rootUrl + "stats/pirogues", {
         params: params,
@@ -239,7 +239,7 @@ export default function AdminStatsPage() {
       }
     }
 
-    params.set("year", searchParams.get("year") ?? "2024");
+    params.set("year", searchParams.get("year") ?? currentYear.toString());
 
     try {
       const response = await axios.get(rootUrl + "stats/immigrants", {
@@ -295,6 +295,7 @@ export default function AdminStatsPage() {
     loadImmigrantsStats();
     loadPiroguesStats();
   }, [searchParams]);
+
   const genre =
     searchParams.get("is_male") === null
       ? "none"
@@ -305,7 +306,7 @@ export default function AdminStatsPage() {
     ? searchParams.get("material") ?? ""
     : "";
 
-  const selectedYear = searchParams.get("year") ?? "2024";
+  const selectedYear = searchParams.get("year") ?? currentYear.toString();
 
   return (
     <div className="flex flex-col">
@@ -314,19 +315,18 @@ export default function AdminStatsPage() {
         <Select
           value={selectedYear}
           className="w-max"
-          onChange={() => {
+          onChange={(e) => {
             setSearchParams((params) => {
-              if (selectedYear === "2023") {
-                params.set("year", "2024");
-              } else {
-                params.set("year", "2023");
-              }
+              params.set("year", e.target.value);
               return params;
             });
           }}
         >
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
+          {
+            getYears(START_YEAR, currentYear).map((year) => (
+              <option value={year.toString()}>{year}</option>
+            ))
+          }
         </Select>
       </div>
       <div className="flex items-center gap-x-4">
