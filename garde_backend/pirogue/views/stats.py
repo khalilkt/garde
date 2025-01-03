@@ -7,6 +7,8 @@ from rest_framework.permissions import AllowAny
 from django.db.models import Count
 from pirogue.models.country import CountrySerializer
 from django.db.models import Q, F
+from datetime import date 
+
 class StatsSerializer(serializers.Serializer):
     total_pirogues = serializers.IntegerField
     total_immigrants = serializers.IntegerField
@@ -25,10 +27,12 @@ class CountriesDetailView(APIView):
 class StatsView(APIView):
     permission_classes = [IsAdminUser]
     def get(self, request):
-        year= 2024
+        
+        year= date.today().year
         total_pirogues = Pirogue.objects.filter(created_at__year=year).count()
         total_immigrants = Immigrant.objects.filter(deleted_at__isnull = True).filter(created_at__year=year).count()
         return Response(StatsSerializer({
+            "year" : year,
             'total_pirogues': total_pirogues,
             'total_immigrants': total_immigrants,
         }).data)   
@@ -63,8 +67,10 @@ def get_year_stats(year):
 class ComparisonView(APIView):
     permission_classes = [IsAdminUser]
     def get(self, request):
-        s_stats = get_year_stats(2023)
-        f_stats = get_year_stats(2024)
+        # get real current year
+        current_year = date.today().year
+        s_stats = get_year_stats(current_year - 1)
+        f_stats = get_year_stats(current_year)
         nats = {}
         for nat in s_stats['nationalities']:
             if not nat in nats:
@@ -83,8 +89,8 @@ class ComparisonView(APIView):
      
         return Response({
             "data":{
-                "2023": s_stats,
-            "2024": f_stats,
+                str(current_year - 1): s_stats,
+                str(current_year ): f_stats
             },
             "nationalities": nats
         })
