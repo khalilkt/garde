@@ -280,7 +280,7 @@ function EditImmigrantDialog({
             cin: e.target.value,
           }));
         }}
-        placeholder="CIN"
+        placeholder="NNI/NP"
         type="text"
       />
       <Input
