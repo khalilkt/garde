@@ -135,7 +135,7 @@ export default function PrintImmigrantButton({
               Nationalité: immigrant.nationality_name,
               "Pays de naissance": immigrant.birth_country_name,
               État: getImmigrantEtats(immigrant),
-              cin: immigrant.cin ?? "-",
+              "NNI/NP": immigrant.cin ?? "-",
               "Numero de telephone": immigrant.phone ?? "-",
             }}
           />
