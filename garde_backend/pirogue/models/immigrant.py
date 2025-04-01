@@ -55,6 +55,9 @@ class Immigrant(models.Model):
 
     ])
     criminal_note = models.TextField( blank = True, default="")
+    cin = models.CharField(max_length=100, blank = True, null = True)
+    phone = models.CharField(max_length=100, blank = True, null = True)
+    
     
     objects = ImmigrantManager()
 

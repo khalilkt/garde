@@ -76,6 +76,8 @@ export interface PirogueInterface {
   etat: string;
   situation: string;
   video: string | null;
+  video2: string | null;
+  video3: string | null;
 }
 
 export interface DialogState {

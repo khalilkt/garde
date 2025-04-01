@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { ChangeEvent, useContext, useEffect } from "react";
 import { PirogueInterface } from "./agent&admin_pirogues_page";
 import {
   Border,
@@ -496,6 +496,38 @@ export default function PirogueDetailPage({
     );
   }
 
+  async function uploadNewVideo(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    var videoName = "video";
+    if (data?.video) {
+      videoName = "video2";
+    }
+    if (data?.video2) {
+      videoName = "video3";
+    }
+    alert(videoName);
+    formData.append(videoName, file);
+
+    await axios
+      .patch(rootUrl + "pirogues/" + pirogueId + "/", formData, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        load();
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+
+    alert("video uploaded");
+  }
+
   return (
     <div
       {...divProps}
@@ -616,14 +648,51 @@ export default function PirogueDetailPage({
         )}
       </div>
       <hr className="border-[#888888]" />
-      {data && data!.video && (
-        <video className="mt-4" width="320" height="240" controls>
-          <source
-            src={data!.video?.replace("http://", "https://")}
-            type="video/mp4"
+      <div className="flex gap-x-4">
+        {data && data!.video && (
+          <video className="mt-4" width="320" height="240" controls>
+            <source
+              src={data!.video?.replace("http://", "https://")}
+              type="video/mp4"
+            />
+            Your browser does not support the video tag.
+          </video>
+        )}
+        {data && data!.video2 && (
+          <video className="mt-4" width="320" height="240" controls>
+            <source
+              src={data!.video2?.replace("http://", "https://")}
+              type="video/mp4"
+            />
+            Your browser does not support the video tag.
+          </video>
+        )}
+        {data && data!.video3 && (
+          <video className="mt-4" width="320" height="240" controls>
+            <source
+              src={data!.video3?.replace("http://", "https://")}
+              type="video/mp4"
+            />
+            Your browser does not support the video tag.
+          </video>
+        )}
+      </div>
+      {/* new video upload button */}
+      {isAdmin && !data?.video3 && (
+        <div className="mt-4 flex gap-x-4">
+          <label
+            htmlFor="video"
+            className="cursor-pointer rounded bg-primary px-4 py-2 text-white"
+          >
+            Nouvelle vidéo
+          </label>
+          <input
+            type="file"
+            id="video"
+            className="hidden"
+            onChange={uploadNewVideo}
           />
-          Your browser does not support the video tag.
-        </video>
+        </div>
       )}
       {data && data.video && <hr className="mt-6 border-[#888888]" />}
       {/* <Title className="mb-4 mt-6">Description</Title>

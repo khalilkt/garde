@@ -60,6 +60,8 @@ export interface ImmigrantInterface {
   pirogue_sejour: number | null;
   sejour: number | null;
   etat: string;
+  cin: string | null;
+  phone: string | null;
   criminal_record:
     | "killer"
     | "thief"
@@ -90,6 +92,8 @@ function EditImmigrantDialog({
     criminal_note: string;
     birth_country: { name: string; id: number } | null;
     nationality: { name: string; id: number } | null;
+    cin: string | null;
+    phone: string | null;
   }>({
     name: initialImmigrant.name,
     etat: initialImmigrant.etat,
@@ -109,6 +113,8 @@ function EditImmigrantDialog({
           id: initialImmigrant.nationality,
         }
       : null,
+    cin: initialImmigrant.cin,
+    phone: initialImmigrant.phone,
   });
   const token = useContext(AuthContext).authData?.token;
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -132,6 +138,8 @@ function EditImmigrantDialog({
           criminal_note: formState.criminal_note,
           birth_country: formState.birth_country?.id ?? null,
           nationality: formState.nationality?.id ?? null,
+          cin: formState.cin,
+          phone: formState.phone,
         },
         {
           headers: {
@@ -263,6 +271,28 @@ function EditImmigrantDialog({
         search={true}
         url={"countries"}
         lookupColumn="name_fr"
+      />
+      <Input
+        value={formState.cin ?? ""}
+        onChange={(e) => {
+          setFormState((state) => ({
+            ...state,
+            cin: e.target.value,
+          }));
+        }}
+        placeholder="CIN"
+        type="text"
+      />
+      <Input
+        value={formState.phone ?? ""}
+        onChange={(e) => {
+          setFormState((state) => ({
+            ...state,
+            phone: e.target.value,
+          }));
+        }}
+        placeholder="Téléphone"
+        type="text"
       />
 
       <div className="col-span-2 flex gap-x-4">
@@ -809,11 +839,9 @@ export default function AdminAgentImmigrantsPage() {
               <option value="" disabled>
                 Annee
               </option>
-              {
-            getYears(START_YEAR, new Date().getFullYear()).map((year) => (
-              <option value={year.toString()}>{year}</option>
-            ))
-          }
+              {getYears(START_YEAR, new Date().getFullYear()).map((year) => (
+                <option value={year.toString()}>{year}</option>
+              ))}
             </Select>
           )}
           {selectedDateRange !== null && list !== null && (

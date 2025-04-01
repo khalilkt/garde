@@ -54,7 +54,7 @@ class HasPirogueImmigrantsPermission(BasePermission):
 def get_immigrant_filterset_fields():
     return  ['pirogue', 'birth_country', 'nationality', 'created_by', 'is_male', 'etat', 'free_at', 'criminal_record']
 def get_immigrant_search_fields():
-    return ['name']
+    return ['name', 'cin', 'phone']
 def get_immigrant_ordering_fields():
     return ['name', 'date_of_birth', 'birth_country','nationality', 'created_by_name', 'created_by', 'pirogue_number']
 
